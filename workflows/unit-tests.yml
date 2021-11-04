@@ -1,0 +1,23 @@
+name: transcendence test-battery
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Transcendence Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: NodeJS - environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: NPM - construct
+        run: npm ci
+      - name: React - build
+        run: npm run build --if-present
+      - name: React - unit tests
+        run: npm test
