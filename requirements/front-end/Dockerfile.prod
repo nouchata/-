@@ -18,9 +18,9 @@ RUN apk update && apk add --no-cache nginx openssl
 
 WORKDIR /app
 
-RUN openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
-    -subj "/C=FR/ST=France/L=Paris/O=Dis/CN=trans" \
-    -keyout /etc/ssl/private/trans.key  -out  /etc/ssl/certs/trans.crt
+#RUN openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+#    -subj "/C=FR/ST=France/L=Paris/O=Dis/CN=trans" \
+#    -keyout /etc/ssl/private/trans.key  -out  /etc/ssl/certs/trans.crt
 
 RUN adduser -D -g 'www' www && mkdir /www && chown -R www:www /var/lib/nginx && chown -R www:www /www && \
 	mkdir -p /run/nginx
