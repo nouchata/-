@@ -29,7 +29,6 @@ COPY ./nginx.conf /etc/nginx/nginx.conf
 
 COPY --from=build /build/build /var/www
 
-EXPOSE 443
 CMD ["nginx", "-g", "daemon off;"]
 
 EXPOSE 443
