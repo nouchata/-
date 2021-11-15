@@ -1,4 +1,4 @@
-name: transcendence front test
+name: Transcendence tests
 on:
   push:
     branches: [ main ]
