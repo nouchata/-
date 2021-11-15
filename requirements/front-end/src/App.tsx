@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ButtonTest from './Button';
 import './styles/App.scss'
 
 function App() {
-  return (
+	const [data, setData] = useState<string>("ft_transcendence");
+
+	function fun(odata:string) {
+		setData(odata);
+	}
+
+	return (
     <div className="App">
-      ft_transcendence
+      {data}
+	  <ButtonTest fun={fun} />
     </div>
   );
 }
