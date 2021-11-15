@@ -1,0 +1,23 @@
+name: transcendence front test
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Transcendence front end test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: NodeJS - environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - name: yarn install
+        run: cd requirements/front-end && yarn install
+      - name: yarn build
+        run: cd requirements/front-end && yarn build
+      - name: React - unit tests
+        run: cd requirements/front-end && yarn test
