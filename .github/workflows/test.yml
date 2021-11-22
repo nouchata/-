@@ -16,11 +16,11 @@ jobs:
         with:
           node-version: 16
       - name: yarn install
-        run: cd requirements/front-end && yarn install
+        run: cd requirements/frontend && yarn install
       - name: yarn build
-        run: cd requirements/front-end && yarn build
+        run: cd requirements/frontend && yarn build
       - name: React - unit tests
-        run: cd requirements/front-end && yarn test
+        run: cd requirements/frontend && yarn test
   back:
     name: Transcendence back end test
     runs-on: ubuntu-latest
@@ -31,8 +31,8 @@ jobs:
         with:
           node-version: 16
       - name: yarn install
-        run: cd requirements/back-end && yarn install
+        run: cd requirements/backend && yarn install
       - name: yarn build
-        run: cd requirements/back-end && yarn build
+        run: cd requirements/backend && yarn build
       - name: React - unit tests
-        run: cd requirements/back-end && yarn test
+        run: cd requirements/backend && yarn test
