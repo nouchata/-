@@ -1,0 +1,27 @@
+FROM alpine:latest
+
+ARG DB_ROOT_PASS
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASS
+
+RUN apk update && apk add postgresql
+
+RUN mkdir /run/postgresql && chown postgres:postgres /run/postgresql/
+
+USER postgres
+
+RUN mkdir /var/lib/postgresql/data && chmod 0700 /var/lib/postgresql/data 
+
+RUN initdb -D /var/lib/postgresql/data
+
+RUN echo "host all all 0.0.0.0/0 md5" >> /var/lib/postgresql/data/pg_hba.conf &&\
+	echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf
+
+RUN pg_ctl start -D /var/lib/postgresql/data &&\
+ 	echo "CREATE DATABASE $DB_NAME;" | psql &&\
+    echo "CREATE USER $DB_USER WITH PASSWORD '$DB_PASS';" | psql &&\
+    echo "GRANT ALL PRIVILEGES ON DATABASE $DB_NAME TO $DB_USER;" | psql &&\
+	echo "ALTER USER postgres PASSWORD '$DB_ROOT_PASS';" | psql;
+
+CMD "postgres" "-D" "/var/lib/postgresql/data"
