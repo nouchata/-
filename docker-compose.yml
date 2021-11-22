@@ -1,23 +1,28 @@
 version: '3.9'
 services:
-        front-end:
+        frontend:
                 build:
-                  context: ./requirements/front-end
+                  context: ./requirements/frontend
                   dockerfile: Dockerfile.prod
-                image: front-end:v1
-                container_name: front-end
+                image: frontend:v1
+                container_name: frontend
                 depends_on:
-                        - back-end
+                        - backend
                 ports: 
                         - "80:80"
                 restart: always
 
-        back-end:
-                build:
-                  context: ./requirements/back-end
+        backend:
+                build: 
+                  context: ./requirements/backend
                   dockerfile: Dockerfile.prod
-                image: back-end:v1
-                container_name: back-end
+                image: backend:v1
+                environment:
+                        - DB_NAME=${DB_NAME}
+                        - DB_USER=${DB_USER}
+                        - DB_PASS=${DB_PASS}
+                        - DB_ROOT_PASS=${DB_ROOT_PASS}
+                container_name: backend
                 depends_on:
                         - database
                 ports: 
@@ -25,6 +30,24 @@ services:
                 restart: always
                 networks:
                         - database-network
+        database:
+                build:
+                  context: ./requirements/database
+                  args:
+                        - DB_NAME=${DB_NAME}
+                        - DB_USER=${DB_USER}
+                        - DB_PASS=${DB_PASS}
+                        - DB_ROOT_PASS=${DB_ROOT_PASS}
+                  dockerfile: Dockerfile.prod
+                image: database:v1
+                container_name: database
+                restart: always
+                volumes:
+                  - db_vol:/var/lib/postgresql/data
+
+volumes:
+        db_vol:
 
 networks:
         database-network:
+          
