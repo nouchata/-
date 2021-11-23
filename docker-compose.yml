@@ -18,10 +18,12 @@ services:
                   dockerfile: Dockerfile.prod
                 image: backend:v1
                 environment:
+                        - RUN_ENV=${RUN_ENV}
                         - DB_NAME=${DB_NAME}
                         - DB_USER=${DB_USER}
                         - DB_PASS=${DB_PASS}
                         - DB_ROOT_PASS=${DB_ROOT_PASS}
+                        - BACKEND_PORT=${BACKEND_PORT}
                 container_name: backend
                 depends_on:
                         - database
