@@ -35,4 +35,4 @@ jobs:
       - name: yarn build
         run: cd requirements/backend && yarn build
       - name: React - unit tests
-        run: cd requirements/backend && yarn test
+        run: cd requirements/backend && yarn test yarn test --passWithNoTests 

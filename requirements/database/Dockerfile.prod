@@ -4,6 +4,7 @@ ARG DB_ROOT_PASS
 ARG DB_NAME
 ARG DB_USER
 ARG DB_PASS
+ARG DB_PORT
 
 RUN apk update && apk add postgresql
 
@@ -16,7 +17,9 @@ RUN mkdir /var/lib/postgresql/data && chmod 0700 /var/lib/postgresql/data
 RUN initdb -D /var/lib/postgresql/data
 
 RUN echo "host all all 0.0.0.0/0 md5" >> /var/lib/postgresql/data/pg_hba.conf &&\
-	echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf
+	echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf &&\
+	echo "port = $DB_PORT" >> /var/lib/postgresql/data/postgresql.conf
+
 
 RUN pg_ctl start -D /var/lib/postgresql/data &&\
  	echo "CREATE DATABASE $DB_NAME;" | psql &&\
