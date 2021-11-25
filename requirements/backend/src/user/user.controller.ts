@@ -13,7 +13,7 @@ export class UserController {
 		status: 201,
 		description: 'The user has been successfully created.',
 		type: User})
-	addUser(@Body() createUserDTO: CreateUserDTO) : User {
+	addUser(@Body() createUserDTO: CreateUserDTO) : Promise<User> {
 		return this.userService.createUser(createUserDTO);
 	}
 }

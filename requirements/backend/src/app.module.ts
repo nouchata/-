@@ -37,6 +37,7 @@ else {
 		password: process.env.DB_PASS,
 		database: process.env.DB_NAME,
 		entities: [User],
+		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000
 	}), UserModule],
