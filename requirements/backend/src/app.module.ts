@@ -2,6 +2,7 @@ import { DynamicModule, Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { hostname } from 'os';
+import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 
 let dyn_import: DynamicModule[] = []
@@ -35,7 +36,7 @@ else {
 		username: process.env.DB_USER,
 		password: process.env.DB_PASS,
 		database: process.env.DB_NAME,
-		entities: [],
+		entities: [User],
 		retryAttempts: 5,
 		retryDelay: 5000
 	}), UserModule],
