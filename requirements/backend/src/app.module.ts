@@ -25,20 +25,19 @@ else {
 	}));
 }
 
-dyn_import = [ ...dyn_import, TypeOrmModule.forRoot({
-	type: 'postgres',
-	host: process.env.DB_HOSTNAME,
-	port: Number(process.env.DB_PORT),
-	username: process.env.DB_USER,
-	password: process.env.DB_PASS,
-	database: process.env.DB_NAME,
-	entities: [],
-	retryAttempts: 5,
-	retryDelay: 5000
-})]
 
 @Module({
-	imports: dyn_import,
+	imports: [...dyn_import, TypeOrmModule.forRoot({
+		type: 'postgres',
+		host: process.env.DB_HOSTNAME,
+		port: Number(process.env.DB_PORT),
+		username: process.env.DB_USER,
+		password: process.env.DB_PASS,
+		database: process.env.DB_NAME,
+		entities: [],
+		retryAttempts: 5,
+		retryDelay: 5000
+	})],
 	controllers: [],
 	providers: [],
 })
