@@ -2,6 +2,7 @@ import { DynamicModule, Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { hostname } from 'os';
+import { UserModule } from './user/user.module';
 
 let dyn_import: DynamicModule[] = []
 
@@ -37,8 +38,8 @@ else {
 		entities: [],
 		retryAttempts: 5,
 		retryDelay: 5000
-	})],
+	}), UserModule],
 	controllers: [],
 	providers: [],
 })
-export class AppModule { }
+export class AppModule {}
