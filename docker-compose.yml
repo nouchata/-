@@ -26,6 +26,9 @@ services:
                         - DB_PASS=${DB_PASS}
                         - DB_ROOT_PASS=${DB_ROOT_PASS}
                         - BACKEND_PORT=${BACKEND_PORT}
+                        - UID_42=${UID_42}
+                        - SECRET_42=${SECRET_42}
+                        - CALLBACK_URI_42=${CALLBACK_URI_42}
                 container_name: backend
                 depends_on:
                         - database
