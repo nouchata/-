@@ -46,6 +46,9 @@ services:
                   dockerfile: Dockerfile.prod
                 image: database:v1
                 container_name: database
+                hostname: ${DB_HOSTNAME}
+                networks:
+                        - database-network
                 restart: always
                 volumes:
                   - db_vol:/var/lib/postgresql/data
