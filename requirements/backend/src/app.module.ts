@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { hostname } from 'os';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
 
 let dyn_import: DynamicModule[] = []
 
@@ -40,7 +41,7 @@ else {
 		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000
-	}), UserModule],
+	}), UserModule, AuthModule],
 	controllers: [],
 	providers: [],
 })
