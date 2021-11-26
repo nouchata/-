@@ -40,7 +40,6 @@ async function bootstrap() {
 			.setTitle('ft_trancendence')
 			.setDescription('ft_trancendence API description')
 			.setVersion('indev')
-			.addTag('REST')
 			.build();
 		const document = SwaggerModule.createDocument(app, config);
 		SwaggerModule.setup('', app, document);
