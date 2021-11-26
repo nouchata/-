@@ -16,20 +16,27 @@ You need docker and docker compose.
 you need to setup a .env at the root of the project:
 
 ```
-RUN_ENV=PROD
+RUN_ENV=TEST
 
 # DB CONFIG
 
 DB_HOSTNAME=database
 DB_PORT=5432
-DB_ROOT_PASS=yourpass
+DB_ROOT_PASS=
 DB_NAME=transdb
 DB_USER=nestjs
-DB_PASS=anotherpass
+DB_PASS=
 
 # BACKEND CONFIG
 
 BACKEND_PORT=3000
+COOKIE_SECRET=
+
+# 42 AUTH CONFIG
+
+UID_42=
+SECRET_42=
+CALLBACK_URL_42=http://localhost:3000/auth/redirect/
 
 ```
 
