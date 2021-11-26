@@ -1,4 +1,4 @@
-import { Controller, Get, Redirect, UseGuards } from '@nestjs/common';
+import { Controller, Get, Redirect, Req, UseGuards } from '@nestjs/common';
 import { FortyTwoGuard } from './guards/fortytwo.guard';
 import { GroupGuard } from './guards/group.guard';
 import { Roles } from './roles.decorator';
@@ -19,11 +19,15 @@ export class AuthController {
 
 	@Get('status')
 	@UseGuards(GroupGuard)
-	status() {
-		return ('ok');
+	status(@Req() req) {
+		
+		return req.user;
 	}
 
 	@Get('logout')
-	logout() {
+	@UseGuards(GroupGuard)
+	logout(@Req() req) {
+		req.session.destroy();
+		return 'logged out';
 	}
 }
