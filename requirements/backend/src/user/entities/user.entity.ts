@@ -47,4 +47,11 @@ export class User implements UserInterface {
 		}
 	)
 	createdAt: Date;
+
+
+	hasRole(role: UserRole): boolean {
+		console.log(role);
+		const roles_table: UserRole[] = ['standard', 'moderator', 'admin'];
+		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
+	}
 }

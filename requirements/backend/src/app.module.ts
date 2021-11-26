@@ -6,6 +6,7 @@ import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
+import { SessionEntity } from './auth/session.entity';
 
 let dyn_import: DynamicModule[] = []
 
@@ -38,7 +39,7 @@ else {
 		username: process.env.DB_USER,
 		password: process.env.DB_PASS,
 		database: process.env.DB_NAME,
-		entities: [User],
+		entities: [User, SessionEntity],
 		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000

@@ -5,10 +5,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
 import * as passport from 'passport';
+import { getRepository } from 'typeorm';
+import { ISession, TypeormStore } from 'connect-typeorm/out';
+import { SessionEntity } from './auth/session.entity';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-
+	const sessionRepo = getRepository<ISession>(SessionEntity);
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: true,
 		transform: true,
@@ -22,6 +25,7 @@ async function bootstrap() {
 			secret: process.env.COOKIE_SECRET,
 			resave: false,
 			saveUninitialized: false,
+			store: new TypeormStore().connect(sessionRepo),
 		}
 	));
 	app.use(passport.initialize());

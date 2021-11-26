@@ -13,9 +13,9 @@ export class SessionSerializer extends PassportSerializer
 	serializeUser(user: User, done: (err: Error, login: string) => void) {
 		done(null, user.login);
 	}
-	
-	async deserializeUser(payload: string, done: (err: Error, user: User) => void) {
-		const userDb: User = await this.userService.findUser({login: payload});
+
+	async deserializeUser(login: string, done: (err: Error, user: User) => void) {
+		const userDb: User = await this.userService.findUser({login: login});
 
 		if (userDb)
 			return done(null, userDb);

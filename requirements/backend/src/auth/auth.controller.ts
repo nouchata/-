@@ -1,5 +1,7 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { FortyTwoGuard } from './fortytwo.guard';
+import { Controller, Get, Redirect, UseGuards } from '@nestjs/common';
+import { FortyTwoGuard } from './guards/fortytwo.guard';
+import { GroupGuard } from './guards/group.guard';
+import { Roles } from './roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -11,11 +13,14 @@ export class AuthController {
 
 	@Get('redirect')
 	@UseGuards(FortyTwoGuard)
+	@Redirect('/auth/status/', 301)
 	redirect() {
 	}
 
 	@Get('status')
+	@UseGuards(GroupGuard)
 	status() {
+		return ('ok');
 	}
 
 	@Get('logout')
