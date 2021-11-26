@@ -5,6 +5,7 @@ import { hostname } from 'os';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
 
 let dyn_import: DynamicModule[] = []
 
@@ -41,8 +42,11 @@ else {
 		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000
-	}), UserModule, AuthModule],
+	}), UserModule,
+		AuthModule,
+	PassportModule.register({ session: true })
+	],
 	controllers: [],
 	providers: [],
 })
-export class AppModule {}
+export class AppModule { }

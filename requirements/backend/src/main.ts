@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as session from 'express-session';
+import * as passport from 'passport';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -11,7 +13,20 @@ async function bootstrap() {
 		whitelist: true,
 		transform: true,
 	}))
-	
+
+	app.use(session(
+		{
+			cookie: {
+				maxAge: 86400000,
+			},
+			secret: process.env.COOKIE_SECRET,
+			resave: false,
+			saveUninitialized: false,
+		}
+	));
+	app.use(passport.initialize());
+	app.use(passport.session());
+
 	const configService = app.get<ConfigService>(ConfigService);
 	const port: number = Number(configService.get('BACKEND_PORT'));
 

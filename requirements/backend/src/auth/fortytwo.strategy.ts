@@ -1,10 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { Strategy } from "passport-42";
+import { User } from "src/user/entities/user.entity";
+import { AuthService } from "./auth.service";
+import { UserDetails } from "./utils/UserDetails";
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy) {
-	constructor() {
+	constructor(private authService: AuthService) {
 		super({
 			clientID: process.env.UID_42,
 			clientSecret: process.env.SECRET_42,
@@ -12,8 +15,13 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		});
 	}
 
-	async validate(accessToken: string, refreshToken: string, profile, cb)
+	async validate(accessToken: string, refreshToken: string, profile: any, cb: (err: Error, user: User) => void)
 	{
-		console.log(profile);
+		const { login } = profile;
+
+		const details: UserDetails = {login: profile.username};
+		const user: User = await this.authService.validateUser(details);
+
+		return cb(null, user);
 	}
 }
