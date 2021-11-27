@@ -29,7 +29,7 @@ services:
                         - COOKIE_SECRET=${COOKIE_SECRET}
                         - UID_42=${UID_42}
                         - SECRET_42=${SECRET_42}
-                        - CALLBACK_URI_42=${CALLBACK_URI_42}
+                        - CALLBACK_URL_42=${CALLBACK_URL_42}
                 container_name: backend
                 depends_on:
                         - database
