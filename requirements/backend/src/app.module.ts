@@ -4,6 +4,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { hostname } from 'os';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { PassportModule } from '@nestjs/passport';
+import { SessionEntity } from './auth/session.entity';
 
 let dyn_import: DynamicModule[] = []
 
@@ -36,12 +39,15 @@ else {
 		username: process.env.DB_USER,
 		password: process.env.DB_PASS,
 		database: process.env.DB_NAME,
-		entities: [User],
+		entities: [User, SessionEntity],
 		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000
-	}), UserModule],
+	}), UserModule,
+		AuthModule,
+	PassportModule.register({ session: true })
+	],
 	controllers: [],
 	providers: [],
 })
-export class AppModule {}
+export class AppModule { }

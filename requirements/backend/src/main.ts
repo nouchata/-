@@ -3,15 +3,34 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as session from 'express-session';
+import * as passport from 'passport';
+import { getRepository } from 'typeorm';
+import { ISession, TypeormStore } from 'connect-typeorm/out';
+import { SessionEntity } from './auth/session.entity';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-
+	const sessionRepo = getRepository<ISession>(SessionEntity);
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: true,
 		transform: true,
 	}))
-	
+
+	app.use(session(
+		{
+			cookie: {
+				maxAge: 86400000,
+			},
+			secret: process.env.COOKIE_SECRET,
+			resave: false,
+			saveUninitialized: false,
+			store: new TypeormStore().connect(sessionRepo),
+		}
+	));
+	app.use(passport.initialize());
+	app.use(passport.session());
+
 	const configService = app.get<ConfigService>(ConfigService);
 	const port: number = Number(configService.get('BACKEND_PORT'));
 
@@ -21,7 +40,6 @@ async function bootstrap() {
 			.setTitle('ft_trancendence')
 			.setDescription('ft_trancendence API description')
 			.setVersion('indev')
-			.addTag('REST')
 			.build();
 		const document = SwaggerModule.createDocument(app, config);
 		SwaggerModule.setup('', app, document);

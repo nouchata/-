@@ -1,16 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { UserInterface, UserRole } from "../interface/UserInterface";
 
 @Entity({ name: 'users' })
-export class User implements UserInterface
-{
+export class User implements UserInterface {
 	@PrimaryGeneratedColumn()
 	@ApiProperty(
 		{
 			description: "id in the database",
 			example: 50,
-			required: true,
 		}
 	)
 	id: number;
@@ -22,7 +20,6 @@ export class User implements UserInterface
 		{
 			description: "The login of the user",
 			example: "tmatis",
-			required: true,
 		}
 	)
 	login: string;
@@ -33,8 +30,28 @@ export class User implements UserInterface
 			enum: ['standard', 'moderator', 'admin'],
 			description: "The role of the user",
 			example: "standard",
-			required: true,
 		}
 	)
 	role: UserRole;
+
+	
+	@CreateDateColumn(
+		{
+			update: false
+		}
+	)
+	@ApiProperty(
+		{
+			description: "The date of creation of the user",
+			example: 10000000000,
+		}
+	)
+	createdAt: Date;
+
+
+	hasRole(role: UserRole): boolean {
+		console.log(role);
+		const roles_table: UserRole[] = ['standard', 'moderator', 'admin'];
+		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
+	}
 }
