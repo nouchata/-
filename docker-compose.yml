@@ -3,6 +3,8 @@ services:
         frontend:
                 build:
                   context: ./requirements/frontend
+                  args:
+                    - REACT_APP_BACKEND_ADDRESS=${REACT_APP_BACKEND_ADDRESS}
                   dockerfile: Dockerfile.prod
                 image: frontend:v1
                 container_name: frontend
