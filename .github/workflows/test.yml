@@ -20,7 +20,7 @@ jobs:
       - name: yarn build
         run: cd requirements/frontend && yarn build
       - name: React - unit tests
-        run: cd requirements/frontend && yarn test
+        run: cd requirements/frontend && yarn test --passWithNoTests
   back:
     name: Transcendence back end test
     runs-on: ubuntu-latest
@@ -35,4 +35,4 @@ jobs:
       - name: yarn build
         run: cd requirements/backend && yarn build
       - name: React - unit tests
-        run: cd requirements/backend && yarn test yarn test --passWithNoTests 
+        run: cd requirements/backend && yarn test --passWithNoTests 
