@@ -1,69 +1,97 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import LoginContext from './LoginContext';
+import { FetchStatusData } from './types/FetchStatusData';
+import { LoginDataSet } from './types/LoginDataSet';
 import Axios from 'axios';
+// not-package-related importation
+import './styles/login.scss';
+import resetAsset from './assets/login/reset.png';
+import tickAsset from './assets/login/tick.png';
 
 const Login = () =>
 {
-	let [ dataSet, setDataSet ] = useState({ h1: '', p: '', img: '' });
+	let [ dataSet, setDataSet ] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
 	let queryCode = useQuery().get('code');
+	let history = useHistory();
 	let [ cookie, setCookie ] = useContext(LoginContext);
-	let res : string | null = 'x';
 
 	useEffect(() => {
 		if (cookie === false && !queryCode) {
-			window.open('http://localhost:4000/auth/login', 'Login 42', 'scrollbars=no,resizable=no,' +
-			'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
+			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string + 
+				process.env.REACT_APP_BACKEND_LOGIN as string, 'Login 42', 'scrollbars=no,resizable=no,' +
+				'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
 			setDataSet({ 
 				h1: 'Use the prompt to Log In',
-				p: 'Please follow the instructions in the popup. If the popup hasn\'t showed, click here.',
-				img: 'loading.png'
+				p: 'The login occurs in a popup.',
+				img: resetAsset
 			});
 			(async() => {
 				let flag = true;
 				while (flag) {
 					try {
-						await new Promise((resolve) => setTimeout(() => resolve(Axios.get('http://localhost:4000/auth/status', { withCredentials: true })), 1000));
-						flag = false;
+						let res : FetchStatusData = await new Promise((resolve) => 
+						setTimeout(() => 
+						resolve(Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
+							process.env.REACT_APP_BACKEND_FETCH_USER as string, 
+							{ withCredentials: true })), 1000)
+						);
+        				if (res.data.loggedIn)
+							flag = false;
 					} catch {}
 				}
 				setCookie(true);
-				setDataSet({ h1: 'got it !', p: dataSet.p, img: dataSet.img });
+				setDataSet({ 
+					h1: 'You are logged in !',
+					p: 'Please wait a moment, you\'ll be redirected to your last location.',
+					img: tickAsset
+				});
+				setTimeout(() => history.goBack(), 2000);
 			})();
 		} else if (cookie === false && queryCode) {
 			setDataSet({ 
-				h1: 'Logging In',
+				h1: 'Logging In ...',
 				p: 'Please wait a moment, this window will automatically close.',
-				img: 'loading.png'
+				img: resetAsset
 			});
 			(async() => {
 				try {
-				await Axios.get(`http://localhost:4000/auth/redirect`, {withCredentials: true, params: {code: queryCode}});
-				} catch {}
-				setDataSet({ 
-					h1: 'You are logged in !',
-					p: 'Please wait a moment, you will redirect to your last location.',
-					img: 'done.png'
-				});
-				setCookie(true)
+					await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
+						process.env.REACT_APP_BACKEND_LOGIN as string, 
+						{withCredentials: true, params: {code: queryCode}}
+					);
+					setDataSet({ 
+						h1: 'You are logged in !',
+						p: 'The window will automatically close.',
+						img: tickAsset
+					});
+					setCookie(true);
+					setTimeout(() => window.close(), 1000);
+				} catch {
+					setDataSet({ 
+						h1: 'Oops, an error happened :( !',
+						p: '',
+						img: 'error.png'
+					});
+				}
 			})();
 		} else {
 			setDataSet({ 
 				h1: 'You are logged in !',
-				p: 'Please wait a moment, you will redirect to your last location.',
-				img: 'done.png'
+				p: 'Please wait a moment, you\'ll be redirected to your last location.',
+				img: tickAsset
 			});
 			(async() => {
-				setTimeout(() => window.close(), 1000); 
+				setTimeout(() => history.goBack(), 2000);
 			})();
 		}
 	}, []);
 
 	return (
-		<div>
+		<div className="login-stuff">
 			<h1>{dataSet.h1}</h1>
 			{dataSet.p.length && <p>{dataSet.p}</p>}
-			<img src="#" />
+			<img className={dataSet.img === tickAsset ? "onthespot" : "rotation"} src={dataSet.img} alt="" />
 		</div>
 	);
 }
@@ -71,21 +99,6 @@ const Login = () =>
 function useQuery() {
 	const { search } = useLocation();
 	return useMemo(() => new URLSearchParams(search), [search]);
-}
-
-function fetchLogin() : void {
-
-}
-
-function readCookie(name: string) : string | null {
-    let nameEQ = name + "=";
-    let ca = document.cookie.split(';');
-    for (let i=0 ; i < ca.length ; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
 }
 
 export default Login;

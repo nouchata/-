@@ -1,0 +1,75 @@
+.login-stuff {
+	display: flex;
+	flex-flow: row wrap;
+	height: 100vh;
+	align-content: center;
+	justify-content: center;
+	overflow: hidden;
+	//gap: 10px;
+}
+
+.login-stuff > * {
+	margin: 0;
+	padding: 0;
+	flex: 0 0 100%;
+	//border: 1px solid black;
+	text-align: center;
+}
+
+.login-stuff > img {
+	object-fit: contain;
+	height: 60px;
+	padding: 40px 0;
+	// animation: 2s linear 0 infinite alternate none inherit onthespot;
+	// animation: 2s linear 0 infinite normal rotation;
+	// animation-name: onthespot;
+	// animation-direction: normal;
+	// animation-duration: 2s;
+	// animation-delay: 1s;
+	// animation-iteration-count: infinite;
+}
+
+.login-stuff > h1 {
+	font-size: 3em;
+}
+
+.login-stuff > p {
+	color: rgba(0, 0, 0, 0.8);
+	font-size: 1em;
+	font-style: italic;
+}
+
+.rotation {
+	animation-name: rotation;
+	animation-direction: normal;
+	animation-duration: 2s;
+	animation-iteration-count: infinite;
+}
+
+.onthespot {
+	animation-name: onthespot;
+	animation-direction: alternate;
+	animation-duration: 2s;
+	animation-iteration-count: infinite;
+}
+
+@keyframes rotation {
+	From {
+		transform: rotate(0deg);
+	}
+	To {
+		transform: rotate(359deg);
+	}
+}
+
+@keyframes onthespot {
+	0% {
+		transform: rotate(-20deg);
+	}
+	50% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(20deg);
+	}
+}

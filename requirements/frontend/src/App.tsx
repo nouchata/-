@@ -1,9 +1,12 @@
 import { useEffect, useState, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Link, Redirect, Switch } from 'react-router-dom';
+import { FetchStatusData } from './types/FetchStatusData';
 import LoginContext from './LoginContext';
 import Login from './Login';
+import LoadingContent from './LoadingContent';
 import Axios from 'axios';
-import './styles/App.scss'
+import './styles/global.scss';
+
 
 const App = (props: any) : JSX.Element => {
   let auth_cookie = useState(false);
@@ -12,8 +15,13 @@ const App = (props: any) : JSX.Element => {
   useEffect(() => {
     (async() => {
       try {
-        await new Promise((resolve) => setTimeout(() => resolve(Axios.get('http://localhost:4000/auth/status', { withCredentials: true })), 1000));
-        auth_cookie[1](true);
+        let res : FetchStatusData = await new Promise((resolve) => 
+						setTimeout(() => 
+						resolve(Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
+							process.env.REACT_APP_BACKEND_FETCH_USER as string, 
+							{ withCredentials: true })), 1000)
+						);
+        auth_cookie[1](res.data.loggedIn);
       } catch {}
       data_fetch[1](true);
     })();
@@ -23,23 +31,15 @@ const App = (props: any) : JSX.Element => {
     <LoginContext.Provider value={auth_cookie}>
       {data_fetch[0] && <div className="App">
         <Router>
-          <Route path="/login"><Login /></Route>
+          <Switch>
+            <Route path="/login"><Login /></Route>
+            <Route path="/"><Link to="/login">LIEN</Link></Route>
+          </Switch>
         </Router>
       </div>}
-      {!data_fetch[0] && <p>loading ...</p>}
+      {!data_fetch[0] && <LoadingContent />}
     </LoginContext.Provider>
   );
-}
-
-function readCookie(name: string) : string | null {
-  let nameEQ = name + "=";
-  let ca = document.cookie.split(';');
-  for (let i=0 ;i < ca.length ; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === ' ') c = c.substring(1,c.length);
-      if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length,c.length);
-  }
-  return null;
 }
 
 export default App;

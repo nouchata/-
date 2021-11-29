@@ -14,7 +14,7 @@ async function bootstrap() {
 
 	const configService = app.get<ConfigService>(ConfigService);
 	const port: number = Number(configService.get('BACKEND_PORT'));
-	const front_address: string = configService.get('FRONT_ADDRESS');
+	const front_address: string = configService.get('FRONTEND_ADDRESS');
 
 	app.enableCors({
 		origin: front_address,
