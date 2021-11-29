@@ -1,11 +1,13 @@
 import { Controller, Get, Redirect, Req, UseGuards } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AuthService } from './auth.service';
+import { StatusDTO } from './dtos/status.dto';
 import { FortyTwoGuard } from './guards/fortytwo.guard';
 import { GroupGuard } from './guards/group.guard';
-import { Roles } from './roles.decorator';
 
 @Controller('auth')
 export class AuthController {
+	constructor(private authService: AuthService ) {}
 
    	@Get('login')
 	@UseGuards(FortyTwoGuard)
@@ -21,11 +23,14 @@ export class AuthController {
 	}
 
 	@Get('status')
-	@UseGuards(GroupGuard)
 	@ApiTags('auth')
-	status(@Req() req) {
-		
-		return req.user;
+	@ApiResponse({
+		status: 200,
+		description: 'User status',
+		type: StatusDTO,
+	})
+	status(@Req() req): StatusDTO {
+		return (this.authService.status(req))
 	}
 
 	@Get('logout')
