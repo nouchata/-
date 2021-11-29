@@ -11,10 +11,9 @@
 
 ## How to run the project 101
 
-You need docker and docker compose.
+You need docker and docker compose `AND` you need to setup two .env at the root of the project (one in _requirements/backend_ and _requirements/frontend_) :
 
-you need to setup a .env at the root of the project:
-
+__The backend one :__
 ```
 RUN_ENV=TEST
 
@@ -45,6 +44,16 @@ CALLBACK_URL_42=http://localhost:3000/auth/redirect/
 
 
 ```
+__The frontend one :__
+```
+REACT_APP_BACKEND_ADDRESS=http://localhost:4000
+
+# BACKEND CRUD ROUTES
+
+REACT_APP_BACKEND_LOGIN=/auth/login
+REACT_APP_BACKEND_FETCH_USER=/auth/status
+```
+
 
 then run
 ```sh
