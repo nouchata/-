@@ -11,11 +11,23 @@ import { SessionEntity } from './auth/session.entity';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	const sessionRepo = getRepository<ISession>(SessionEntity);
+
+	const configService = app.get<ConfigService>(ConfigService);
+	const port: number = Number(configService.get('BACKEND_PORT'));
+	const front_address: string = configService.get('FRONT_ADDRESS');
+
+	app.enableCors({
+		origin: front_address,
+		credentials: true,
+	});
+
+	// verify user content
 	app.useGlobalPipes(new ValidationPipe({
 		whitelist: true,
 		transform: true,
 	}))
+
+	const sessionRepo = getRepository<ISession>(SessionEntity);
 
 	app.use(session(
 		{
@@ -30,9 +42,6 @@ async function bootstrap() {
 	));
 	app.use(passport.initialize());
 	app.use(passport.session());
-
-	const configService = app.get<ConfigService>(ConfigService);
-	const port: number = Number(configService.get('BACKEND_PORT'));
 
 	if (configService.get('RUN_ENV') !== 'PROD') {
 

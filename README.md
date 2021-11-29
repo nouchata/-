@@ -31,12 +31,18 @@ DB_PASS=
 
 BACKEND_PORT=3000
 COOKIE_SECRET=
+FRONTEND_ADDRESS=http://localhost:3001
+
+# FRONTEND CONFIG
+
+BACKEND_ADDRESS=http://localhost:3000
 
 # 42 AUTH CONFIG
 
 UID_42=
 SECRET_42=
 CALLBACK_URL_42=http://localhost:3000/auth/redirect/
+
 
 ```
 
