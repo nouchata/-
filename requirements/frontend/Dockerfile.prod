@@ -1,6 +1,10 @@
 # BUILD
 FROM alpine:latest as build
 
+ARG REACT_APP_BACKEND_ADDRESS
+
+ENV REACT_APP_BACKEND_ADDRESS $REACT_APP_BACKEND_ADDRESS
+
 WORKDIR /build
 
 RUN apk update && apk add --no-cache yarn
