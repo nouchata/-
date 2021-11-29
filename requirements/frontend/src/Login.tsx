@@ -19,7 +19,7 @@ const Login = () =>
 	useEffect(() => {
 		if (cookie === false && !queryCode) {
 			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string + 
-				process.env.REACT_APP_BACKEND_LOGIN as string, 'Login 42', 'scrollbars=no,resizable=no,' +
+				'/auth/login', 'Login 42', 'scrollbars=no,resizable=no,' +
 				'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
 			setDataSet({ 
 				h1: 'Use the prompt to Log In',
@@ -33,7 +33,7 @@ const Login = () =>
 						let res : FetchStatusData = await new Promise((resolve) => 
 						setTimeout(() => 
 						resolve(Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
-							process.env.REACT_APP_BACKEND_FETCH_USER as string, 
+							'/auth/status', 
 							{ withCredentials: true })), 1000)
 						);
         				if (res.data.loggedIn)
@@ -57,7 +57,7 @@ const Login = () =>
 			(async() => {
 				try {
 					await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
-						process.env.REACT_APP_BACKEND_LOGIN as string, 
+						'/auth/login', 
 						{withCredentials: true, params: {code: queryCode}}
 					);
 					setDataSet({ 

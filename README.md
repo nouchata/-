@@ -47,11 +47,6 @@ CALLBACK_URL_42=http://localhost:3000/auth/redirect/
 __The frontend one :__
 ```
 REACT_APP_BACKEND_ADDRESS=http://localhost:4000
-
-# BACKEND CRUD ROUTES
-
-REACT_APP_BACKEND_LOGIN=/auth/login
-REACT_APP_BACKEND_FETCH_USER=/auth/status
 ```
 
 

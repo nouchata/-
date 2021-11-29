@@ -18,7 +18,7 @@ const App = (props: any) : JSX.Element => {
         let res : FetchStatusData = await new Promise((resolve) => 
 						setTimeout(() => 
 						resolve(Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
-							process.env.REACT_APP_BACKEND_FETCH_USER as string, 
+							'/auth/status', 
 							{ withCredentials: true })), 1000)
 						);
         auth_cookie[1](res.data.loggedIn);
