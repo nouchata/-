@@ -85,7 +85,7 @@ const Login = () =>
 				setTimeout(() => history.goBack(), 2000);
 			})();
 		}
-	}, []);
+	}, []); // eslint-disable-line
 
 	return (
 		<div className="login-stuff">

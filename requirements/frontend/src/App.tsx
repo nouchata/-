@@ -1,5 +1,5 @@
-import { useEffect, useState, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Link, Redirect, Switch } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import { FetchStatusData } from './types/FetchStatusData';
 import LoginContext from './LoginContext';
 import Login from './Login';
@@ -25,7 +25,7 @@ const App = (props: any) : JSX.Element => {
       } catch {}
       data_fetch[1](true);
     })();
-  }, []);
+  }, []); // eslint-disable-line
 
 	return (
     <LoginContext.Provider value={auth_cookie}>
