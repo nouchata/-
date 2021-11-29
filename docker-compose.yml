@@ -30,6 +30,7 @@ services:
                         - UID_42=${UID_42}
                         - SECRET_42=${SECRET_42}
                         - CALLBACK_URL_42=${CALLBACK_URL_42}
+                        - FRONTEND_ADDRESS=${FRONTEND_ADDRESS}
                 container_name: backend
                 depends_on:
                         - database
