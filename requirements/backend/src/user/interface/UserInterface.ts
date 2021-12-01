@@ -1,5 +1,10 @@
-export type UserRole = 'standard' | 'moderator' | 'admin';
+export type UserRole = 'user' | 'moderator' | 'admin';
 
 export interface UserInterface {
-	login: string;	
+	login: string;
+	displayName: string;
+	profileURL: string;
+	email?: string;
+	picture?: string;	
+	role: UserRole;
 }
