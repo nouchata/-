@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 
@@ -13,8 +13,20 @@ export class UserService {
     	return this.userRepo.save(user);
 	}
 
-	async findUser(login: string) : Promise<User>
+	async getUserByLogin(login: string) : Promise<User>
 	{
-		return this.userRepo.findOne({login: login});
+		return this.userRepo.findOne({login});
+	}
+
+	async getUserById(id: number) : Promise<User>
+	{
+		return this.userRepo.findOne({id})
+	}
+
+	async findUsersByLogin(loginFragment: string) : Promise<User[]>
+	{
+		return await this.userRepo.find({
+			login: Like(`%${loginFragment}%`)
+		});
 	}
 }
