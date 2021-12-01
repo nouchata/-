@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { UserRole } from "../../user/interface/UserInterface";
+import { User } from "src/user/entities/user.entity";
 
 export class StatusDTO {
 
@@ -10,14 +10,8 @@ export class StatusDTO {
 	loggedIn: boolean;
 
 	@ApiPropertyOptional({
-		description: "The user's login",
-		example: "tmatis",
+		description: "The user object",
+		type: User,
 	})
-	login?: string;
-
-	@ApiPropertyOptional({
-		description: "The user's role",
-		example: "standard",
-	})
-	role?: UserRole;
+	user?: User;
 }
