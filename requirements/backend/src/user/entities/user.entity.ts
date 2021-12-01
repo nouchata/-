@@ -79,7 +79,7 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The date of creation of the user",
-			example: 10000000000,
+			example: '2021-12-01T17:45:40.162Z',
 		}
 	)
 	createdAt: Date;
