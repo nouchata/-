@@ -1,13 +1,13 @@
 export type UserRole = 'standard' | 'moderator' | 'admin';
 
-export type UserState = 'online' | 'offline' | 'ingame';
+export type UserStatus = 'online' | 'offline' | 'ingame';
 
-export interface UserInterface {
-	login: string;	
-}
-
-export interface UserMatchHistory {
-	players: [number, number];	// winner / loser
+export type UserMatchHistory = {
+	players: [number, number];	// winner id / loser id
 	score: [number, number];	// winner / loser
 	duration: number;			// in seconds
+}
+
+export interface UserInterface {
+	login: string;
 }

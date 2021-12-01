@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { UserInterface, UserRole, UserState } from "../interface/UserInterface";
+import { UserInterface, UserMatchHistory, UserRole, UserStatus } from "../interface/UserInterface";
 
 @Entity({ name: 'users' })
 export class User implements UserInterface {
@@ -15,6 +15,7 @@ export class User implements UserInterface {
 
 	@Column({
 		unique: true,
+		update: false,
 	})
 	@ApiProperty(
 		{
@@ -23,6 +24,17 @@ export class User implements UserInterface {
 		}
 	)
 	login: string;
+
+	@Column({
+		unique: true,
+	})
+	@ApiProperty(
+		{
+			description: "The user's name, the one visible by other users",
+			example: "ProPongPlayer22",
+		}
+	)
+	username: string;
 
 	@Column()
 	@ApiProperty(
@@ -59,8 +71,17 @@ export class User implements UserInterface {
 	@Column()
 	@ApiProperty(
 		{
+			description: "The user's elo score to determine their ranking",
+			example: 1450,
+		}
+	)
+	elo: number;
+
+	@Column()
+	@ApiProperty(
+		{
 			description: "The user's rank in the ladder",
-			exemple: 598,
+			example: 272,
 		}
 	)
 	rank: number;
@@ -69,7 +90,7 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The count of victories/losses of the user",
-			exemple: [22, 13],
+			example: [22, 13],
 		}
 	)
 	vdRatio: [number, number];
@@ -78,7 +99,7 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The history of the previous matches of the user",
-			exemple: [{ players: [56, 22], score: [5, 3], duration: 300 }],
+			example: [{ players: [56, 22], score: [5, 3], duration: 300 }],
 		}
 	)
 	history: UserMatchHistory[];
@@ -87,7 +108,7 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The user's friends list (only contains user's id)",
-			exemple: [18, 12, 27],
+			example: [18, 12, 27],
 		}
 	)
 	friends: number[];
@@ -96,10 +117,10 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The state of the user",
-			exemple: "online",
+			example: "online",
 		}
 	)
-	state: UserState;
+	state: UserStatus;
 
 	hasRole(role: UserRole): boolean {
 		console.log(role);
