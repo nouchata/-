@@ -6,6 +6,7 @@ import Login from './Login';
 import LoadingContent from './LoadingContent';
 import Axios from 'axios';
 import './styles/global.scss';
+import Profile from './Profile';
 
 
 const App = (props: any) : JSX.Element => {
@@ -32,8 +33,11 @@ const App = (props: any) : JSX.Element => {
       {data_fetch[0] && <div className="App">
         <Router>
           <Switch>
+            <Route path="/profile"><Profile /></Route>
             <Route path="/login"><Login /></Route>
-            <Route path="/"><Link to="/login">LIEN</Link></Route>
+            <Route path="/">
+              <Link to="/login">Login</Link>
+            </Route>
           </Switch>
         </Router>
       </div>}

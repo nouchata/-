@@ -68,59 +68,64 @@ export class User implements UserInterface {
 	)
 	createdAt: Date;
 
-	@Column()
+	@Column({
+		type: 'int',
+		default: 1000,
+	})
 	@ApiProperty(
 		{
 			description: "The user's elo score to determine their ranking",
 			example: 1450,
 		}
 	)
-	elo: number;
+	elo: number = 1000;
 
-	@Column()
-	@ApiProperty(
-		{
-			description: "The user's rank in the ladder",
-			example: 272,
-		}
-	)
-	rank: number;
-
-	@Column("simple-array")
+	@Column({
+		type: "simple-array",
+		default: true,
+	})
 	@ApiProperty(
 		{
 			description: "The count of victories/losses of the user",
 			example: [22, 13],
 		}
 	)
-	vdRatio: [number, number];
+	vdRatio: [number, number] = [0, 0];
 
-	@Column("simple-array")
+	@Column({
+		type: "simple-array",
+		default: true,
+	})
 	@ApiProperty(
 		{
 			description: "The history of the previous matches of the user",
 			example: [{ players: [56, 22], score: [5, 3], duration: 300 }],
 		}
 	)
-	history: UserMatchHistory[];
+	history: UserMatchHistory[] = [];
 
-	@Column("simple-array")
+	@Column({
+		type: "simple-array",
+		default: true,
+	})
 	@ApiProperty(
 		{
 			description: "The user's friends list (only contains user's id)",
 			example: [18, 12, 27],
 		}
 	)
-	friends: number[];
+	friends: number[] = [];
 
-	@Column()
+	@Column({
+		default: true,
+	})
 	@ApiProperty(
 		{
 			description: "The state of the user",
 			example: "online",
 		}
 	)
-	state: UserStatus;
+	state: UserStatus = 'online';
 
 	hasRole(role: UserRole): boolean {
 		console.log(role);

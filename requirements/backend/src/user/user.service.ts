@@ -11,6 +11,9 @@ export class UserService {
 	constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 	async createUser(details: CreateUserDTO) : Promise<User>
 	{
+		details.username = details.login;
+		details.avatar = 'avatar_default.jpg';
+
 		const user = this.userRepo.create(details);
     	return this.userRepo.save(user);
 	}
