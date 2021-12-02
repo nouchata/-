@@ -144,7 +144,7 @@ export class User implements UserInterface {
 			example: "online",
 		}
 	)
-	state: UserStatus = 'online';
+	status: UserStatus = 'online';
 
 	hasRole(role: UserRole): boolean {
 		console.log(role);

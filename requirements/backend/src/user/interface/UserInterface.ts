@@ -3,7 +3,7 @@ export type UserRole = 'user' | 'moderator' | 'admin';
 export type UserStatus = 'online' | 'offline' | 'ingame';
 
 export type UserMatchHistory = {
-	players: [number, number];	// winner id / loser id
+	players: [string, string];	// winner name / loser name
 	score: [number, number];	// winner / loser
 	duration: number;			// in seconds
 }

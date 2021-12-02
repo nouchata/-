@@ -6,6 +6,7 @@ import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import { UpdateResult } from 'typeorm';
+import { FindUserDTO } from './dto/find-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -22,7 +23,7 @@ export class UserController {
 	})
 	@Get(':id')
 	@UseGuards(GroupGuard)
-	async getUserById(@Param('id', ParseIntPipe) id: number): Promise<User> {
+	async getUserById(@Param('id', ParseIntPipe) id: number): Promise<FindUserDTO> {
 		return await this.userService.findUserById(id);
 	}
 
