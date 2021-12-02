@@ -1,5 +1,7 @@
-import { UserInterface, UserRole } from "src/user/interface/UserInterface";
-
-export class UserDetails implements UserInterface {
+export class UserDetails {
 	login: string;
+	displayName: string;
+	profileURL: string;
+	email?: string;
+	picture?: string;
 }

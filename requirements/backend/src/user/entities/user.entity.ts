@@ -1,9 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { UserInterface, UserMatchHistory, UserRole, UserStatus } from "../interface/UserInterface";
 
 @Entity({ name: 'users' })
 export class User implements UserInterface {
+
 	@PrimaryGeneratedColumn()
 	@ApiProperty(
 		{
@@ -25,35 +26,53 @@ export class User implements UserInterface {
 	)
 	login: string;
 
+	@Column()
+	@ApiProperty(
+		{
+			description: "The path to the picture of the user",
+			example: "https://cdn.intra.42.fr/users/tmatis.jpg",
+		}
+	)
+	picture: string;
+
+	@Column()
+	@ApiProperty(
+		{
+			enum: ['user', 'moderator', 'admin'],
+			description: "The role of the user",
+			example: "user",
+		}
+	)
+	role: UserRole;
+
 	@Column({
 		unique: true,
 	})
 	@ApiProperty(
 		{
-			description: "The user's name, the one visible by other users",
-			example: "ProPongPlayer22",
+			description: "The display name of the user",
+			example: "Theo Matis",
 		}
 	)
-	username: string;
+	displayName: string;
 
 	@Column()
 	@ApiProperty(
 		{
-			description: "The path to the avatar of the user",
-			example: "avatar_16.jpg",
+			description: "The profile url of the user",
+			example: "https://profile.intra.42.fr/users/tmatis",
 		}
 	)
-	avatar: string;
+	profileURL: string;
 
-	@Column()
-	@ApiProperty(
+	@Column({nullable: true})
+	@ApiPropertyOptional(
 		{
-			enum: ['standard', 'moderator', 'admin'],
-			description: "The role of the user",
-			example: "standard",
+			description: "The email of the user",
+			example: "tmatis@student.42.fr",
 		}
 	)
-	role: UserRole;
+	email?: string;
 
 	@CreateDateColumn(
 		{
@@ -63,7 +82,7 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The date of creation of the user",
-			example: 10000000000,
+			example: '2021-12-01T17:45:40.162Z',
 		}
 	)
 	createdAt: Date;
@@ -129,7 +148,7 @@ export class User implements UserInterface {
 
 	hasRole(role: UserRole): boolean {
 		console.log(role);
-		const roles_table: UserRole[] = ['standard', 'moderator', 'admin'];
+		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
 	}
 }
