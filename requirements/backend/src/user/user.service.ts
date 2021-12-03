@@ -28,12 +28,12 @@ export class UserService {
 		});
 	}
 
-	async findUserById(id: number) : Promise<FindUserDTO>
+	async findUserById(id: number) : Promise<User>
 	{
 		const userDB = await this.userRepo.findOne({ id });
 		if (!userDB)
 			throw new NotFoundException(`User ${id} does not exist.`);
-		return await this.createUserDTO(userDB);
+		return userDB;
 	}
 
 	async editUser(dto: EditUserDTO) : Promise<UpdateResult>

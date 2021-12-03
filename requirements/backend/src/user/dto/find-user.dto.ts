@@ -1,59 +1,68 @@
 import { Inject } from "@nestjs/common";
 import { UserService } from '../user.service';
-import { IsString, IsDate, IsArray, IsNumber, IsObject, ArrayContains, ValidateNested } from "class-validator";
+import { IsString, IsDate, IsArray, IsNumber, IsObject, ArrayContains, ValidateNested, IsBoolean } from "class-validator";
 import { User } from "../entities/user.entity";
 
 class GeneralInfo {
-    //@IsString()
+    @IsString()
     name: string;
 
-    //@IsString()
+    @IsString()
     picture: string;
 
-    //@IsString()
+    @IsString()
     role: string;
 
-    //@IsDate()
+    @IsDate()
     creation: Date;
     
-    //@IsString()
+    @IsString()
     status: string;
 }
 
 class RankingInfo {
-    //@IsArray()
+    @IsArray()
     vdRatio: [number, number];
     
-    //@IsNumber()
+    @IsNumber()
     elo: number;
     
-    //@IsNumber()
+    @IsNumber()
     rank: number;
 }
 
 export class HistoryInfo {
-    //@IsString()
+    @IsString()
     winner: string;
     
-    //@IsString()
+    @IsString()
     loser: string;
     
-    //@IsArray()
+    @IsArray()
     score: [number, number];
     
-    //@IsNumber()
+    @IsNumber()
     duration: number;
 }
 
 export class FindUserDTO {
 
-    //@ValidateNested()
+    constructor() {
+        this.general = new GeneralInfo();
+        this.ranking = new RankingInfo();
+        this.history = [];
+    }
+
+    @ValidateNested()
     general: GeneralInfo;
 
-    //@ValidateNested()
+    @ValidateNested()
     ranking: RankingInfo;
 
-    //@ValidateNested()
+    @ValidateNested()
     history: HistoryInfo[];
+
+    @IsBoolean()
+    isEditable: boolean;
 }
 

@@ -23,8 +23,15 @@ export class UserController {
 	})
 	@Get(':id')
 	@UseGuards(GroupGuard)
-	async getUserById(@Param('id', ParseIntPipe) id: number): Promise<FindUserDTO> {
-		return await this.userService.findUserById(id);
+	async getUserById(
+		@Req() req: any,
+		@Param('id', ParseIntPipe) id: number
+	): Promise<FindUserDTO> {
+		const userDB = await this.userService.findUserById(id);
+		const dto = await this.userService.createUserDTO(userDB);
+
+		dto.isEditable = (req.user.id === id);
+		return dto;
 	}
 
 	@ApiResponse({
