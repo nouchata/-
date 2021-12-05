@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
-import { UserInterface, UserMatchHistory, UserRole, UserStatus } from "../interface/UserInterface";
+import { UserInterface, UserRole, UserStatus } from "../interface/UserInterface";
 import { Friendship } from "./friendship.entity";
+import { MatchHistory } from "./match-history.entity";
 
 @Entity({ name: 'users' })
 export class User implements UserInterface {
@@ -112,17 +113,15 @@ export class User implements UserInterface {
 	)
 	vdRatio: [number, number] = [0, 0];
 
-	@Column({
-		type: "simple-array",
-		default: true,
-	})
+	@ManyToMany(type => MatchHistory)
+	@JoinTable()
 	@ApiProperty(
 		{
 			description: "The history of the previous matches of the user",
 			example: [{ players: [56, 22], score: [5, 3], duration: 300 }],
 		}
 	)
-	history: UserMatchHistory[] = [];
+	history: MatchHistory[];
 
 	@ManyToMany(type => Friendship)
 	@JoinTable()

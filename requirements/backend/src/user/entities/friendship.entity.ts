@@ -20,7 +20,6 @@ export class Friendship {
 		}
 	)
     @Column({
-        unique: true,
         update: false
     })
     id1: number;
@@ -32,7 +31,6 @@ export class Friendship {
 		}
 	)
     @Column({
-        unique: true,
         update: false
     })
     id2: number;

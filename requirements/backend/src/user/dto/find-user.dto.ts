@@ -1,7 +1,5 @@
-import { Inject } from "@nestjs/common";
-import { UserService } from '../user.service';
 import { IsString, IsDate, IsArray, IsNumber, IsObject, ArrayContains, ValidateNested, IsBoolean } from "class-validator";
-import { User } from "../entities/user.entity";
+import { MatchHistoryDTO } from "./match-history.dto";
 
 class GeneralInfo {
     @IsString()
@@ -31,20 +29,6 @@ class RankingInfo {
     rank: number;
 }
 
-export class HistoryInfo {
-    @IsString()
-    winner: string;
-    
-    @IsString()
-    loser: string;
-    
-    @IsArray()
-    score: [number, number];
-    
-    @IsNumber()
-    duration: number;
-}
-
 export class FindUserDTO {
 
     constructor() {
@@ -60,7 +44,7 @@ export class FindUserDTO {
     ranking: RankingInfo;
 
     @ValidateNested()
-    history: HistoryInfo[];
+    history: MatchHistoryDTO[];
 
     @IsBoolean()
     isEditable: boolean;
