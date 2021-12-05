@@ -52,7 +52,7 @@ export class UserService {
 
 		return usersArray.findIndex( (curr) => {
 			return (curr.id === user.id);
-		});
+		}) + 1;
 	}
 
 	async createUserDTO(entity: User) : Promise<FindUserDTO>

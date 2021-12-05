@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserInterface, UserMatchHistory, UserRole, UserStatus } from "../interface/UserInterface";
+import { Friendship } from "./friendship.entity";
 
 @Entity({ name: 'users' })
 export class User implements UserInterface {
@@ -123,17 +124,14 @@ export class User implements UserInterface {
 	)
 	history: UserMatchHistory[] = [];
 
-	@Column({
-		type: "simple-array",
-		default: true,
-	})
+	@ManyToMany(type => Friendship)
+	@JoinTable()
 	@ApiProperty(
 		{
-			description: "The user's friends list (only contains user's id)",
-			example: [18, 12, 27],
+			description: "The user's friends list",
 		}
 	)
-	friends: number[] = [];
+	friends: Friendship[];
 
 	@Column({
 		default: true,
