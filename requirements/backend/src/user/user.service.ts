@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
-import { FindUserDTO, HistoryInfo } from './dto/find-user.dto';
+import { FindUserDTO } from './dto/find-user.dto';
 import { Like, Repository, UpdateResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
+import { MatchHistoryDTO } from './dto/match-history.dto';
 
 @Injectable()
 export class UserService {
@@ -44,11 +45,9 @@ export class UserService {
 
 	async getRank(user: User) : Promise<number> {
 
-		const usersArray: User[] = await this.userRepo.find();
-
-		usersArray.sort( (a: User, b: User) : number => {
-			return (b.elo - a.elo);
-		})
+		const usersArray: User[] = await this.userRepo.find({
+			order: { elo: "DESC" }
+		});
 
 		return usersArray.findIndex( (curr) => {
 			return (curr.id === user.id);
@@ -69,13 +68,17 @@ export class UserService {
         dto.ranking.elo = entity.elo;
         dto.ranking.rank = await this.getRank(entity);
 
-        entity.history.forEach( (match) => {
-            const matchInfo = new HistoryInfo();
+        entity.history.forEach( async (match) => {
+            const matchInfo = new MatchHistoryDTO();
 
-            matchInfo.winner = match.players[0];
-            matchInfo.loser = match.players[1];
-            matchInfo.score = match.score;
+			const players: User[] = await this.userRepo.findByIds([match.winnerId, match.loserId]);
+			matchInfo.winner = players[0].displayName;
+			matchInfo.loser = players[1].displayName;
+
+			matchInfo.score[0] = match.winScore;
+			matchInfo.score[1] = match.loseScore;
             matchInfo.duration = match.duration;
+
             dto.history.push(matchInfo);
         });
 

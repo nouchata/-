@@ -1,37 +1,26 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { User } from "./user.entity";
 
 @Entity({ name: 'friendships' })
 export class Friendship {
     
     @ApiProperty(
 		{
-			description: "The id of the friendship in the database",
-			example: 25,
-		}
-	)
-    @PrimaryGeneratedColumn()
-    key: number;
-
-    @ApiProperty(
-		{
 			description: "The id of the first friend",
 			example: 3,
 		}
 	)
-    @Column({
-        update: false
-    })
+	@PrimaryColumn()
+	@ManyToOne(() => User, user => user.friends)
     id1: number;
 
     @ApiProperty(
 		{
-			description: "The id of the other friend",
+			description: "The id of the second friend",
 			example: 7,
 		}
 	)
-    @Column({
-        update: false
-    })
+	@PrimaryColumn()
     id2: number;
 }
