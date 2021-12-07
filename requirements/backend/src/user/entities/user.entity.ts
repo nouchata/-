@@ -102,16 +102,26 @@ export class User implements UserInterface {
 	elo: number = 1000;
 
 	@Column({
-		type: "simple-array",
-		default: true,
+		default: 0,
 	})
 	@ApiProperty(
 		{
-			description: "The count of victories/losses of the user",
-			example: [22, 13],
+			description: "The number of victories of the user",
+			example: 22,
 		}
 	)
-	vdRatio: [number, number] = [0, 0];
+	victories: number;
+
+	@Column({
+		default: 0,
+	})
+	@ApiProperty(
+		{
+			description: "The number of losses of the user",
+			example: 13,
+		}
+	)
+	losses: number;
 
 	@ManyToMany(type => MatchHistory, {
 		eager: true
@@ -120,7 +130,7 @@ export class User implements UserInterface {
 	@ApiProperty(
 		{
 			description: "The history of the previous matches of the user",
-			example: [{ players: [56, 22], score: [5, 3], duration: 300 }],
+			example: "see MatchHistory documentation for further info",
 		}
 	)
 	history: MatchHistory[];

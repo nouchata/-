@@ -64,23 +64,30 @@ export class UserService {
         dto.general.creation = entity.createdAt;
         dto.general.status = entity.status;
 
-        dto.ranking.vdRatio = entity.vdRatio;
+        dto.ranking.vdRatio = [entity.victories, entity.losses];
         dto.ranking.elo = entity.elo;
         dto.ranking.rank = await this.getRank(entity);
 
-        entity.history.forEach( async (match) => {
-            const matchInfo = new MatchHistoryDTO();
+		dto.history = await Promise.all(entity.history.map( async (match) => {
+			const matchInfo = new MatchHistoryDTO();
 
 			const players: User[] = await this.userRepo.findByIds([match.winnerId, match.loserId]);
-			matchInfo.winner = players[0].displayName;
-			matchInfo.loser = players[1].displayName;
+			
+			if (players[0].id == match.winnerId) {
+				matchInfo.winner = players[0].displayName;
+				matchInfo.loser = players[1].displayName;
+			} else {
+				matchInfo.winner = players[1].displayName;
+				matchInfo.loser = players[0].displayName;			
+			}
 
+			matchInfo.id = match.id;
 			matchInfo.score[0] = match.winScore;
 			matchInfo.score[1] = match.loseScore;
             matchInfo.duration = match.duration;
 
-            dto.history.push(matchInfo);
-        });
+			return (matchInfo);
+		}));
 
         return dto;
 	}

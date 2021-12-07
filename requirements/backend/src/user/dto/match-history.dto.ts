@@ -3,6 +3,14 @@ import { IsArray, IsNumber, IsString } from "class-validator";
 
 export class MatchHistoryDTO {
 
+    constructor() {
+        this.score = [0, 0];
+    }
+
+	@ApiProperty({description: "The match's id in the database", example: "78"})
+    @IsNumber()
+    id: number;
+
 	@ApiProperty({description: "The winner's username", example: "mamartin"})
     @IsString()
     winner: string;
