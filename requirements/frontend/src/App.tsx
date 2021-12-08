@@ -7,7 +7,6 @@ import LoadingContent from './LoadingContent';
 import Axios from 'axios';
 import './styles/global.scss';
 
-
 const App = (props: any) : JSX.Element => {
   let auth_cookie = useState(false);
   let data_fetch = useState(false);
@@ -33,7 +32,9 @@ const App = (props: any) : JSX.Element => {
         <Router>
           <Switch>
             <Route path="/login"><Login /></Route>
-            <Route path="/"><Link to="/login">LIEN</Link></Route>
+            <Route path="/">
+              <Link to="/login">Login</Link>
+            </Route>
           </Switch>
         </Router>
       </div>}
