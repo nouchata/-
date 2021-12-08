@@ -6,8 +6,6 @@ import Login from './Login';
 import LoadingContent from './LoadingContent';
 import Axios from 'axios';
 import './styles/global.scss';
-import Profile from './Profile';
-
 
 const App = (props: any) : JSX.Element => {
   let auth_cookie = useState(false);
