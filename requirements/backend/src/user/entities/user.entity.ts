@@ -1,6 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { UserInterface, UserRole } from "../interface/UserInterface";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { UserInterface, UserRole, UserStatus } from "../interface/UserInterface";
+import { Friendship } from "./friendship.entity";
+import { MatchHistory } from "./match-history.entity";
 
 @Entity({ name: 'users' })
 export class User implements UserInterface {
@@ -16,6 +18,7 @@ export class User implements UserInterface {
 
 	@Column({
 		unique: true,
+		update: false,
 	})
 	@ApiProperty(
 		{
@@ -28,6 +31,15 @@ export class User implements UserInterface {
 	@Column()
 	@ApiProperty(
 		{
+			description: "The path to the picture of the user",
+			example: "https://cdn.intra.42.fr/users/tmatis.jpg",
+		}
+	)
+	picture: string;
+
+	@Column()
+	@ApiProperty(
+		{
 			enum: ['user', 'moderator', 'admin'],
 			description: "The role of the user",
 			example: "user",
@@ -35,7 +47,9 @@ export class User implements UserInterface {
 	)
 	role: UserRole;
 
-	@Column()
+	@Column({
+		unique: true,
+	})
 	@ApiProperty(
 		{
 			description: "The display name of the user",
@@ -62,15 +76,6 @@ export class User implements UserInterface {
 	)
 	email?: string;
 
-	@Column({nullable: true})
-	@ApiPropertyOptional(
-		{
-			description: "The picture of the user",
-			example: "https://cdn.intra.42.fr/users/tmatis.jpg",
-		}
-	)
-	picture?: string;
-
 	@CreateDateColumn(
 		{
 			update: false
@@ -83,6 +88,73 @@ export class User implements UserInterface {
 		}
 	)
 	createdAt: Date;
+
+	@Column({
+		type: 'int',
+		default: 1000,
+	})
+	@ApiProperty(
+		{
+			description: "The user's elo score to determine their ranking",
+			example: 1450,
+		}
+	)
+	elo: number = 1000;
+
+	@Column({
+		default: 0,
+	})
+	@ApiProperty(
+		{
+			description: "The number of victories of the user",
+			example: 22,
+		}
+	)
+	victories: number;
+
+	@Column({
+		default: 0,
+	})
+	@ApiProperty(
+		{
+			description: "The number of losses of the user",
+			example: 13,
+		}
+	)
+	losses: number;
+
+	@ManyToMany(type => MatchHistory, {
+		eager: true
+	})
+	@JoinTable()
+	@ApiProperty(
+		{
+			description: "The history of the previous matches of the user",
+			example: "see MatchHistory documentation for further info",
+		}
+	)
+	history: MatchHistory[];
+
+	@OneToMany(() => Friendship, friendship => friendship.id1, {
+		eager: true
+	})
+	@ApiProperty(
+		{
+			description: "The user's friends list",
+		}
+	)
+	friends: Friendship[];
+
+	@Column({
+		default: true,
+	})
+	@ApiProperty(
+		{
+			description: "The state of the user",
+			example: "online",
+		}
+	)
+	status: UserStatus = 'online';
 
 	hasRole(role: UserRole): boolean {
 		console.log(role);

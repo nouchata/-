@@ -1,9 +1,12 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common'
-import { ApiParam, ApiProperty, ApiResponse } from '@nestjs/swagger';
 import { GroupGuard } from 'src/auth/guards/group.guard';
+import { EditUserDTO } from './dto/edit-user.dto';
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, NotFoundException, Param, ParseIntPipe, Patch, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { ApiResponse } from '@nestjs/swagger';
 import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
+import { UpdateResult } from 'typeorm';
+import { FindUserDTO } from './dto/find-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -18,15 +21,17 @@ export class UserController {
 		status: 404,
 		description: 'No id matching user'
 	})
-	@UseGuards(GroupGuard)
 	@Get(':id')
-	async getUserByID(@Param('id', ParseIntPipe) id: number): Promise<User> {
-		const userDB: User = await this.userService.getUserById(id);
+	@UseGuards(GroupGuard)
+	async getUserById(
+		@Req() req: any,
+		@Param('id', ParseIntPipe) id: number
+	): Promise<FindUserDTO> {
+		const userDB = await this.userService.findUserById(id);
+		const dto = await this.userService.createUserDTO(userDB);
 
-		if (userDB)
-			return (userDB);
-		else
-			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+		dto.isEditable = (req.user.id === id);
+		return dto;
 	}
 
 	@ApiResponse({
@@ -50,4 +55,33 @@ export class UserController {
 		else
 			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 	}
+
+	@ApiResponse({
+		type: UpdateResult,
+		status: 200,
+		description: 'the user found'
+	})
+	@ApiResponse({
+		status: 401,
+		description: 'Cannot edit a user other than yourself'
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'No id matching user'
+	})
+	@Patch(':id')
+	@UseGuards(GroupGuard)
+	async editUserInfo(
+		@Req() request: any,
+		@Param('id', ParseIntPipe) id: number,
+		@Body() dto: EditUserDTO
+	) : Promise<UpdateResult>
+	{
+		if (request.user.id !== id) {
+			throw new UnauthorizedException('A user can only edit their own profile.');
+		}
+		dto.id = id;
+		return await this.userService.editUser(EditUserDTO.from(dto));
+	}
+
 }
