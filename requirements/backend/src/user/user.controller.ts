@@ -24,7 +24,7 @@ export class UserController {
 	@Get(':id')
 	@UseGuards(GroupGuard)
 	async getUserById(
-		@Req() req: any,
+		@Req() req: {user: User},
 		@Param('id', ParseIntPipe) id: number
 	): Promise<FindUserDTO> {
 		const userDB = await this.userService.findUserById(id);
@@ -72,12 +72,12 @@ export class UserController {
 	@Patch(':id')
 	@UseGuards(GroupGuard)
 	async editUserInfo(
-		@Req() request: any,
+		@Req() req: {user: User},
 		@Param('id', ParseIntPipe) id: number,
 		@Body() dto: EditUserDTO
 	) : Promise<UpdateResult>
 	{
-		if (request.user.id !== id) {
+		if (req.user.id !== id) {
 			throw new UnauthorizedException('A user can only edit their own profile.');
 		}
 		dto.id = id;

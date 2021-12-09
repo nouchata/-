@@ -1,4 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Channel } from "src/chat/entities/channel.entity";
+import { Message } from "src/chat/entities/message.entity";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserInterface, UserRole, UserStatus } from "../interface/UserInterface";
 import { Friendship } from "./friendship.entity";
@@ -144,6 +146,12 @@ export class User implements UserInterface {
 		}
 	)
 	friends: Friendship[];
+
+	@ManyToMany(type => Channel, channel => channel.users) @JoinTable()
+	channels: Channel[];
+
+	@OneToMany(type => Message, message => message.user)
+	messages: Message[];
 
 	@Column({
 		default: true,

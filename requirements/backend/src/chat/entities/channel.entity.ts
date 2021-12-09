@@ -1,5 +1,6 @@
 import { User } from "src/user/entities/user.entity";
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { ChannelType } from "../dtos/create-channel.dto";
 import { Message } from "./message.entity";
 
 @Entity({ name: "channels" })
@@ -11,7 +12,13 @@ export class Channel {
 	@Column()
 	name: string;
 
-	@ManyToMany(type => User, user => user.channels)
+	@Column()
+	channelType: ChannelType;
+
+	@ManyToOne(type => User)
+	owner: User;
+
+	@ManyToMany(type => User, user => user.channels, { cascade: true })
 	users: User[];
 
 	@OneToMany(type => Message, message => message.channel)
