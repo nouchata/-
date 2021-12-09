@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import { FetchStatusData } from './types/FetchStatusData';
 import LoginContext from './LoginContext';
+import Homepage from './Homepage';
 import Login from './Login';
 import LoadingContent from './LoadingContent';
 import Axios from 'axios';
@@ -33,6 +34,7 @@ const App = (props: any) : JSX.Element => {
         <Router>
           <Switch>
             <Route path="/login"><Login /></Route>
+            <Route path="/home"><Homepage /></Route>
             <Route path="/"><Link to="/login">LIEN</Link></Route>
           </Switch>
         </Router>

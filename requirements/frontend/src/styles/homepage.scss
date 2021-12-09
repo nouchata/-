@@ -1,0 +1,77 @@
+$fab-size: 60px;
+$fab-gap: 20px;
+$fab-img-size: 50%;
+$chat-width: 280px;
+
+body {
+	height: 100vh;
+	//overflow-x: hidden;
+}
+
+.material-like-fab {
+	position: fixed;
+	bottom: calc($fab-gap / 1.5);
+	width: calc(100% - $fab-gap);
+	display: flex;
+	box-sizing: border-box;
+	flex-flow: row wrap;
+	justify-content: right;
+	gap: $fab-gap;
+}
+
+.material-like-fab > button {
+	width: $fab-size;
+	height: $fab-size;
+	background-repeat: no-repeat;
+	border-radius: 100%;
+	border: 0;
+	//border: 1px solid red;
+	padding: 0;
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: center;
+	align-items: center;
+
+	filter: drop-shadow(0 0 0.2rem rgba(0, 0, 0, 0.2));
+}
+
+.material-like-fab > button > img {
+	flex: 0 1 $fab-img-size;
+	width: $fab-img-size;
+
+	filter: invert(100%);
+}
+
+.main-field {
+	display: flex;
+	flex-flow: row nowrap;
+	height: inherit;
+}
+
+.main-field > * {
+	flex: 0 1 100%;
+	//border: 1px solid black;
+	height: 100vh;
+}
+
+.main-field > *:first-child {
+	display: none;
+}
+
+@media(min-width: 800px) {
+	.material-like-fab > *:first-child {
+		display: none;
+	}
+
+	.main-field > *:first-child {
+		display: flex;
+		flex: 0 0 $chat-width;
+		border-right: 1px solid black;
+		//overflow-x: hidden;
+	}
+
+	.main-field > *:nth-child(1) {
+		filter: drop-shadow(0 0 0.75rem crimson);
+	}
+
+}
