@@ -1,5 +1,5 @@
-import { BrowserRouter as Link, Route, Redirect } from 'react-router-dom';
-import { useState } from 'react';
+// import { BrowserRouter as Link, Route, Redirect } from 'react-router-dom';
+// import { useState } from 'react';
 import HSocialField from './HSocialField';
 import './styles/homepage.scss';
 import ChatAsset from './assets/homepage/chat.png';
@@ -15,7 +15,18 @@ const Homepage = () : JSX.Element => {
 			</div>
 			<div className='main-field'>
 				<HSocialField />
-				<div>y</div>
+				<div className='homepage-content'>
+					<div className='homepage-header'>
+						<h1>Welcome back, <br /><span>display_name</span> !</h1>
+						<div></div>
+					</div>
+					<div className='homepage-widgets'>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+					</div>
+				</div>
 			</div>
 			{/*<p>coucou!</p>*/}
 		</div>
