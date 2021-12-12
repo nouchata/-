@@ -6,8 +6,7 @@ import Login from './Login';
 import LoadingContent from './LoadingContent';
 import Axios from 'axios';
 import './styles/global.scss';
-import Profile from './Profile';
-
+import Profile from './components/profile/Profile';
 
 const App = (props: any) : JSX.Element => {
   let auth_cookie = useState(false);
@@ -33,7 +32,7 @@ const App = (props: any) : JSX.Element => {
       {data_fetch[0] && <div className="App">
         <Router>
           <Switch>
-            <Route path="/profile"><Profile /></Route>
+            <Route path="/profile/:id"><Profile /></Route>
             <Route path="/login"><Login /></Route>
             <Route path="/">
               <Link to="/login">Login</Link>
