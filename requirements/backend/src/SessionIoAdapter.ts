@@ -8,20 +8,13 @@ export class SessionIoAdapter extends IoAdapter {
 		super(app);
 	}
 
-	log_middleware = (request, res, next) => {
-		console.log(request.url);
-		next();
-	}
-
 	create(port: number, options?: ServerOptions & {
         namespace?: string;
         server?: any;
     }): Server
 	{
 		const server = super.create(port, options);
-		server.use((socket: any, next: any) => {
-			this.log_middleware(socket.request, socket.request.res || {}, next);
-		});
+		
 		server.use((socket: any, next: any) => {
 			this.middlewares.sessionMiddleware(socket.request, socket.request.res || {}, next);
 		});
