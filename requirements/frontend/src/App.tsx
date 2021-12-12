@@ -6,6 +6,7 @@ import Login from './Login';
 import LoadingContent from './LoadingContent';
 import Axios from 'axios';
 import './styles/global.scss';
+import Chat from './components/Chat';
 
 const App = (props: any) : JSX.Element => {
   let auth_cookie = useState(false);
@@ -32,6 +33,7 @@ const App = (props: any) : JSX.Element => {
         <Router>
           <Switch>
             <Route path="/login"><Login /></Route>
+			<Route path="/chat"><Chat /></Route>
             <Route path="/">
               <Link to="/login">Login</Link>
             </Route>

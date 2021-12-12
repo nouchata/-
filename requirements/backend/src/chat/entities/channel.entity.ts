@@ -18,9 +18,13 @@ export class Channel {
 	@ManyToOne(type => User)
 	owner: User;
 
-	@ManyToMany(type => User, user => user.channels, { cascade: true })
+	@ManyToMany(type => User, user => user.channels)
 	users: User[];
 
 	@OneToMany(type => Message, message => message.channel)
 	messages: Message[];
+
+	canUserAccess(user: User): boolean {
+		return this.users.some(u => u.id === user.id);
+	}
 }

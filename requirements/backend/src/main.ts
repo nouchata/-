@@ -8,6 +8,7 @@ import * as passport from 'passport';
 import { getRepository } from 'typeorm';
 import { ISession, TypeormStore } from 'connect-typeorm/out';
 import { SessionEntity } from './auth/session.entity';
+import { SessionIoAdapter } from './SessionIoAdapter';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
@@ -29,19 +30,26 @@ async function bootstrap() {
 
 	const sessionRepo = getRepository<ISession>(SessionEntity);
 
-	app.use(session(
-		{
-			cookie: {
-				maxAge: 86400000,
-			},
-			secret: process.env.COOKIE_SECRET,
-			resave: false,
-			saveUninitialized: false,
-			store: new TypeormStore().connect(sessionRepo),
-		}
-	));
-	app.use(passport.initialize());
-	app.use(passport.session());
+	var sessionMiddleware = session({
+		cookie: {
+			maxAge: 86400000,
+		},
+		secret: process.env.COOKIE_SECRET,
+		resave: false,
+		saveUninitialized: false,
+		store: new TypeormStore().connect(sessionRepo),
+	})
+
+	var passportMiddleware = passport.initialize();
+	var passportSessionMiddleware = passport.session();
+
+	app.use(sessionMiddleware);
+	app.use(passportMiddleware);
+	app.use(passportSessionMiddleware);
+
+	app.useWebSocketAdapter(new SessionIoAdapter(app, {sessionMiddleware, passportMiddleware, passportSessionMiddleware}));
+
+
 
 	if (configService.get('RUN_ENV') !== 'PROD') {
 

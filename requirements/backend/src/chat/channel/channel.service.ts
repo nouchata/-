@@ -12,9 +12,7 @@ export class ChannelService {
 		) {}
 	
 	async createChannel(channel: {name: string, channelType: ChannelType, owner: User}): Promise<Channel> {
-		const nObj = {...channel, users: [channel.owner], messages: []}
-		console.log(nObj)
-		const newChannel: Channel = this.channelRepository.create(nObj);
+		const newChannel: Channel = this.channelRepository.create({...channel, users: [channel.owner], messages: []});
 		return this.channelRepository.save(newChannel);
 	}
 
