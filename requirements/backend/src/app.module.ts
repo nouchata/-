@@ -9,6 +9,8 @@ import { PassportModule } from '@nestjs/passport';
 import { SessionEntity } from './auth/session.entity';
 import { Friendship } from './user/entities/friendship.entity';
 import { MatchHistory } from './user/entities/match-history.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path/posix';
 
 let dyn_import: DynamicModule[] = []
 
@@ -32,7 +34,6 @@ else {
 	}));
 }
 
-
 @Module({
 	imports: [...dyn_import, TypeOrmModule.forRoot({
 		type: 'postgres',
@@ -47,9 +48,13 @@ else {
 		retryDelay: 5000
 	}), UserModule,
 		AuthModule,
-	PassportModule.register({ session: true })
+		PassportModule.register({ session: true }),
+		ServeStaticModule.forRoot({
+			rootPath: join(__dirname, '..', 'public')
+		})
 	],
 	controllers: [],
 	providers: [],
 })
+
 export class AppModule { }

@@ -1,21 +1,25 @@
 import { GroupGuard } from 'src/auth/guards/group.guard';
 import { EditUserDTO } from './dto/edit-user.dto';
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, NotFoundException, Param, ParseIntPipe, Patch, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiResponse } from '@nestjs/swagger';
 import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
-import { UpdateResult } from 'typeorm';
 import { FindUserDTO } from './dto/find-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { v4 as uuidv4 } from 'uuid';
+import { diskStorage } from 'multer';
+import path = require('path');
+import fs = require('fs');
 
 @Controller('user')
 export class UserController {
 	constructor(@Inject(UserService) private userService: UserService) { }
 
 	@ApiResponse({
-		type: User,
+		type: FindUserDTO,
 		status: 200,
-		description: 'the user found'
+		description: 'The user found'
 	})
 	@ApiResponse({
 		status: 404,
@@ -37,7 +41,7 @@ export class UserController {
 	@ApiResponse({
 		type: [User],
 		status: 200,
-		description: 'table of users that are matching login'
+		description: 'Table of users that are matching login'
 	})
 	@ApiResponse({
 		status: 404,
@@ -57,31 +61,68 @@ export class UserController {
 	}
 
 	@ApiResponse({
-		type: UpdateResult,
+		type: User,
 		status: 200,
-		description: 'the user found'
+		description: 'The user found'
 	})
 	@ApiResponse({
-		status: 401,
-		description: 'Cannot edit a user other than yourself'
+		status: 403,
+		description: 'A user can only edit their own informations'
 	})
 	@ApiResponse({
 		status: 404,
 		description: 'No id matching user'
 	})
-	@Patch(':id')
+	@Post('edit/')
 	@UseGuards(GroupGuard)
-	async editUserInfo(
-		@Req() request: any,
-		@Param('id', ParseIntPipe) id: number,
-		@Body() dto: EditUserDTO
-	) : Promise<UpdateResult>
-	{
-		if (request.user.id !== id) {
-			throw new UnauthorizedException('A user can only edit their own profile.');
+	@UseInterceptors(FileInterceptor('picture', {
+		storage: diskStorage({
+			destination: 'public',
+			filename: (req, file, cb) => {
+				const extension: string = path.parse(file.originalname).ext;
+				cb(null, `${uuidv4()}${extension}`);
+			}
+		}),
+		limits: {
+			files: 1,
+			fileSize: 5000000 // 5MB
+		}, 
+		fileFilter: (req, file, cb) => {
+			if (file.mimetype.startsWith('image/')) {
+				cb(null, true);
+			} else {
+				cb(null, false); // reject the file
+			}
 		}
-		dto.id = id;
-		return await this.userService.editUser(EditUserDTO.from(dto));
-	}
+	}))
+	async uploadFile(
+		@UploadedFile() file: Express.Multer.File,
+		@Req() req,
+		@Body() body: { username: string }
+	) : Promise<User>
+	{
+		// if file got rejected for bad mimetype
+		if (!file) {
+			throw new UnsupportedMediaTypeException();
+		}
 
+		const dto = EditUserDTO.from({
+			id: req.user.id,
+			picture: file.filename,
+			displayName: body.username
+		})
+
+		const prevUser = await this.userService.findUserById(req.user.id);
+		const newUser = await this.userService.editUser(dto);
+		
+		// delete the user's previous picture
+		if (prevUser.picture !== newUser.picture) {
+			fs.unlink('public/' + prevUser.picture, (err) => {
+				if (err) {
+					throw err;
+				}
+			})
+		}
+		return newUser;
+	}
 }
