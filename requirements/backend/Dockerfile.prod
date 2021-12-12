@@ -16,11 +16,16 @@ FROM node:alpine
 
 ENV NODE_ENV production
 
-USER node
 WORKDIR /app
+
+RUN chown -R node:node /app && chmod -R 755 /app
+
+USER node
 
 COPY --from=builder /home/node/package*.json /app/
 COPY --from=builder /home/node/node_modules/ /app/node_modules/
 COPY --from=builder /home/node/dist/ /app/dist/
+
+
 
 CMD ["node", "dist/main.js"]
