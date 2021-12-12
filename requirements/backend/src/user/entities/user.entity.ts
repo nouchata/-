@@ -165,7 +165,6 @@ export class User implements UserInterface {
 	status: UserStatus = 'online';
 
 	hasRole(role: UserRole): boolean {
-		console.log(role);
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
 	}
