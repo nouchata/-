@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsDate, IsArray, IsNumber, IsObject, ArrayContains, ValidateNested, IsBoolean } from "class-validator";
+import { IsString, IsDate, IsArray, IsNumber, ValidateNested, IsBoolean } from "class-validator";
 import { MatchHistoryDTO } from "./match-history.dto";
 
 class GeneralInfo {
@@ -12,13 +12,14 @@ class GeneralInfo {
     name: string;
 
     @ApiProperty({
-        description: "Path or URL to the user's picture",
-        example: "https://cdn.intra.42.fr/users/mamartin.jpg"
+        description: "User's picture",
+        example: "mamartin.jpg"
     })
     @IsString()
     picture: string;
 
     @ApiProperty({
+		enum: ['user', 'moderator', 'admin'],
         description: "User's role",
         example: "user"
     })
@@ -27,12 +28,13 @@ class GeneralInfo {
 
     @ApiProperty({
         description: "User's date of account creation",
-        example: "https://cdn.intra.42.fr/users/mamartin.jpg"
+        example: "2021-12-12 01:37:03.699864"
     })
     @IsDate()
     creation: Date;
     
     @ApiProperty({
+		enum: ['online', 'offline', 'ingame'],
         description: "User's current status",
         example: "offline"
     })
