@@ -1,0 +1,99 @@
+@use 'theme';
+
+$po-bg-color: whitesmoke;
+$po-button-color: black;
+
+$po-img-border-color: black;
+
+.profile-overview {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: flex-start;
+	padding: 5px;
+	gap: 10px;
+	background-color: $po-bg-color;
+	//background-color: theme.$darker-color;
+	overflow: hidden;
+
+	> * {
+		flex: 0 1 100%;
+	}
+
+	> :first-child {
+		box-sizing: border-box;
+		flex: 0 0 30%;
+		height: 100%;
+		border-radius: 5px;
+		border: 1px solid $po-img-border-color;
+		//border: 1px solid theme.$primary-color;
+		padding: 3px;
+	}
+
+	.profile-overview-content {
+		display: flex;
+		flex-flow: column nowrap;
+		height: 100%;
+
+		* {
+			//border: 1px solid black;
+		}
+
+		.profile-overview-data {
+			flex: 0 0 70%;
+			display: flex;
+			flex-flow: row wrap;
+			justify-content: flex-start;
+	
+			.profile-overview-progress {
+				display: flex;
+				flex-flow: row nowrap;
+				width: 90%;
+				gap: 3px;
+				align-items: center;
+	
+				> p {
+					flex: 0 0 30%;
+					text-align: left;
+					font-size: 0.6rem;
+				}
+	
+				> progress {
+					width: 100%;
+				}
+			}
+		}
+
+		.profile-overview-actions {
+			flex: auto;
+			display: flex;
+			flex-flow: row-reverse nowrap;
+			justify-content: right;
+			align-items: flex-end;
+			gap: 5px;
+			padding: 1px;
+
+
+			button {
+				display: flex;
+				flex-flow: row nowrap;
+				justify-content: center;
+				align-items: center;
+				border: 0;
+				background-color: $po-button-color;
+				background-color: theme.$darkest-color;
+				border-radius: 100%;
+				height: 20px; width: 20px;
+
+				:hover {
+					cursor: pointer;
+				}
+
+				img {
+					flex: 0 1 60%;
+					width: 60%;
+					filter: invert(100%);
+				}
+			}
+		}
+	}
+}

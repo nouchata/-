@@ -33,7 +33,7 @@ const App = (props: any) : JSX.Element => {
             <Route path="/profile/:id"><Profile /></Route>
             <Route path="/login"><Login /></Route>
             <Route path="/home"><Homepage /></Route>
-            <Route path="/"><Link to="/login">LIEN</Link></Route>
+            <Route path="/"><Link to="/login">LIE</Link></Route>
           </Switch>
         </Router>
       </div>}

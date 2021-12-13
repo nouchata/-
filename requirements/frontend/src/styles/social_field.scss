@@ -1,21 +1,22 @@
 @use 'theme';
 
 $hsf-content-pp-size: 35px;
+$hsf-chat-window-min-size: 50px;
 
 .social-field {
-	display: flex;
 	flex-flow: column nowrap;
 	justify-content: center;
 	align-items: center;
 	background-color: theme.$darkest-color;
 	overflow: hidden;
+	
+	> * {
+		flex: 1 1 1%;
+		//border-bottom: 1px solid theme.$primary-color;
+		width: 100%;
+	}
 }
 
-.social-field > * {
-	flex: 0 1 100%;
-	//border-bottom: 1px solid theme.$primary-color;
-	width: 100%;
-}
 
 .hsf-tab-selector {
 	flex: 0 0 50px;
@@ -23,27 +24,29 @@ $hsf-content-pp-size: 35px;
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: space-evenly;
-	align-items: end;
+	align-items: flex-end;
 	z-index: 1;
 	overflow: hidden;
+	
+	> * {
+		flex: 0 1 40%;
+		box-shadow: 0 0 0.75rem rgba(0, 0, 0, 0.3);
+	}
+	
+	> button {
+		width: 100%;
+		//height: 20px;
+		border: 1px solid theme.$darker-color;
+		//background-color: transparent;
+		background-color: theme.$darker-color;
+		// border: 0;
+	
+		border-radius: 5px 5px 5px 5px;
+		margin-bottom: 5px;
+	}
 }
 
-.hsf-tab-selector > * {
-	flex: 0 1 40%;
-	box-shadow: 0 0 0.75rem rgba(0, 0, 0, 0.3);
-}
 
-.hsf-tab-selector > button {
-	width: 100%;
-	//height: 20px;
-	border: 1px solid theme.$darker-color;
-	//background-color: transparent;
-	background-color: theme.$darker-color;
-	// border: 0;
-
-	border-radius: 5px 5px 5px 5px;
-	margin-bottom: 5px;
-}
 
 .hsf-btn-selected {
 	margin-bottom: 0 !important;
@@ -53,35 +56,48 @@ $hsf-content-pp-size: 35px;
 .hsf-content {
 	background-color: theme.$darker-color;
 	overflow-x: hidden;
-}
-
-.hsf-content * {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.hsf-content > ul > li {
-	margin: 0;
-	padding: 0;
-	border-bottom: 1px solid theme.$darkest-color;
-	height: 50px;
-}
-
-.hsf-content > ul > li > figure:hover {
-	cursor: pointer;
-	background-color: rgba(0, 0, 0, 0.1);
-}
-
-.hsf-content > ul > li > figure {
-	display: flex;
-	position: relative;
-	flex-flow: row wrap;
-	height: 100%;
-	width: 100%;
-	align-items: center;
-	gap: 20px;
-	overflow: hidden;
+	
+	* {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	
+	> ul > li {
+		margin: 0;
+		padding: 0;
+		border-bottom: 1px solid theme.$darkest-color;
+		height: 50px;
+		
+		> figure:hover {
+			cursor: pointer;
+			background-color: rgba(0, 0, 0, 0.1);
+		}
+		
+		> figure {
+			display: flex;
+			position: relative;
+			flex-flow: row wrap;
+			height: 100%;
+			width: 100%;
+			align-items: center;
+			gap: 20px;
+			overflow: hidden;
+			
+			> img {
+				padding: 0;
+				margin: 0 0 0 30px;
+				width: $hsf-content-pp-size;
+				height: $hsf-content-pp-size;
+				border-radius: 100%;
+				background-color: theme.$darkest-color;
+			}
+			
+			> figcaption {
+				font-size: 1em;
+			}
+		}
+	}
 }
 
 .hsf-content-notification {
@@ -109,31 +125,89 @@ $hsf-content-pp-size: 35px;
 	background-color: rgb(3, 136, 3);
 }
 
-.hsf-content > ul > li > figure > img {
-	padding: 0;
-	margin: 0 0 0 30px;
-	width: $hsf-content-pp-size;
-	height: $hsf-content-pp-size;
-	border-radius: 100%;
-	background-color: theme.$darkest-color;
+.hsf-chat {
+	min-height: $hsf-chat-window-min-size;
+	flex: 0 1 auto;
+	z-index: 1;
+	display: flex;
+	flex-flow: row wrap;
+	box-shadow: 0 -5px 1rem rgba(0, 0, 0, 0.7);
+	//display: none;
+
+	> * {
+		flex: 100%;
+	}
 }
 
-.hsf-content > ul > li > figure > figcaption {
-	font-size: 1em;
+.hsf-chat-controls {
+	height: $hsf-chat-window-min-size;
+	background-color: theme.$darkest-color;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 10px 0 10px;
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+
+	> * {
+		flex: 0 0 10%;
+	}
+
+	h2 {
+		box-sizing: border-box;
+		flex: 1 0 70%;
+		margin: 0;
+		overflow: hidden;
+		font-size: 1rem;
+		//padding: 0 0 0 10px;
+		color: theme.$darker-color;
+		filter: brightness(175%);
+	}
+
+	button {
+		height: 100%;
+		border: 0;
+		background-color: transparent;
+		display: flex;
+		flex-flow: row wrap;
+		justify-content: center;
+		align-items: center;
+
+		> img {
+			flex: 0 0 100%;
+			width: 100%;
+			filter: invert(100%);
+		}
+	}
+
+	button:hover {
+		cursor: pointer;
+	}
+}
+
+.hsf-chat-container {
+	background-color: theme.$darker-color;
+	height: calc($hsf-chat-window-min-size * 5);
+	overflow-x: hidden;
+	//display: none;
 }
 
 .hsf-btn-new {
 	flex: 0 0 70px;
-}
+	
+	> button {
+		height: 100%;
+		width: 100%;
+		background-color: theme.$darkest-color;
+		border: 0;
+		font-size: 1.3rem;
+		font-weight: bold;
+		color: theme.$darker-color;
+		//box-shadow: 0 -5px 0 rgba(0, 0, 0, 0.1);
+		filter: drop-shadow(0 0 1rem rgba(0, 0, 0, 0.7));
+	}
 
-.hsf-btn-new > button {
-	height: 100%;
-	width: 100%;
-	background-color: theme.$darkest-color;
-	border: 0;
-	font-size: 1.3rem;
-	font-weight: bold;
-	color: theme.$darker-color;
-	//box-shadow: 0 -5px 0 rgba(0, 0, 0, 0.1);
-	filter: drop-shadow(0 0 1rem rgba(0, 0, 0, 0.7));
+	> button:hover {
+		cursor: pointer;
+	}
 }

@@ -87,13 +87,12 @@ $chat-width: 280px;
 		}
 	}
 
-	div { // tba
+	> div { // tba
 		flex: 0 0 250px;
 		width: 100px;
 		height: 90px;
 		border-radius: 5px;
-		overflow: hidden;
-		background-color: whitesmoke;
+		filter: drop-shadow(5px 5px 0 black);
 	}
 }
 
