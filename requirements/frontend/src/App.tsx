@@ -7,7 +7,7 @@ import Login from './Login';
 import LoadingContent from './LoadingContent';
 import Axios from 'axios';
 import './styles/global.scss';
-
+import Profile from './components/profile/Profile';
 
 const App = (props: any) : JSX.Element => {
   let auth_cookie = useState(false);
@@ -16,12 +16,9 @@ const App = (props: any) : JSX.Element => {
   useEffect(() => {
     (async() => {
       try {
-        let res : FetchStatusData = await new Promise((resolve) => 
-						setTimeout(() => 
-						resolve(Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
+        let res : FetchStatusData = await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
 							'/auth/status', 
-							{ withCredentials: true })), 1000)
-						);
+							{ withCredentials: true });
         auth_cookie[1](res.data.loggedIn);
       } catch {}
       data_fetch[1](true);
@@ -33,6 +30,7 @@ const App = (props: any) : JSX.Element => {
       {data_fetch[0] && <div className="App">
         <Router>
           <Switch>
+            <Route path="/profile/:id"><Profile /></Route>
             <Route path="/login"><Login /></Route>
             <Route path="/home"><Homepage /></Route>
             <Route path="/"><Link to="/login">LIEN</Link></Route>

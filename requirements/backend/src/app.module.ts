@@ -1,12 +1,14 @@
 import { DynamicModule, Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { hostname } from 'os';
 import { User } from './user/entities/user.entity';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { SessionEntity } from './auth/session.entity';
+import { MatchHistory } from './user/entities/match-history.entity';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path/posix';
 
 let dyn_import: DynamicModule[] = []
 
@@ -30,7 +32,6 @@ else {
 	}));
 }
 
-
 @Module({
 	imports: [...dyn_import, TypeOrmModule.forRoot({
 		type: 'postgres',
@@ -39,15 +40,19 @@ else {
 		username: process.env.DB_USER,
 		password: process.env.DB_PASS,
 		database: process.env.DB_NAME,
-		entities: [User, SessionEntity],
+		entities: [User, SessionEntity, MatchHistory],
 		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000
 	}), UserModule,
 		AuthModule,
-	PassportModule.register({ session: true })
+		PassportModule.register({ session: true }),
+		ServeStaticModule.forRoot({
+			rootPath: join(__dirname, '..', 'public')
+		})
 	],
 	controllers: [],
 	providers: [],
 })
+
 export class AppModule { }
