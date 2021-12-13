@@ -106,7 +106,7 @@ $chat-width: 280px;
 
 	div {
 		flex: 0 0 100%;
-		height: 250px;
+		height: 300px;
 		//border: 1px solid black;
 		//border-radius: 5px;
 		background-color: rgb(250, 224, 214);
@@ -133,13 +133,13 @@ $chat-width: 280px;
 		//overflow-x: hidden;
 	}
 
-}
-
-@media(min-width: 1000px) {
 	.homepage-content {
 		padding: 20px 5% 20px 5%;
 	}
 
+}
+
+@media(min-width: 1000px) {
 	.homepage-header {
 		display: flex;
 		flex-flow: row nowrap;
@@ -155,12 +155,11 @@ $chat-width: 280px;
 	}
 
 	.homepage-widgets {
-		justify-content: space-evenly;
-		gap: 20px;
+		justify-content: center;
+		gap: 30px;
 	
 		div {
 			flex: 0 0 45%;
-			height: 250px;
 		}
 	}
 }

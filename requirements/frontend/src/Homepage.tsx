@@ -18,7 +18,9 @@ const Homepage = () : JSX.Element => {
 				<div className='homepage-content'>
 					<div className='homepage-header'>
 						<h1>Welcome back, <br /><span>display_name</span> !</h1>
-						<div></div>
+						<div className='profile-overview'>
+							
+						</div>
 					</div>
 					<div className='homepage-widgets'>
 							<div></div>
