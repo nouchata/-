@@ -47,9 +47,7 @@ async function bootstrap() {
 	app.use(passportMiddleware);
 	app.use(passportSessionMiddleware);
 
-	app.useWebSocketAdapter(new SessionIoAdapter(app, {sessionMiddleware, passportMiddleware, passportSessionMiddleware}));
-
-
+	app.useWebSocketAdapter(new SessionIoAdapter(app, [sessionMiddleware, passportMiddleware, passportSessionMiddleware]));
 
 	if (configService.get('RUN_ENV') !== 'PROD') {
 

@@ -3,7 +3,7 @@ import { IoAdapter } from "@nestjs/platform-socket.io";
 import { ServerOptions, Server } from 'socket.io';
 
 export class SessionIoAdapter extends IoAdapter {
-	constructor(app: INestApplication, private middlewares: {sessionMiddleware: any, passportMiddleware: any, passportSessionMiddleware: any})
+	constructor(app: INestApplication, private middlewares: ((request: any, res: any, next: any) => void)[])
 	{
 		super(app);
 	}
@@ -14,15 +14,11 @@ export class SessionIoAdapter extends IoAdapter {
     }): Server
 	{
 		const server = super.create(port, options);
-		
-		server.use((socket: any, next: any) => {
-			this.middlewares.sessionMiddleware(socket.request, socket.request.res || {}, next);
-		});
-		server.use((socket: any, next: any) => {
-			this.middlewares.passportMiddleware(socket.request, socket.request.res || {}, next);
-		});
-		server.use((socket: any, next: any) => {
-			this.middlewares.passportSessionMiddleware(socket.request, socket.request.res || {}, next);
+	
+		this.middlewares.forEach(middleware => {
+			server.use((socket: any, next: any) => {
+				middleware(socket.request, socket.request.res || {}, next);
+			});
 		});
 		return (server);
 	}	
