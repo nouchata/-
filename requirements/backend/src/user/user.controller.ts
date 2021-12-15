@@ -126,18 +126,16 @@ export class UserController {
 		}
 		return newUser;
 	}
-	
-	@Get('/:id/channels')
+
+	@Get('channels/list')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		type: [UserChannelsDto],
 		status: 200,
 		description: 'The channels were the is member user'
 	})
-	async getUserChannels(
-		@Param('id', ParseIntPipe) id: number
-	): Promise<UserChannelsDto[]> {
-		return this.userService.getUserChannels({ id });
+	async getUserChannels(@Req() req): Promise<UserChannelsDto[]> {
+		return this.userService.getUserChannels({ id: req.user.id });
 	}
 
 }

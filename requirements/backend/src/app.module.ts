@@ -49,6 +49,7 @@ else {
 		retryDelay: 5000
 	}), UserModule,
 		AuthModule,
+		ChatModule,
 		PassportModule.register({ session: true }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'public')
