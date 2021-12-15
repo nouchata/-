@@ -2,12 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
-import { Like, Repository, UpdateResult } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
 import { Channel } from 'src/chat/entities/channel.entity';
 import { MessageDto, UserChannelsDto } from './dto/user-channels.dto';
+import download from './utils/download';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,18 @@ export class UserService {
 	
 	async createUser(details: UserInterface) : Promise<User>
 	{
+		// download picture from 42 servers
+		if (details.picture) {
+			const path = `public/${details.login}.jpg`;
+			const res = await download(details.picture, path);
+
+			if (res) { // download successful
+				details.picture = `${details.login}.jpg`;
+			} else { // download failed, use default picture instead
+				details.picture = null;
+			}
+		}
+
 		const user = this.userRepo.create(details);
     	return this.userRepo.save(user);
 	}
@@ -39,10 +52,9 @@ export class UserService {
 		return userDB;
 	}
 
-	async editUser(dto: EditUserDTO) : Promise<UpdateResult>
+	async editUser(dto: EditUserDTO) : Promise<User>
 	{
-		const user = await this.findUserById(dto.id);
-		return await this.userRepo.update(user, dto.toEntity());
+		return await this.userRepo.save(dto.toEntity());
 	}
 
 	async getRank(user: User) : Promise<number> {
@@ -61,7 +73,7 @@ export class UserService {
 		const dto = new FindUserDTO();
         
         dto.general.name = entity.displayName;
-        dto.general.picture = entity.picture;
+        dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
         dto.general.role = entity.role;
         dto.general.creation = entity.createdAt;
         dto.general.status = entity.status;

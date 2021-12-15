@@ -28,8 +28,9 @@ export class EditUserDTO {
 
     toEntity() : DeepPartial<User> {
         const user = new User();
-        this.displayName ? user.displayName = this.displayName : user.displayName = null;
-        this.picture ? user.picture = this.picture : user.picture = null;
+        user.id = this.id;
+        user.displayName = this.displayName;
+        user.picture = this.picture;
         return user;
     }
 }
