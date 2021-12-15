@@ -16,4 +16,9 @@ export class ChannelService {
 		return this.channelRepository.save(newChannel);
 	}
 
+	async getChannel(channelId: number): Promise<Channel>
+	{
+		return this.channelRepository.findOne(channelId, {relations: ['owner', 'users']});
+	}
+
 }
