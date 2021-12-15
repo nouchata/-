@@ -7,6 +7,7 @@ import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import { UpdateResult } from 'typeorm';
 import { FindUserDTO } from './dto/find-user.dto';
+import { UserChannelsDto } from './dto/user-channels.dto';
 
 @Controller('user')
 export class UserController {
@@ -24,7 +25,7 @@ export class UserController {
 	@Get(':id')
 	@UseGuards(GroupGuard)
 	async getUserById(
-		@Req() req: {user: User},
+		@Req() req: { user: User },
 		@Param('id', ParseIntPipe) id: number
 	): Promise<FindUserDTO> {
 		const userDB = await this.userService.findUserById(id);
@@ -45,13 +46,12 @@ export class UserController {
 	})
 	@UseGuards(GroupGuard)
 	@Post('search/login')
-	async findUsersByLogin(@Body() findUserByLogin: FindUsersByLoginDTO): Promise<User[]>
-	{
+	async findUsersByLogin(@Body() findUserByLogin: FindUsersByLoginDTO): Promise<User[]> {
 		let users: User[] = await this.userService.findUsersByLogin(findUserByLogin.loginfragment);
 
 		if (users.length > 0)
 			return (users.slice((findUserByLogin.offset - 1) * findUserByLogin.maxresults,
-							findUserByLogin.offset * findUserByLogin.maxresults));
+				findUserByLogin.offset * findUserByLogin.maxresults));
 		else
 			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 	}
@@ -72,11 +72,10 @@ export class UserController {
 	@Patch(':id')
 	@UseGuards(GroupGuard)
 	async editUserInfo(
-		@Req() req: {user: User},
+		@Req() req: { user: User },
 		@Param('id', ParseIntPipe) id: number,
 		@Body() dto: EditUserDTO
-	) : Promise<UpdateResult>
-	{
+	): Promise<UpdateResult> {
 		if (req.user.id !== id) {
 			throw new UnauthorizedException('A user can only edit their own profile.');
 		}
@@ -84,4 +83,16 @@ export class UserController {
 		return await this.userService.editUser(EditUserDTO.from(dto));
 	}
 
+	@Get('/:id/channels')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [UserChannelsDto],
+		status: 200,
+		description: 'The channels were the is member user'
+	})
+	async getUserChannels(
+		@Param('id', ParseIntPipe) id: number
+	): Promise<UserChannelsDto[]> {
+		return this.userService.getUserChannels({ id });
+	}
 }

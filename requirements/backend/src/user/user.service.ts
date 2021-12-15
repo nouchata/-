@@ -6,6 +6,8 @@ import { Like, Repository, UpdateResult } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
+import { Channel } from 'src/chat/entities/channel.entity';
+import { MessageDto, UserChannelsDto } from './dto/user-channels.dto';
 
 @Injectable()
 export class UserService {
@@ -90,5 +92,40 @@ export class UserService {
 		}));
 
         return dto;
+	}
+
+	async getUserChannels(user: {id: number}) : Promise<UserChannelsDto[]>
+	{
+		var channelDtos: UserChannelsDto[] = [];
+
+		const channels: Channel[] = (await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['channels',
+			'channels.owner',
+			'channels.users',
+			'channels.messages',
+			'channels.messages.user'
+		]})).channels;
+
+		for (let channel of channels) {
+			var messageDtos: MessageDto[] = [];
+			for (let message of channel.messages) {
+				var messageDto: MessageDto = {
+					id: message.id,
+					text: message.text,
+					userId: message.user.id,
+				};
+				messageDtos.push(messageDto);
+			}
+			var channelDto: UserChannelsDto  = {
+				id: channel.id,
+				name: channel.name,
+				owner: channel.owner,
+				users: channel.users,
+				messages: messageDtos
+			};
+			channelDtos.push(channelDto);
+		}
+		return channelDtos;
 	}
 }
