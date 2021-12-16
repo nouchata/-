@@ -30,9 +30,9 @@ async function bootstrap() {
 
 	const sessionRepo = getRepository<ISession>(SessionEntity);
 
-	var sessionMiddleware = session({
+	let sessionMiddleware = session({
 		cookie: {
-			maxAge: 86400000,
+			maxAge: 86400000 * 4,
 		},
 		secret: process.env.COOKIE_SECRET,
 		resave: false,
@@ -40,8 +40,8 @@ async function bootstrap() {
 		store: new TypeormStore().connect(sessionRepo),
 	})
 
-	var passportMiddleware = passport.initialize();
-	var passportSessionMiddleware = passport.session();
+	let passportMiddleware = passport.initialize();
+	let passportSessionMiddleware = passport.session();
 
 	app.use(sessionMiddleware);
 	app.use(passportMiddleware);

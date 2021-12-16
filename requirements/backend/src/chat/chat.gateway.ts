@@ -15,11 +15,10 @@ export class ChatGateway {
 
 	@UseGuards(WsGroupGuard)
 	@SubscribeMessage('joinChannel')
-	async handleJoinChannel(client: Socket & {request: {user: User}}, channelId: string)
+	async handleJoinChannel(client: Socket & {request: {user: User}}, { channelId }: {channelId: number })
 	{
-		var channelFound: Channel = await this.channelService.getChannel(Number(channelId));
+		let channelFound: Channel = await this.channelService.getChannel(channelId);
 
-		console.log(channelFound);
 		
 		if(channelFound)
 		{
@@ -27,9 +26,29 @@ export class ChatGateway {
 			{
 				client.join("channel#" + channelId);
 				client.emit('joinedChannel', channelFound);
+				console.log("Joined channel " + channelId);
 			}
 			else
 				throw new WsException('You are not allowed to join this channel');
+		}
+		else
+			throw new WsException('Channel not found');
+	}
+
+	@UseGuards(WsGroupGuard)
+	@SubscribeMessage('sendMessage')
+	async handleSendMessage(client: Socket & {request: {user: User}}, { channelId, text }: {channelId: number, text: string})
+	{
+		let channelFound: Channel = await this.channelService.getChannel(channelId);
+
+		if(channelFound)
+		{
+			if (channelFound.canUserAccess(client.request.user))
+			{
+				console.log(client.request.user.login + "(" + channelId+ ") : " + text);
+			}
+			else
+				throw new WsException('You are not allowed to send messages to this channel');
 		}
 		else
 			throw new WsException('Channel not found');

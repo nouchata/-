@@ -108,7 +108,7 @@ export class UserService {
 
 	async getUserChannels(user: {id: number}) : Promise<UserChannelsDto[]>
 	{
-		var channelDtos: UserChannelsDto[] = [];
+		let channelDtos: UserChannelsDto[] = [];
 
 		const channels: Channel[] = (await this.userRepo.findOne({
 			where: { id: user.id },
@@ -120,16 +120,16 @@ export class UserService {
 		]})).channels;
 
 		for (let channel of channels) {
-			var messageDtos: MessageDto[] = [];
+			let messageDtos: MessageDto[] = [];
 			for (let message of channel.messages) {
-				var messageDto: MessageDto = {
+				let messageDto: MessageDto = {
 					id: message.id,
 					text: message.text,
 					userId: message.user.id,
 				};
 				messageDtos.push(messageDto);
 			}
-			var channelDto: UserChannelsDto  = {
+			let channelDto: UserChannelsDto  = {
 				id: channel.id,
 				name: channel.name,
 				owner: channel.owner,
