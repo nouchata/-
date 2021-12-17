@@ -1,5 +1,5 @@
 import { User } from "src/user/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 
 @Entity({ name: "messages" })
@@ -15,5 +15,8 @@ export class Message {
 
 	@ManyToOne(type => Channel, channel => channel.messages)
 	channel: Channel;
+
+	@CreateDateColumn()
+	createdAt: Date;
 
 }

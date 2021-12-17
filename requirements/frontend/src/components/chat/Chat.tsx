@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
-import { UserChannelsDto } from "./class/user-channels.dto";
+import { MessageDto, UserChannelsDto } from "./class/user-channels.dto";
 import './Chat.scss';
 import ChatArea from "./ChatArea";
 
@@ -17,9 +17,16 @@ const Chat = () => {
 		const connectSocket = (userChannels: UserChannelsDto[]) => {
 			const new_socket = socketIOClient("http://localhost:3000/chat", { withCredentials: true });
 			setSocket(new_socket);
-			new_socket.on("connect", () => {
-				console.log("connected");
+			new_socket.on("receiveMessage", (data: MessageDto & {channelId: number}) => {
+				console.log(data);
+				setUserChannels(userChannels.map((channel: UserChannelsDto) => {
+					if (channel.id === data.channelId) {
+						channel.messages.push(data);
+					}
+					return channel;
+				}));
 			});
+
 			for (const channel of userChannels) {
 				new_socket.emit("joinChannel", { channelId: channel.id });
 			}

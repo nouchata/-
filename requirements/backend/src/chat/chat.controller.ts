@@ -7,7 +7,6 @@ import { Message } from './entities/message.entity';
 @Controller('chat')
 export class ChatController {
 	constructor(
-			@InjectRepository(Message) private msgRepo: Repository<Message>,
 			@InjectRepository(User) private userRepo: Repository<User>) {}
 
 }

@@ -119,6 +119,16 @@ export class UserService {
 			'channels.messages.user'
 		]})).channels;
 
+		// sort channels by last message date
+		channels.sort((a, b) => {
+			if (a.messages[0].createdAt > b.messages[0].createdAt)
+				return -1;
+			else if (a.messages[0].createdAt < b.messages[0].createdAt)
+				return 1;
+			else
+				return 0;
+		});
+
 		for (let channel of channels) {
 			let messageDtos: MessageDto[] = [];
 			for (let message of channel.messages) {
