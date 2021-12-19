@@ -1,9 +1,8 @@
+import { User } from "./User";
+
 type FetchStatusData = {
-	data: {
-		loggedIn: boolean,
-		login: string,
-		role: string
-	}
+	loggedIn: boolean,
+	user: User;
 }
 
 export type { FetchStatusData };

@@ -6,3 +6,106 @@
 .selected-button {
 	background-color: rgb(177, 76, 76);
 }
+
+.chat {
+	width: 500px;
+	height: 500px;
+	background-color: rgb(249, 247, 247);
+	border-radius: 20px;
+	margin: 50px;
+
+	.channel-title {
+		position: relative;
+		font-size: 250%;
+		font-weight: bold;
+		top: 0%;
+		text-align: center;
+		width: 100%;
+		height: 10%;
+		// gradient blue to red
+		background: rgb(29, 53, 87);
+		background: linear-gradient(
+			333deg,
+			rgba(29, 53, 87, 1) 19%,
+			rgba(65, 152, 208, 1) 51%,
+			rgba(230, 57, 70, 1) 94%
+		);
+		color: white;
+		// border radius top
+		border-top-left-radius: 20px;
+		border-top-right-radius: 20px;
+		// iner text top
+	}
+
+	.message-area {
+		position: relative;
+		top: -5%;
+		width: 100%;
+		height: 80%;
+		background-color: rgb(255, 255, 255);
+		// border radius bottom
+		border-bottom-left-radius: 20px;
+		border-bottom-right-radius: 20px;
+		overflow-y: scroll;
+		// inner text bottom
+
+		
+
+		.message-chat {
+			padding: 10px;
+			margin-bottom: 30px;
+			position: relative;
+			
+			.bubble {
+				position: absolute;
+				right: 0;
+				display: inline-block;
+				background-color: rgb(240, 189, 162);
+				margin: 10px;
+				padding: 10px;
+				border-radius: 20px;
+				// overflow new line
+				color: white;
+			}
+			// blue chat bubble
+		}
+	}
+	.input-area {
+		// bottom
+		position: relative;
+		top: -6%;
+		padding: 3%;
+		width: 100%;
+
+		.input-field {
+			position: relative;
+			width: 70%;
+			height: 100%;
+			// rounded input
+			border: 1px solid rgb(228, 178, 178);
+			padding: 5px;
+
+			background: rgb(255, 255, 255);
+
+			color: black;
+			// border radius left
+			border-top-left-radius: 20px;
+			border-bottom-left-radius: 20px;
+			// inner text left
+		}
+		.input-button {
+			position: relative;
+			margin-left: 1%;
+			// good looking button
+			background-color: rgb(177, 76, 76);
+			color: white;
+			border: 1px solid rgb(177, 76, 76);
+			width: 20%;
+			height: 100%;
+			// border radius right
+			border-top-right-radius: 20px;
+			border-bottom-right-radius: 20px;
+			// inner text right
+		}
+	}
+}

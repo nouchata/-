@@ -8,23 +8,23 @@ import ChatArea from "./ChatArea";
 
 const Chat = () => {
 	const [userChannels, setUserChannels] = useState<UserChannelsDto[]>([]);
+	// save selected channel by index
 	const [selectedChannel, setSelectedChannel] = useState<number>(0);
 	const [msgInput, setMsgInput] = useState<string>("");
 	const [socket, setSocket] = useState<any>(null);
 
 	useEffect(() => {
-
 		const connectSocket = (userChannels: UserChannelsDto[]) => {
 			const new_socket = socketIOClient("http://localhost:3000/chat", { withCredentials: true });
 			setSocket(new_socket);
-			new_socket.on("receiveMessage", (data: MessageDto & {channelId: number}) => {
-				console.log(data);
-				setUserChannels(userChannels.map((channel: UserChannelsDto) => {
+			new_socket.on("receiveMessage", (data: MessageDto & { channelId: number }) => {
+				setUserChannels(userChannels.map(channel => {
 					if (channel.id === data.channelId) {
 						channel.messages.push(data);
 					}
 					return channel;
-				}));
+				}
+				));
 			});
 
 			for (const channel of userChannels) {
@@ -35,40 +35,39 @@ const Chat = () => {
 		const fetchData = async () => {
 			const result: UserChannelsDto[] = (await axios("http://localhost:3000/user/channels/list", { withCredentials: true })).data;
 			setUserChannels(result);
-			if (result.length > 0) {
-				setSelectedChannel(result[0].id);
-			}
 			connectSocket(result);
 		}
 
 		fetchData();
 	}, []);
-	
+
 	const sendMessage = async () => {
-		if (msgInput.length > 0)
-		{
-			socket.emit("sendMessage", { channelId: selectedChannel, text: msgInput });
+		if (msgInput.length > 0) {
+			socket.emit("sendMessage", { channelId: userChannels[selectedChannel].id, text: msgInput });
 		}
 		setMsgInput("");
 	}
 	return (
-		<div className="chat">
+		<div>
 			<div className="button-area">
 				{
-					userChannels.map((channel: UserChannelsDto) => {
+					userChannels.map((channel: UserChannelsDto, index: number) => {
 						var className: string = '';
-						if (channel.id === selectedChannel)
+						if (index === selectedChannel)
 							className = 'selected-button';
-						return (<button className={className} key={channel.id} onClick={() => setSelectedChannel(channel.id)}>{channel.name}</button>);
+						return (<button className={className} key={index} onClick={() => setSelectedChannel(index)}>{channel.name}</button>);
 					})
 				}
 			</div>
-			<div className="chat-area">
-				<ChatArea messages={userChannels.find(x => x.id === selectedChannel)?.messages} />
-			</div>
-			<div className="input-area">
-				<input type="text" placeholder="Type your message here" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
-				<button onClick={sendMessage}>Send</button>
+			<div className="chat">
+				<h1 className="channel-title">{userChannels[selectedChannel]?.name}</h1>
+				<div className="message-area">
+					<ChatArea channel={userChannels[selectedChannel]} />
+				</div>
+				<div className="input-area">
+						<input className="input-field" type="text" placeholder="Type your message here" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
+						<button className="input-button" onClick={sendMessage}>Send</button>
+					</div>
 			</div>
 		</div>
 	)
