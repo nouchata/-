@@ -1,16 +1,17 @@
-import { useEffect, useRef } from "react";
+import { useContext, useEffect, useRef } from "react";
+import LoginContext from "../../LoginContext";
+import { FetchStatusData } from "../../types/FetchStatusData";
 import { MessageDto, User, UserChannelsDto } from "./types/user-channels.dto";
 
 
 const ChatArea = ({ channel }: { channel: UserChannelsDto | undefined }) => {
 
-	//let fetchStatusValue: { fetchStatus: FetchStatusData | undefined; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
+	let fetchStatusValue: { fetchStatus: FetchStatusData; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 
 	const scrollToBottom = () => {
 		if (messagesEndRef.current) {
 			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-			// edit color of message
 		}
 	}
 
