@@ -31,7 +31,7 @@ const ChatArea = ({ channel }: { channel: UserChannelsDto | undefined }) => {
 			channel?.messages.map((message: MessageDto, index: number) => {
 				return (<div className='message-chat' key={message.id}>
 					{
-						message.id % 2 === 0 ?
+						fetchStatusValue.fetchStatus.user.id === message.userId ?
 							<div className="message-self">
 								<div className='bubble-self'>
 									{
