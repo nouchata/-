@@ -1,5 +1,5 @@
 import { User } from "src/user/entities/user.entity";
-import { Column, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ChannelType } from "../dtos/create-channel.dto";
 import { Message } from "./message.entity";
 
@@ -23,6 +23,9 @@ export class Channel {
 
 	@OneToMany(type => Message, message => message.channel)
 	messages: Message[];
+
+	@CreateDateColumn()
+	createdAt: Date;
 
 	canUserAccess(user: User): boolean {
 		return this.users.some(u => u.id === user.id);

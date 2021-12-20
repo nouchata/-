@@ -1,4 +1,4 @@
-import { UserRole } from "../components/chat/class/user-channels.dto";
+import { UserRole } from "../components/chat/types/user-channels.dto";
 
 export interface User {
 

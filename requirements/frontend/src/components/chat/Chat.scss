@@ -1,111 +1,113 @@
-.button-area {
-	display: flex;
-	margin: 10px;
-}
-
-.selected-button {
-	background-color: rgb(177, 76, 76);
-}
-
 .chat {
-	width: 500px;
-	height: 500px;
-	background-color: rgb(249, 247, 247);
-	border-radius: 20px;
-	margin: 50px;
+	position: absolute;
+	width: 50%;
+	height: 50%;
+	background-color: white;
+	border-radius: 10px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	margin: 5%;
+	min-height: 400px;
 
 	.channel-title {
 		position: relative;
-		font-size: 250%;
-		font-weight: bold;
-		top: 0%;
-		text-align: center;
 		width: 100%;
-		height: 10%;
-		// gradient blue to red
-		background: rgb(29, 53, 87);
-		background: linear-gradient(
-			333deg,
-			rgba(29, 53, 87, 1) 19%,
-			rgba(65, 152, 208, 1) 51%,
-			rgba(230, 57, 70, 1) 94%
-		);
+		text-align: center;
+		margin-top: 0;
+		margin-bottom: 0px;
+		background-color: rgb(31, 31, 31);
+		border-radius: 10px 10px 0 0;
 		color: white;
-		// border radius top
-		border-top-left-radius: 20px;
-		border-top-right-radius: 20px;
-		// iner text top
 	}
 
 	.message-area {
 		position: relative;
-		top: -5%;
 		width: 100%;
-		height: 80%;
-		background-color: rgb(255, 255, 255);
-		// border radius bottom
-		border-bottom-left-radius: 20px;
-		border-bottom-right-radius: 20px;
+		height: 85%;
 		overflow-y: scroll;
-		// inner text bottom
+		overflow-x: hidden;
+		margin-top: 0;
 
-		
+		// the bubble is alligned to the right
 
-		.message-chat {
-			padding: 10px;
-			margin-bottom: 30px;
+		.message-self {
 			position: relative;
-			
-			.bubble {
-				position: absolute;
-				right: 0;
-				display: inline-block;
-				background-color: rgb(240, 189, 162);
+			width: 100%;
+			border-radius: 10px;
+			float: right;
+
+			.bubble-self {
+				position: relative;
+				max-width: 40%;
+				border-radius: 10px;
 				margin: 10px;
-				padding: 10px;
-				border-radius: 20px;
-				// overflow new line
+				float: right;
+				word-wrap: break-word;
+				padding: 5px;
+				background-color: rgb(113, 139, 245);
 				color: white;
+				padding: 6px;
 			}
-			// blue chat bubble
 		}
+
+		.message {
+			position: relative;
+			width: 100%;
+			border-radius: 10px;
+			float: left;
+
+			.bubble {
+				position: relative;
+				max-width: 40%;
+				border-radius: 10px;
+				margin: 10px;
+				float: left;
+				word-wrap: break-word;
+				padding: 5px;
+				background-color: rgb(213, 213, 213);
+				color: rgb(22, 22, 22);
+				padding: 6px;
+			}
+		}
+		.message-text {
+			margin: 0;
+		}
+		.message-display-name
+		{
+			margin: 0;
+			font-weight: bold;
+		}
+
+		.chat-bottom {
+			height: 10px;
+		}
+			
 	}
+
 	.input-area {
-		// bottom
-		position: relative;
-		top: -6%;
-		padding: 3%;
+		position: absolute;
+		bottom: 0;
 		width: 100%;
+		padding: 10px;
 
 		.input-field {
 			position: relative;
 			width: 70%;
-			height: 100%;
-			// rounded input
-			border: 1px solid rgb(228, 178, 178);
-			padding: 5px;
-
-			background: rgb(255, 255, 255);
-
+			margin-top: 0;
+			margin-bottom: 0;
+			border-radius: 10px 0px 0px 10px;
 			color: black;
-			// border radius left
-			border-top-left-radius: 20px;
-			border-bottom-left-radius: 20px;
-			// inner text left
 		}
+
 		.input-button {
 			position: relative;
-			margin-left: 1%;
-			// good looking button
-			background-color: rgb(177, 76, 76);
+			width: 25%;
+			margin-top: 0;
+			margin-bottom: 0;
+			border-radius: 0px 10px 10px 0px;
 			color: white;
-			border: 1px solid rgb(177, 76, 76);
-			width: 20%;
-			height: 100%;
-			// border radius right
-			border-top-right-radius: 20px;
-			border-bottom-right-radius: 20px;
-			// inner text right
+			// bold text
+			font-weight: bold;
+			background-color: rgb(255, 158, 123);
 		}
 	}
 }

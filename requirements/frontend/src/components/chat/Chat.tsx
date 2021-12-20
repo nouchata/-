@@ -1,10 +1,9 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
-import { MessageDto, UserChannelsDto } from "./class/user-channels.dto";
+import { MessageDto, UserChannelsDto } from "./types/user-channels.dto";
 import './Chat.scss';
 import ChatArea from "./ChatArea";
-
 
 const Chat = () => {
 	const [userChannels, setUserChannels] = useState<UserChannelsDto[]>([]);
@@ -61,13 +60,11 @@ const Chat = () => {
 			</div>
 			<div className="chat">
 				<h1 className="channel-title">{userChannels[selectedChannel]?.name}</h1>
-				<div className="message-area">
-					<ChatArea channel={userChannels[selectedChannel]} />
-				</div>
+				<ChatArea channel={userChannels[selectedChannel]} />
 				<div className="input-area">
-						<input className="input-field" type="text" placeholder="Type your message here" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
-						<button className="input-button" onClick={sendMessage}>Send</button>
-					</div>
+					<input className="input-field" type="text" placeholder="Type your message here" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
+					<button className="input-button" onClick={sendMessage}>Send</button>
+				</div>
 			</div>
 		</div>
 	)

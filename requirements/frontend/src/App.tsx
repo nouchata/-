@@ -12,9 +12,9 @@ import Chat from './components/chat/Chat';
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
 	const fetchStatusValue = useMemo(
-		() => ({ fetchStatus, setFetchStatus }), 
+		() => ({ fetchStatus, setFetchStatus }),
 		[fetchStatus]
-	  );
+	);
 
 	useEffect(() => {
 		(async () => {
@@ -35,7 +35,18 @@ const App = (): JSX.Element => {
 							<h1>
 								{fetchStatus.loggedIn ? 'You are logged in !' : 'You are not logged in !'}
 							</h1>
-							<Link to="/login">Login</Link>
+							<div>
+								{
+									fetchStatus.loggedIn ?
+										(
+											<div>
+												<Link to="/chat">Go to chat</Link>
+												<Link to={`/profile/${fetchStatus.user.id}`}>Go to profile</Link>
+											</div>
+										) :
+										<Link to="/login">Login</Link>
+								}
+							</div>
 						</Route>
 					</Switch>
 				</Router>
