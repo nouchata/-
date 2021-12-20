@@ -26,7 +26,6 @@ export class ChatGateway {
 			if (channelFound.canUserAccess(client.request.user)) {
 				client.join("channel#" + channelId);
 				client.emit('joinedChannel', channelFound);
-				console.log("Joined channel " + channelId);
 			}
 			else
 				throw new WsException('You are not allowed to join this channel');
