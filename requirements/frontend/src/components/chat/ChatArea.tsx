@@ -33,7 +33,12 @@ const ChatArea = ({ channel }: { channel: UserChannelsDto | undefined }) => {
 						message.id % 2 === 0 ?
 							<div className="message-self">
 								<div className='bubble-self'>
-									<p className="message-text" >{message.text}</p>
+									{
+										index === channel.messages.length - 1 ?
+											<p className="message-text" ref={messagesEndRef} >{message.text}</p>
+											:
+											<p className="message-text" >{message.text}</p>
+									}
 								</div>
 							</div>
 							:
