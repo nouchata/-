@@ -6,6 +6,7 @@ import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import { FindUserDTO } from './dto/find-user.dto';
+import { UserChannelsDto } from './dto/user-channels.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { v4 as uuidv4 } from 'uuid';
 import { diskStorage } from 'multer';
@@ -125,4 +126,16 @@ export class UserController {
 		}
 		return newUser;
 	}
+
+	@Get('channels/list')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [UserChannelsDto],
+		status: 200,
+		description: 'The channels were the is member user'
+	})
+	async getUserChannels(@Req() req): Promise<UserChannelsDto[]> {
+		return this.userService.getUserChannels({ id: req.user.id });
+	}
+
 }

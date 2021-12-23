@@ -6,6 +6,8 @@ import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
+import { Channel } from 'src/chat/entities/channel.entity';
+import { MessageDto, UserChannelsDto } from './dto/user-channels.dto';
 import download from './utils/download';
 
 @Injectable()
@@ -102,5 +104,48 @@ export class UserService {
 		}));
 
         return dto;
+	}
+
+	async getUserChannels(user: {id: number}) : Promise<UserChannelsDto[]>
+	{
+		let channelDtos: UserChannelsDto[] = [];
+
+		const channels: Channel[] = (await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['channels',
+			'channels.owner',
+			'channels.users',
+			'channels.messages',
+			'channels.messages.user'
+		]})).channels;
+
+		// sort messages by date
+		channels.forEach( (channel) => {
+			channel.messages.sort( (a, b) => {
+				return (a.createdAt > b.createdAt) ? 1 : -1;
+			});
+		});
+		
+
+		for (let channel of channels) {
+			let messageDtos: MessageDto[] = [];
+			for (let message of channel.messages) {
+				let messageDto: MessageDto = {
+					id: message.id,
+					text: message.text,
+					userId: message.user.id,
+				};
+				messageDtos.push(messageDto);
+			}
+			let channelDto: UserChannelsDto  = {
+				id: channel.id,
+				name: channel.name,
+				owner: channel.owner,
+				users: channel.users,
+				messages: messageDtos
+			};
+			channelDtos.push(channelDto);
+		}
+		return channelDtos;
 	}
 }
