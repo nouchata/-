@@ -9,9 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: setup ssh agent
-        run: eval $(ssh-agent -s)
-      - name: add ssh key
-        run: ssh-add <(echo "${{ secrets.SSH_KEY }}")
+        run: eval $(ssh-agent -s) && ssh-add <(echo "${{ secrets.SSH_KEY }}")
       - name: prepare ssh folder
         run: mkdir -p ~/.ssh
       - name: Allow fingerprint
