@@ -4,11 +4,10 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  deploy-vps:
     name: Deploy cluster
-      runs-on: ubuntu-latest
-      steps:
-      - uses: actions/checkout@v2
+    runs-on: ubuntu-latest
+    steps:
       - name: setup ssh agent
         run: eval $(ssh-agent -s)
       - name: add ssh key
