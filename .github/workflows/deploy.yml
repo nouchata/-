@@ -17,5 +17,5 @@ jobs:
       - name: Allow fingerprint
         run: echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
       - name: deploy
-      - run: ssh ${{ secrets.DEPLOY_LOGIN }}@${{ secrets.DEPLOY_HOST }}"cd ft_transcendence && docker-compose down -v && git pull && docker-compose up -d --build"
+        run: ssh ${{ secrets.DEPLOY_LOGIN }}@${{ secrets.DEPLOY_HOST }}"cd ft_transcendence && docker-compose down -v && git pull && docker-compose up -d --build"
 
