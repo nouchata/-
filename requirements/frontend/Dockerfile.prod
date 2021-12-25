@@ -9,9 +9,13 @@ WORKDIR /build
 
 RUN apk update && apk add --no-cache yarn
 
-COPY . ./
+COPY package.json .
+
+COPY yarn.lock .
 
 RUN yarn install
+
+COPY . .
 
 RUN yarn build
 
