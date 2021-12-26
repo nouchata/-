@@ -32,7 +32,7 @@ const Chat = () => {
 		}
 
 		const fetchData = async () => {
-			const result: UserChannelsDto[] = (await axios(process.env.REACT_APP_BACKEND_ADDRESS + '/list', { withCredentials: true })).data;
+			const result: UserChannelsDto[] = (await axios(process.env.REACT_APP_BACKEND_ADDRESS + '/user/channels/list', { withCredentials: true })).data;
 			setUserChannels(result);
 			connectSocket(result);
 		}
