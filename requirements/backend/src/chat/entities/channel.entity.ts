@@ -15,6 +15,13 @@ export class Channel {
 	@Column()
 	channelType: ChannelType;
 
+	// optional column
+	@Column({ nullable: true })
+	password_hash: string;
+
+	@Column({ nullable: true })
+	password_salt: string;
+
 	@ManyToOne(type => User)
 	owner: User;
 
