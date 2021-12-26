@@ -14,7 +14,7 @@ const Chat = () => {
 
 	useEffect(() => {
 		const connectSocket = (userChannels: UserChannelsDto[]) => {
-			const new_socket = socketIOClient("http://localhost:3000/chat", { withCredentials: true });
+			const new_socket = socketIOClient(process.env.REACT_APP_BACKEND_ADDRESS + '/chat', { withCredentials: true });
 			setSocket(new_socket);
 			new_socket.on("receiveMessage", (data: MessageDto & { channelId: number }) => {
 				setUserChannels(userChannels.map(channel => {
@@ -32,7 +32,7 @@ const Chat = () => {
 		}
 
 		const fetchData = async () => {
-			const result: UserChannelsDto[] = (await axios("http://localhost:3000/user/channels/list", { withCredentials: true })).data;
+			const result: UserChannelsDto[] = (await axios(process.env.REACT_APP_BACKEND_ADDRESS + '/list', { withCredentials: true })).data;
 			setUserChannels(result);
 			connectSocket(result);
 		}
