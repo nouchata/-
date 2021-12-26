@@ -1,5 +1,5 @@
 import { User } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { ChannelType } from "../dtos/create-channel.dto";
 import { Message } from "./message.entity";
 
@@ -24,6 +24,10 @@ export class Channel {
 
 	@ManyToOne(type => User)
 	owner: User;
+
+	@ManyToMany(type => User)
+	@JoinTable()
+	admins: User[];
 
 	@ManyToMany(type => User, user => user.channels)
 	users: User[];

@@ -115,6 +115,7 @@ export class UserService {
 			relations: ['channels',
 			'channels.owner',
 			'channels.users',
+			'channels.admins',
 			'channels.messages',
 			'channels.messages.user'
 		]})).channels;
@@ -142,6 +143,7 @@ export class UserService {
 				name: channel.name,
 				owner: channel.owner,
 				users: channel.users,
+				admins: channel.admins,
 				messages: messageDtos
 			};
 			channelDtos.push(channelDto);

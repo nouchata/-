@@ -36,6 +36,7 @@ export class ChannelService {
 		channelCreated.channelType = channel.channelType;
 		channelCreated.owner = channel.owner;
 		channelCreated.users = [channel.owner];
+		channelCreated.admins = [];
 		channelCreated.messages = [];
 		const newChannel: Channel = this.channelRepository.create(channelCreated);
 		return this.channelRepository.save(newChannel);
@@ -63,7 +64,7 @@ export class ChannelService {
 		if (channelToJoin.users.some(u => u.id === user.id)) {
 			throw new HttpException('User already in channel', 400);
 		}
-		
+
 		channelToJoin.users.push(user);
 		return this.channelRepository.save(channelToJoin);
 	}
