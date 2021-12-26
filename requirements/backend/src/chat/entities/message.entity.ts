@@ -13,7 +13,7 @@ export class Message {
 	@ManyToOne(type => User, user => user.messages)
 	user: User;
 
-	@ManyToOne(type => Channel, channel => channel.messages)
+	@ManyToOne(type => Channel, channel => channel.messages, { onDelete: 'CASCADE' })
 	channel: Channel;
 
 	@CreateDateColumn()

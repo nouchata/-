@@ -25,6 +25,9 @@ export class UserChannelsDto {
 	@ApiProperty({description: 'Owner of the channel', type: User})
 	owner: User;
 
+	@ApiProperty({description: 'Admins of the channel', type: [User]})
+	admins: User[];
+
 	@ApiProperty({description: 'Users of the channel', type: [User]})
 	users: User[];
 
