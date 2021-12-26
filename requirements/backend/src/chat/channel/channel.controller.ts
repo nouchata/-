@@ -1,3 +1,4 @@
+import { LeaveChannelDto } from './../dtos/leave-channel.dto';
 import { JoinChannelDto } from './../dtos/join-channel.dto';
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { GroupGuard } from 'src/auth/guards/group.guard';
@@ -20,5 +21,12 @@ export class ChannelController {
 	@UseGuards(GroupGuard)
 	async joinChannel(@Req() req: {user: User}, @Body() channel: JoinChannelDto ): Promise<Channel> {
 		return this.channelService.joinChannel(channel, req.user);
+	}
+
+	@Post('leave')
+	@UseGuards(GroupGuard)
+	async leaveChannel(@Req() req: {user: User}, @Body() channel: LeaveChannelDto ) {
+		this.channelService.leaveChannel(channel.id, req.user);
+		return {'status': 'ok'};
 	}
 }

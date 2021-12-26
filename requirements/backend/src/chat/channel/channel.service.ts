@@ -53,6 +53,10 @@ export class ChannelService {
 		if (!channelToJoin) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channelToJoin.channelType === 'private') {
+			throw new HttpException('This channel is private, you must be invited', 403);
+		}
 		
 		if (channelToJoin.channelType === 'protected') {
 			const hash = crypto.pbkdf2Sync(channel.password, channelToJoin.password_salt, 1000, 64, 'sha512').toString('hex');
@@ -69,4 +73,33 @@ export class ChannelService {
 		return this.channelRepository.save(channelToJoin);
 	}
 
+	async leaveChannel(channelId: number, user: User) {
+		const channelToLeave: Channel = await this.channelRepository.findOne(channelId, { relations: ['users'] });
+		if (!channelToLeave) {
+			throw new HttpException('Channel not found', 404);
+		}
+		if (!channelToLeave.users.some(u => u.id === user.id)) {
+			throw new HttpException('User not in channel', 400);
+		}
+		channelToLeave.users = channelToLeave.users.filter(u => u.id !== user.id);
+		// check if channel is empty
+		if (channelToLeave.users.length === 0) {
+			// cascade delete
+			this.channelRepository.delete(channelToLeave.id);
+		} else {
+			// remove user in case he is admin
+			channelToLeave.admins = channelToLeave.admins.filter(u => u.id !== user.id);
+
+			// is user is owner, set new owner from admin
+			// is no admin left, choose new owner from users
+			if (channelToLeave.owner.id === user.id) {
+				if (channelToLeave.admins.length > 0) {
+					channelToLeave.owner = channelToLeave.admins[0];
+				} else {
+					channelToLeave.owner = channelToLeave.users[0];
+				}
+			}
+			this.channelRepository.save(channelToLeave);
+		}
+	}
 }

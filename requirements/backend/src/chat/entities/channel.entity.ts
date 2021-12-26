@@ -29,10 +29,10 @@ export class Channel {
 	@JoinTable()
 	admins: User[];
 
-	@ManyToMany(type => User, user => user.channels)
+	@ManyToMany(type => User, user => user.channels, { onDelete: 'CASCADE' })
 	users: User[];
 
-	@OneToMany(type => Message, message => message.channel)
+	@OneToMany(type => Message, message => message.channel, { onDelete: 'CASCADE' })
 	messages: Message[];
 
 	@CreateDateColumn()

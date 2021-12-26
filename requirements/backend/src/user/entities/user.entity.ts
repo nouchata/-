@@ -116,10 +116,10 @@ export class User implements UserInterface {
 	})
 	friends: User[];
 
-	@ManyToMany(type => Channel, channel => channel.users) @JoinTable()
+	@ManyToMany(type => Channel, channel => channel.users, { onDelete: 'CASCADE' }) @JoinTable()
 	channels: Channel[];
 
-	@OneToMany(type => Message, message => message.user)
+	@OneToMany(type => Message, message => message.user, { onDelete: 'CASCADE' })
 	messages: Message[];
 
 	@Column({
