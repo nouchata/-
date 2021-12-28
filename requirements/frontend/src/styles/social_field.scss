@@ -44,6 +44,10 @@ $hsf-chat-window-min-size: 50px;
 		border-radius: 5px 5px 5px 5px;
 		margin-bottom: 5px;
 	}
+
+	> button:hover {
+		cursor: pointer;
+	}
 }
 
 
@@ -51,6 +55,7 @@ $hsf-chat-window-min-size: 50px;
 .hsf-btn-selected {
 	margin-bottom: 0 !important;
 	border-radius: 5px 5px 0 0 !important;
+	cursor: initial !important;
 }
 
 .hsf-content {

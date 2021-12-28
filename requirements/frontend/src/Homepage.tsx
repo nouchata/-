@@ -22,7 +22,7 @@ const Homepage = () : JSX.Element => {
 			</div>
 			<div className='main-field'>
 				<HSocialField />
-				<div className='homepage-content'>
+				<div className='homepage-content mov-bg'>
 					<div className='homepage-header'>
 						<h1>Welcome back, <br /><span>display_name</span> !</h1>
 						<div className='profile-overview'>
@@ -44,15 +44,14 @@ const Homepage = () : JSX.Element => {
 									<button title='Edit Profile'><img src={GearAsset} alt='btn' /></button>
 									<button title='HK'><img src={StarAsset} alt='btn' /></button>
 								</div>
-							 </div>
-							 
+							 </div> 
 						</div>
 					</div>
 					<div className='homepage-widgets'>
-							<div></div>
-							<div></div>
-							<div></div>
-							<div></div>
+							<div><h2>Rankings</h2><div></div></div>
+							<div><h2>Rankings</h2><div></div></div>
+							<div><h2>Rankings</h2><div></div></div>
+							<div><h2>Rankings</h2><div></div></div>
 					</div>
 				</div>
 			</div>
