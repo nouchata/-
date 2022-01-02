@@ -12,11 +12,13 @@ const UserEdition = (props: IProps) => {
     const [username, setUsername] = useState<string>(props.data.general.name);
     const [selectedFile, setSelectedFile] = useState<File>();
     const [isFilePicked, setIsFilePicked] = useState<boolean>(false);
+    const [avatarUrl, setAvatarUrl] = useState<string>('');
 
     const handleAvatarChange = (event: React.FormEvent<HTMLInputElement>) => {
         if (event.currentTarget.files) {
             setSelectedFile(event.currentTarget.files[0]);
             setIsFilePicked(true);
+            setAvatarUrl(URL.createObjectURL(event.currentTarget.files[0]));
         }
     };
 
@@ -25,44 +27,52 @@ const UserEdition = (props: IProps) => {
     };
 
     const handleSubmit = () => {
+        let formData = new FormData();
+        formData.append('username', username);
+
         if (isFilePicked) {
-            let formData = new FormData();
             formData.append('picture', selectedFile as File);
-            formData.append('username', username);
-    
-            axios.post(
-                process.env.REACT_APP_BACKEND_ADDRESS as string + `/user/edit`,
-                formData,
-                { withCredentials: true }
-            )
-            .then(() => {
-                props.changeState();
-            })
-            .catch(() => {
-                alert('an error occured, going back to profile page.');
-                props.changeState();
-            });
         }
+
+        axios.post(
+            process.env.REACT_APP_BACKEND_ADDRESS as string + `/user/edit`,
+            formData,
+            { withCredentials: true }
+        )
+        .then(() => {
+            props.changeState();
+        })
+        .catch(() => {
+            alert('an error occured, going back to profile page.');
+            props.changeState();
+        });
     };
 
     return (
-        <div className='edition'>
-            <h1>Edit your information</h1>
+        <div className='edition-page'>
+        <h1>Edit your profile</h1>
 
-            <label>
-                username:
-                <input type='text' value={username} onChange={handleUsernameChange}/>
-            </label>
-            <br />
-            <label>
-                avatar:
-                <input type='file' name='picture' accept='image/*' onChange={handleAvatarChange}/>
-            </label>
-            <br />
-            <button onClick={handleSubmit}>
-                Save your changes
-            </button>
+        <div className='edition-block'>
+            <img
+                src={
+                    avatarUrl ?
+                    avatarUrl :
+                    `${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`
+                }
+                alt='avatar of the user'
+            />
 
+            <div className='forms'>
+                <input type='text' className='name-input' value={username} onChange={handleUsernameChange}/>
+                <br/>
+                <input type='file' id='file' className='file-input' name='picture' accept='image/*' onChange={handleAvatarChange}/>
+                <label htmlFor='file'>Change your picture</label>
+                <br/>
+                <button onClick={handleSubmit}>
+                    Save your changes
+                </button>
+            </div>
+        </div>
         </div>
     );
 }

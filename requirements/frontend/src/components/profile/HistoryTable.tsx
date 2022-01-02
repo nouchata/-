@@ -20,7 +20,11 @@ const HistoryTable = (props: IProps) => {
     const renderData = () => {
         return props.data.history.map((match) => {
             return (
-                <tr key={match.id}>
+                <tr key={match.id} className={
+                    match.winner === props.data.general.name 
+                    ? 'win'
+                    : 'lose'
+                }>
                     <td>{match.winner}</td>
                     <td>{`${match.score[0]} - ${match.score[1]}`}</td>
                     <td>{match.loser}</td>
@@ -32,8 +36,7 @@ const HistoryTable = (props: IProps) => {
 
     return (
         <div className='history'>
-            <h1>History</h1>
-            <table>
+            <table className='matches'>
                 <thead key='thead'>
                     <tr>{renderHeader()}</tr>
                 </thead>

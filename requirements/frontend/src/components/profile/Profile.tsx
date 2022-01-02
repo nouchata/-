@@ -4,6 +4,7 @@ import { RouteComponentProps, withRouter } from "react-router";
 import { FetchUserData } from "../../types/FetchUserData";
 import UserDetails from "./UserDetails";
 import UserEdition from "./UserEdition";
+import '../../styles/profile.css';
 
 interface ProfileRouterProps {
     id: string;
