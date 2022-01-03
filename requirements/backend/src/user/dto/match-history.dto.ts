@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsNumber, IsString } from "class-validator";
+import { IsArray, IsDate, IsNumber, IsString } from "class-validator";
 
 export class MatchHistoryDTO {
 
@@ -26,4 +26,8 @@ export class MatchHistoryDTO {
 	@ApiProperty({description: 'The duration of the match in seconds', example: 300})
     @IsNumber()
     duration: number;
+
+    @ApiProperty({description: 'The day of the match', example: '2022-01-02 15:25:37.579292'})
+    @IsDate()
+    date: Date;
 }

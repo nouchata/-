@@ -33,7 +33,7 @@ const ProgressBar = (props: IProps) => {
                 <span style={labelStyles}>
                     {
                         props.completed ?
-                            `${props.completed}%` :
+                            `${Math.floor(props.completed)}%` :
                             '100%' // avoid showing 'NaN%'
                     }
                 </span>

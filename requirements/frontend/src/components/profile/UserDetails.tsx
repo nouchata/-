@@ -8,16 +8,28 @@ interface IProps {
     onClick: () => void
 }
 
-const UserDetails = (props: IProps) => {
+// convert date to DD/MM/YYYY
+export const formatDate = (date: Date) => {
 
-    const formatDate = (date: Date) => {
-        date = new Date(date);
-        return date.toLocaleDateString();
+    const format2Digit = (n: number) => {
+        if (n < 10) {
+            return ('0' + n.toString());
+        } else {
+            return n.toString();
+        }
     }
 
-    const ratio = props.data.ranking.vdRatio[0] * 100 / (props.data.ranking.vdRatio[0] + props.data.ranking.vdRatio[1]);
-    const statusStyle = { color: 'red' };
+    date = new Date(date);
+    return `${format2Digit(date.getUTCDate())}/${format2Digit(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
 
+const UserDetails = (props: IProps) => {
+
+    // get the winrate of the user in percentage
+    let ratio = props.data.ranking.vdRatio[0] * 100 / (props.data.ranking.vdRatio[0] + props.data.ranking.vdRatio[1]);
+
+    // choose the right color for the user status
+    const statusStyle = { color: 'red' };
     if (props.data.general.status === 'online') {
         statusStyle.color = 'green';
     } else if (props.data.general.status === 'ingame') {
