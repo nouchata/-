@@ -54,6 +54,11 @@ export class UserService {
 
 	async editUser(dto: EditUserDTO) : Promise<User>
 	{
+		const user = await this.findUserById(dto.id);
+
+		if (!dto.picture) {
+			dto.picture = user.picture;
+		}
 		return await this.userRepo.save(dto.toEntity());
 	}
 
@@ -99,9 +104,19 @@ export class UserService {
 			matchInfo.score[0] = match.winScore;
 			matchInfo.score[1] = match.loseScore;
             matchInfo.duration = match.duration;
+			matchInfo.date = match.date;
 
 			return (matchInfo);
 		}));
+
+		// sort matches by date
+		dto.history.sort((a, b) => {
+			if (a.date < b.date) {
+				return -1;
+			} else {
+				return (1);
+			}
+		})
 
         return dto;
 	}

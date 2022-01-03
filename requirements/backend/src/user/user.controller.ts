@@ -97,25 +97,20 @@ export class UserController {
 		}
 	}))
 	async uploadFile(
-		@UploadedFile() file: Express.Multer.File,
 		@Req() req,
-		@Body() body: { username: string }
+		@Body() body: { username: string },
+		@UploadedFile() file?: Express.Multer.File,
 	) : Promise<User>
 	{
-		// if file got rejected for bad mimetype
-		if (!file) {
-			throw new UnsupportedMediaTypeException();
-		}
-
 		const dto = EditUserDTO.from({
 			id: req.user.id,
-			picture: file.filename,
-			displayName: body.username
+			displayName: body.username,
+			picture: file ? file.filename : undefined
 		})
 
 		const prevUser = await this.userService.findUserById(req.user.id);
 		const newUser = await this.userService.editUser(dto);
-		
+
 		// delete the user's previous picture
 		if (prevUser.picture !== newUser.picture) {
 			fs.unlink('public/' + prevUser.picture, (err) => {
