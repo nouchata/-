@@ -82,7 +82,9 @@ const UserDetails = (props: IProps) => {
             </div>
 
             <h2>History</h2>
-            <HistoryTable data={props.data} />
+            <div className='history'>
+                <HistoryTable data={props.data} />
+            </div>
 
         </div>
 

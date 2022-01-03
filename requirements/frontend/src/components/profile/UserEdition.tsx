@@ -50,29 +50,29 @@ const UserEdition = (props: IProps) => {
 
     return (
         <div className='edition-page'>
-        <h1>Edit your profile</h1>
+            <h1>Edit your profile</h1>
 
-        <div className='edition-block'>
-            <img
-                src={
-                    avatarUrl ?
-                    avatarUrl :
-                    `${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`
-                }
-                alt='avatar of the user'
-            />
-
-            <div className='forms'>
-                <input type='text' className='name-input' value={username} onChange={handleUsernameChange}/>
-                <br/>
-                <input type='file' id='file' className='file-input' name='picture' accept='image/*' onChange={handleAvatarChange}/>
-                <label htmlFor='file'>Change your picture</label>
-                <br/>
-                <button onClick={handleSubmit}>
-                    Save your changes
-                </button>
+            <div className='edition-block'>
+                <img
+                    src={
+                        avatarUrl ?
+                        avatarUrl :
+                        `${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`
+                    }
+                    alt='avatar of the user'
+                />
+    
+                <div className='forms'>
+                    <input type='text' className='name-input' value={username} onChange={handleUsernameChange}/>
+                    <br/>
+                    <input type='file' id='file' className='file-input' name='picture' accept='image/*' onChange={handleAvatarChange}/>
+                    <label htmlFor='file'>Change your picture</label>
+                    <br/>
+                    <button onClick={handleSubmit}>
+                        Save your changes
+                    </button>
+                </div>
             </div>
-        </div>
         </div>
     );
 }

@@ -8,12 +8,12 @@ const HistoryTable = (props: IProps) => {
 
     const renderHeader = () => {
         return (
-            <>
+            <tr>
                 <th key='head-winner'>WINNER</th>
                 <th key='head-score'>SCORE</th>
                 <th key='head-loser'>LOSER</th>
                 <th key='head-duration'>DURATION</th>
-            </>
+            </tr>
         );
     }
 
@@ -34,17 +34,21 @@ const HistoryTable = (props: IProps) => {
         });
     }
 
+    if (props.data.history.length === 0) {
+        return <div>This user has not played any match yet.</div>
+    }
+
     return (
-        <div className='history'>
+        <>
             <table className='matches'>
-                <thead key='thead'>
-                    <tr>{renderHeader()}</tr>
+                <thead>
+                    {renderHeader()}
                 </thead>
-                <tbody key='tbody'>
+                <tbody>
                     {renderData()}
                 </tbody>
             </table>
-        </div>
+        </>
     );
 }
 
