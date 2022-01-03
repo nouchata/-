@@ -52,6 +52,11 @@ export class UserService {
 
 	async editUser(dto: EditUserDTO) : Promise<User>
 	{
+		const user = await this.findUserById(dto.id);
+
+		if (!dto.picture) {
+			dto.picture = user.picture;
+		}
 		return await this.userRepo.save(dto.toEntity());
 	}
 

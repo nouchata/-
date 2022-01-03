@@ -16,7 +16,7 @@ export class EditUserDTO {
     
     @IsString()
 	@ApiProperty({description: 'new picture of the user', example: 'new_picture.jpg'})
-    picture: string;
+    picture?: string;
 
     static from(dto: Partial<EditUserDTO>) {
         const user = new EditUserDTO();
