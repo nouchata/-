@@ -6,9 +6,15 @@ USER node
 
 WORKDIR /home/node
 
-COPY . /home/node
+COPY package.json .
 
-RUN yarn install && yarn build
+COPY yarn.lock .
+
+RUN yarn install
+
+COPY . .
+
+RUN yarn build
 
 # ---
 

@@ -6,6 +6,7 @@ import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import { FindUserDTO } from './dto/find-user.dto';
+import { UserChannelsDto } from './dto/user-channels.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { v4 as uuidv4 } from 'uuid';
 import { diskStorage } from 'multer';
@@ -96,25 +97,20 @@ export class UserController {
 		}
 	}))
 	async uploadFile(
-		@UploadedFile() file: Express.Multer.File,
 		@Req() req,
-		@Body() body: { username: string }
+		@Body() body: { username: string },
+		@UploadedFile() file?: Express.Multer.File,
 	) : Promise<User>
 	{
-		// if file got rejected for bad mimetype
-		if (!file) {
-			throw new UnsupportedMediaTypeException();
-		}
-
 		const dto = EditUserDTO.from({
 			id: req.user.id,
-			picture: file.filename,
-			displayName: body.username
+			displayName: body.username,
+			picture: file ? file.filename : undefined
 		})
 
 		const prevUser = await this.userService.findUserById(req.user.id);
 		const newUser = await this.userService.editUser(dto);
-		
+
 		// delete the user's previous picture
 		if (prevUser.picture !== newUser.picture) {
 			fs.unlink('public/' + prevUser.picture, (err) => {
@@ -125,4 +121,16 @@ export class UserController {
 		}
 		return newUser;
 	}
+
+	@Get('channels/list')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [UserChannelsDto],
+		status: 200,
+		description: 'The channels were the is member user'
+	})
+	async getUserChannels(@Req() req): Promise<UserChannelsDto[]> {
+		return this.userService.getUserChannels({ id: req.user.id });
+	}
+
 }

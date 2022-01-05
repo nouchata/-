@@ -6,6 +6,8 @@ import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
+import { Channel } from 'src/chat/entities/channel.entity';
+import { MessageDto, UserChannelsDto } from './dto/user-channels.dto';
 import download from './utils/download';
 
 @Injectable()
@@ -52,6 +54,11 @@ export class UserService {
 
 	async editUser(dto: EditUserDTO) : Promise<User>
 	{
+		const user = await this.findUserById(dto.id);
+
+		if (!dto.picture) {
+			dto.picture = user.picture;
+		}
 		return await this.userRepo.save(dto.toEntity());
 	}
 
@@ -97,10 +104,65 @@ export class UserService {
 			matchInfo.score[0] = match.winScore;
 			matchInfo.score[1] = match.loseScore;
             matchInfo.duration = match.duration;
+			matchInfo.date = match.date;
 
 			return (matchInfo);
 		}));
 
+		// sort matches by date
+		dto.history.sort((a, b) => {
+			if (a.date < b.date) {
+				return -1;
+			} else {
+				return (1);
+			}
+		})
+
         return dto;
+	}
+
+	async getUserChannels(user: {id: number}) : Promise<UserChannelsDto[]>
+	{
+		let channelDtos: UserChannelsDto[] = [];
+
+		const channels: Channel[] = (await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['channels',
+			'channels.owner',
+			'channels.users',
+			'channels.admins',
+			'channels.messages',
+			'channels.messages.user'
+		]})).channels;
+
+		// sort messages by date
+		channels.forEach( (channel) => {
+			channel.messages.sort( (a, b) => {
+				return (a.createdAt > b.createdAt) ? 1 : -1;
+			});
+		});
+		
+
+		for (let channel of channels) {
+			let messageDtos: MessageDto[] = [];
+			for (let message of channel.messages) {
+				let messageDto: MessageDto = {
+					id: message.id,
+					text: message.text,
+					userId: message.user.id,
+				};
+				messageDtos.push(messageDto);
+			}
+			let channelDto: UserChannelsDto  = {
+				id: channel.id,
+				name: channel.name,
+				owner: channel.owner,
+				users: channel.users,
+				admins: channel.admins,
+				messages: messageDtos
+			};
+			channelDtos.push(channelDto);
+		}
+		return channelDtos;
 	}
 }

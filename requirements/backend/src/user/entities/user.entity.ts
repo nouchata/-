@@ -1,4 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Channel } from "src/chat/entities/channel.entity";
+import { Message } from "src/chat/entities/message.entity";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserInterface, UserRole, UserStatus } from "../interface/UserInterface";
 import { MatchHistory } from "./match-history.entity";
@@ -114,6 +116,12 @@ export class User implements UserInterface {
 	})
 	friends: User[];
 
+	@ManyToMany(type => Channel, channel => channel.users, { onDelete: 'CASCADE' }) @JoinTable()
+	channels: Channel[];
+
+	@OneToMany(type => Message, message => message.user, { onDelete: 'CASCADE' })
+	messages: Message[];
+
 	@Column({
 		default: true,
 	})
@@ -125,7 +133,6 @@ export class User implements UserInterface {
 	status: UserStatus = 'online';
 
 	hasRole(role: UserRole): boolean {
-		console.log(role);
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
 	}

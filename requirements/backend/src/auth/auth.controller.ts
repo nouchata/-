@@ -1,5 +1,7 @@
 import { Controller, Get, Redirect, Req, UseGuards } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Session } from 'express-session';
+import { User } from 'src/user/entities/user.entity';
 import { AuthService } from './auth.service';
 import { StatusDTO } from './dtos/status.dto';
 import { FortyTwoGuard } from './guards/fortytwo.guard';
@@ -29,15 +31,15 @@ export class AuthController {
 		description: 'User status',
 		type: StatusDTO,
 	})
-	status(@Req() req): StatusDTO {
+	status(@Req() req: {user: User}): StatusDTO {
 		return (this.authService.status(req))
 	}
 
 	@Get('logout')
 	@UseGuards(GroupGuard)
 	@ApiTags('auth')
-	logout(@Req() req) {
-		req.session.destroy();
+	logout(@Req() req: {session: Session}) {
+		req.session.destroy(() => {});
 		return 'logged out';
 	}
 }

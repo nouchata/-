@@ -7,6 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { SessionEntity } from './auth/session.entity';
 import { MatchHistory } from './user/entities/match-history.entity';
+import { Channel } from './chat/entities/channel.entity';
+import { Message } from './chat/entities/message.entity';
+import { ChatModule } from './chat/chat.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path/posix';
 
@@ -40,12 +43,13 @@ else {
 		username: process.env.DB_USER,
 		password: process.env.DB_PASS,
 		database: process.env.DB_NAME,
-		entities: [User, SessionEntity, MatchHistory],
+		entities: [User, SessionEntity, MatchHistory, Channel, Message],
 		synchronize: true,
 		retryAttempts: 5,
 		retryDelay: 5000
 	}), UserModule,
 		AuthModule,
+		ChatModule,
 		PassportModule.register({ session: true }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'public')

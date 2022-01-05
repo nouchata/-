@@ -12,13 +12,33 @@ export class GroupGuard implements CanActivate
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
 		const request = context.switchToHttp().getRequest();
 		const roles = this.reflector.get<string[]>('roles', context.getHandler());
-		const user: User = request.user;
+
 		if (request.isAuthenticated())
 		{
 			if (!roles || roles.length === 0)
 				return (true);
 			else
-				return (user.hasRole(<UserRole>roles[0]));
+				return (request.user.hasRole(<UserRole>roles[0]));
 		}
+	}
+}
+
+@Injectable()
+export class WsGroupGuard implements CanActivate
+{
+	constructor(private reflector: Reflector) {}
+
+	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+		const client = context.switchToWs().getClient();
+		const roles = this.reflector.get<string[]>('roles', context.getHandler());
+		
+		if (client.request.isAuthenticated())
+		{
+			if (!roles || roles.length === 0)
+				return (true);
+			else
+				return (client.request.user.hasRole(<UserRole>roles[0]));
+		}
+		return (client.request.isAuthenticated());
 	}
 }

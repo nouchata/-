@@ -27,7 +27,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		if (profile.photos && profile.photos.length > 0)
 			picture = profile.photos[0].value;
 
-		var details: UserDetails = {login: profile.username, displayName: profile.displayName, profileURL: profile.profileUrl, email: email, picture: picture};
+		let details: UserDetails = {login: profile.username, displayName: profile.displayName, profileURL: profile.profileUrl, email: email, picture: picture};
 		const user: User = await this.authService.validateUser(details);
 
 		return cb(null, user);

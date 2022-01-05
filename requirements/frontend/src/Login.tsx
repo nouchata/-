@@ -3,72 +3,65 @@ import { useLocation, useHistory } from 'react-router-dom';
 import LoginContext from './LoginContext';
 import { FetchStatusData } from './types/FetchStatusData';
 import { LoginDataSet } from './types/LoginDataSet';
-import Axios from 'axios';
+import axios from 'axios';
 // not-package-related importation
 import './styles/login.scss';
 import resetAsset from './assets/login/reset.png';
 import tickAsset from './assets/login/tick.png';
 
-const Login = () =>
-{
-	let [ dataSet, setDataSet ] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
+const Login = () => {
+	let [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
 	let queryCode = useQuery().get('code');
 	let history = useHistory();
-	let [ cookie, setCookie ] = useContext(LoginContext);
+	let fetchStatusValue: { fetchStatus: FetchStatusData | undefined; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
+
 
 	useEffect(() => {
-		if (cookie === false && !queryCode) {
-			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string + 
+		if (fetchStatusValue.fetchStatus?.loggedIn === false && !queryCode) {
+			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string +
 				'/auth/login', 'Login 42', 'scrollbars=no,resizable=no,' +
-				'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
-			setDataSet({ 
+			'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
+			setDataSet({
 				h1: 'Use the prompt to Log In',
 				p: 'The login occurs in a popup.',
 				img: resetAsset
 			});
-			(async() => {
-				let flag = true;
-				while (flag) {
-					try {
-						let res : FetchStatusData = await new Promise((resolve) => 
-						setTimeout(() => 
-						resolve(Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
-							'/auth/status', 
-							{ withCredentials: true })), 1000)
-						);
-        				if (res.data.loggedIn)
-							flag = false;
-					} catch {}
+			(async () => {
+				while (!fetchStatusValue.fetchStatus?.loggedIn) {
+					let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
+						'/auth/status',
+						{ withCredentials: true })).data;
+					fetchStatusValue.setFetchStatus(res);
+					if (res.loggedIn)
+						break ;
 				}
-				setCookie(true);
-				setDataSet({ 
+				setDataSet({
 					h1: 'You are logged in !',
 					p: 'Please wait a moment, you\'ll be redirected to your last location.',
 					img: tickAsset
 				});
 				setTimeout(() => history.goBack(), 2000);
 			})();
-		} else if (cookie === false && queryCode) {
-			setDataSet({ 
+		} else if (!fetchStatusValue.fetchStatus?.loggedIn && queryCode) {
+			setDataSet({
 				h1: 'Logging In ...',
 				p: 'Please wait a moment, this window will automatically close.',
 				img: resetAsset
 			});
-			(async() => {
+			(async () => {
 				try {
-					await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + 
-						'/auth/login', 
-						{withCredentials: true, params: {code: queryCode}}
+					await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
+						'/auth/login',
+						{ withCredentials: true, params: { code: queryCode } }
 					);
-					setDataSet({ 
+					setDataSet({
 						h1: 'You are logged in !',
 						p: 'The window will automatically close.',
 						img: tickAsset
 					});
-					setCookie(true);
 					setTimeout(() => window.close(), 1000);
 				} catch {
-					setDataSet({ 
+					setDataSet({
 						h1: 'Oops, an error happened :( !',
 						p: '',
 						img: 'error.png'
@@ -76,12 +69,12 @@ const Login = () =>
 				}
 			})();
 		} else {
-			setDataSet({ 
+			setDataSet({
 				h1: 'You are logged in !',
 				p: 'Please wait a moment, you\'ll be redirected to your last location.',
 				img: tickAsset
 			});
-			(async() => {
+			(async () => {
 				setTimeout(() => history.goBack(), 2000);
 			})();
 		}
