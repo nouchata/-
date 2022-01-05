@@ -18,8 +18,16 @@ const App = (): JSX.Element => {
 
 	useEffect(() => {
 		(async () => {
-			let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + '/auth/status', { withCredentials: true })).data;
-			setFetchStatus(res);
+			try {
+				let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + '/auth/status', { withCredentials: true })).data;
+				setFetchStatus(res);
+			}
+			catch (e) {
+				setFetchStatus({
+					loggedIn: false,
+					user: undefined
+				});
+			}
 		})();
 	}, []);
 
@@ -41,7 +49,7 @@ const App = (): JSX.Element => {
 										(
 											<div>
 												<Link to="/chat">Go to chat</Link>
-												<Link to={`/profile/${fetchStatus.user.id}`}>Go to profile</Link>
+												<Link to={`/profile/${fetchStatus.user?.id}`}>Go to profile</Link>
 											</div>
 										) :
 										<Link to="/login">Login</Link>
