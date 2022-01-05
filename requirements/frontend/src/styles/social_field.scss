@@ -105,6 +105,12 @@ $hsf-chat-window-min-size: 50px;
 	}
 }
 
+.hsf-content-channel-img {
+	border-radius: 0 !important;
+	opacity: 0.5 !important;
+	background: none !important;
+}
+
 .hsf-content-notification {
 	position: absolute;
 	top: 0; right: 0;
@@ -215,4 +221,16 @@ $hsf-chat-window-min-size: 50px;
 	> button:hover {
 		cursor: pointer;
 	}
+}
+
+/* CHAT CONTAINER STATE */
+
+.minimize-state {
+	> .hsf-chat-container {
+		display: none;
+	}
+}
+
+.closed-state {
+	display: none;
 }

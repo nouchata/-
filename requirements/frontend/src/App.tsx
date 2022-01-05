@@ -5,7 +5,7 @@ import LoginContext from './LoginContext';
 import Homepage from './Homepage';
 import Login from './Login';
 import LoadingContent from './LoadingContent';
-import axios from 'axios';
+import Axios from 'axios';
 import './styles/global.scss';
 import Profile from './components/profile/Profile';
 import Chat from './components/chat/Chat';
@@ -22,11 +22,10 @@ const App = (): JSX.Element => {
 		(async () => {
 			let res: FetchStatusData = {loggedIn: false, fetched: false};
 			try {
-				res = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + '/auth/status', { withCredentials: true })).data;
+				res = (await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + '/auth/status', { withCredentials: true })).data;
 				res.fetched = true;
 			} catch {}
 			setFetchStatus(res);
-			console.log(res);
 		})();
 	}, []);
 
