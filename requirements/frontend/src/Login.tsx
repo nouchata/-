@@ -28,12 +28,22 @@ const Login = () => {
 			});
 			(async () => {
 				while (!fetchStatusValue.fetchStatus?.loggedIn) {
-					let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
-						'/auth/status',
-						{ withCredentials: true })).data;
-					fetchStatusValue.setFetchStatus(res);
-					if (res.loggedIn)
-						break ;
+					try {
+						let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
+							'/auth/status',
+							{ withCredentials: true })).data;
+						fetchStatusValue.setFetchStatus(res);
+						if (res.loggedIn)
+							break;
+					}
+					catch (e) {
+						setDataSet({
+							h1: 'Oops, an error happened :( !',
+							p: '',
+							img: 'error.png'
+						});
+					}
+
 				}
 				setDataSet({
 					h1: 'You are logged in !',
