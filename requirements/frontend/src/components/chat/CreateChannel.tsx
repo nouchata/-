@@ -2,10 +2,10 @@ import axios from "axios";
 import { useState } from "react";
 import { ChannelType, ChannelDto } from "./types/user-channels.dto";
 
-const CreateChannel = ({ userChannels, setUserChannels }:
+const CreateChannel = ({ userChannels, addUserChannel }:
 	{
 		userChannels: ChannelDto[],
-		setUserChannels: (userChannels: ChannelDto[]) => void
+		addUserChannel: (channel: ChannelDto) => void
 	}) => {
 	const [channelName, setChannelName] = useState<string>('');
 	const [channelType, setChannelType] = useState<ChannelType>('public');
@@ -39,17 +39,22 @@ const CreateChannel = ({ userChannels, setUserChannels }:
 					/>
 				}
 				<button onClick={async () => {
-					await axios.post(process.env.REACT_APP_BACKEND_ADDRESS + '/channel/create', {
-						name: channelName,
-						channelType: channelType,
-						// if channel type is protected, password is required
-						password: channelType === 'protected' ? channelPassword : undefined
-					}, { withCredentials: true })
-
+					try {
+						let res = await axios.post<ChannelDto>(process.env.REACT_APP_BACKEND_ADDRESS + '/channel/create', {
+							name: channelName,
+							channelType: channelType,
+							// if channel type is protected, password is required
+							password: channelType === 'protected' ? channelPassword : undefined
+						}, { withCredentials: true })
+						addUserChannel(res.data);
+					}
+					catch (e: any) {
+						console.log(e);
+					}
+					
 					setChannelName('');
 					setChannelType('public');
 					setChannelPassword('');
-
 
 				}}>Create</button>
 			</div>

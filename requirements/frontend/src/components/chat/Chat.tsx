@@ -41,15 +41,21 @@ const Chat = () => {
 		fetchData();
 	}, []);
 
+	const addUserChannel = async (channel: ChannelDto) => {
+		socket.emit("joinChannel", { channelId: channel.id });
+		setUserChannels([...userChannels, channel]);
+	}
+
 	const sendMessage = async () => {
 		if (msgInput.length > 0) {
 			socket.emit("sendMessage", { channelId: userChannels[selectedChannel].id, text: msgInput });
 		}
 		setMsgInput("");
 	}
+
 	return (
 		<div>
-			<CreateChannel userChannels={userChannels} setUserChannels={setUserChannels} />
+			<CreateChannel userChannels={userChannels} addUserChannel={addUserChannel} />
 			<div className="button-area">
 				{
 					userChannels.map((channel: ChannelDto, index: number) => {

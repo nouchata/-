@@ -5,7 +5,6 @@ import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { GroupGuard } from 'src/auth/guards/group.guard';
 import { User } from 'src/user/entities/user.entity';
 import { CreateChannelDto } from '../dtos/create-channel.dto';
-import { Channel } from '../entities/channel.entity';
 import { ChannelService } from './channel.service';
 
 @Controller('channel')
