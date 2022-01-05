@@ -27,10 +27,14 @@ const Login = () => {
 				img: resetAsset
 			});
 			(async () => {
+				let res: FetchStatusData = {loggedIn: false, fetched: false};
 				while (!fetchStatusValue.fetchStatus?.loggedIn) {
-					let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
-						'/auth/status',
-						{ withCredentials: true })).data;
+					try {
+						res = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
+							'/auth/status',
+							{ withCredentials: true })).data;
+						res.fetched = true;
+					} catch { res.fetched = false; }
 					fetchStatusValue.setFetchStatus(res);
 					if (res.loggedIn)
 						break ;
