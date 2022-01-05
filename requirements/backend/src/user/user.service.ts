@@ -7,8 +7,8 @@ import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
 import { Channel } from 'src/chat/entities/channel.entity';
-import { MessageDto, UserChannelsDto } from './dto/user-channels.dto';
 import download from './utils/download';
+import { ChannelDto, MessageDto } from 'src/chat/dtos/user-channels.dto';
 
 @Injectable()
 export class UserService {
@@ -121,9 +121,9 @@ export class UserService {
         return dto;
 	}
 
-	async getUserChannels(user: {id: number}) : Promise<UserChannelsDto[]>
+	async getUserChannels(user: {id: number}) : Promise<ChannelDto[]>
 	{
-		let channelDtos: UserChannelsDto[] = [];
+		let channelDtos: ChannelDto[] = [];
 
 		const channels: Channel[] = (await this.userRepo.findOne({
 			where: { id: user.id },
@@ -144,24 +144,7 @@ export class UserService {
 		
 
 		for (let channel of channels) {
-			let messageDtos: MessageDto[] = [];
-			for (let message of channel.messages) {
-				let messageDto: MessageDto = {
-					id: message.id,
-					text: message.text,
-					userId: message.user.id,
-				};
-				messageDtos.push(messageDto);
-			}
-			let channelDto: UserChannelsDto  = {
-				id: channel.id,
-				name: channel.name,
-				owner: channel.owner,
-				users: channel.users,
-				admins: channel.admins,
-				messages: messageDtos
-			};
-			channelDtos.push(channelDto);
+			channelDtos.push(channel.toDto());
 		}
 		return channelDtos;
 	}

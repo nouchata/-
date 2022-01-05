@@ -5,8 +5,8 @@ import { Socket, Server } from 'socket.io';
 import { User } from 'src/user/entities/user.entity'
 import { ChannelService } from './channel/channel.service';
 import { Channel } from './entities/channel.entity';
-import { MessageDto } from 'src/user/dto/user-channels.dto';
 import { ChatService } from './chat.service';
+import { MessageDto } from './dtos/user-channels.dto';
 
 @WebSocketGateway({ cors: true, namespace: 'chat' })
 export class ChatGateway {

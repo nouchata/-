@@ -1,4 +1,5 @@
 export type UserRole = 'user' | 'moderator' | 'admin';
+export type ChannelType = 'private' | 'protected' | 'public';
 
 
 export interface User
@@ -19,10 +20,11 @@ export interface MessageDto
 	userId: number;
 }
 
-export interface UserChannelsDto {
+export interface ChannelDto {
 
 	id: number;
 	name: string;
+	channelType: ChannelType;
 	owner: User;
 	users: User[];
 	messages: MessageDto[];

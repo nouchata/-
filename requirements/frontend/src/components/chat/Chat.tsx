@@ -1,19 +1,20 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
-import { MessageDto, UserChannelsDto } from "./types/user-channels.dto";
+import { MessageDto, ChannelDto } from "./types/user-channels.dto";
 import './Chat.scss';
 import ChatArea from "./ChatArea";
+import CreateChannel from "./CreateChannel";
 
 const Chat = () => {
-	const [userChannels, setUserChannels] = useState<UserChannelsDto[]>([]);
+	const [userChannels, setUserChannels] = useState<ChannelDto[]>([]);
 	// save selected channel by index
 	const [selectedChannel, setSelectedChannel] = useState<number>(0);
 	const [msgInput, setMsgInput] = useState<string>("");
 	const [socket, setSocket] = useState<any>(null);
 
 	useEffect(() => {
-		const connectSocket = (userChannels: UserChannelsDto[]) => {
+		const connectSocket = (userChannels: ChannelDto[]) => {
 			const new_socket = socketIOClient(process.env.REACT_APP_BACKEND_ADDRESS + '/chat', { withCredentials: true });
 			setSocket(new_socket);
 			new_socket.on("receiveMessage", (data: MessageDto & { channelId: number }) => {
@@ -32,7 +33,7 @@ const Chat = () => {
 		}
 
 		const fetchData = async () => {
-			const result: UserChannelsDto[] = (await axios(process.env.REACT_APP_BACKEND_ADDRESS + '/user/channels/list', { withCredentials: true })).data;
+			const result: ChannelDto[] = (await axios(process.env.REACT_APP_BACKEND_ADDRESS + '/user/channels/list', { withCredentials: true })).data;
 			setUserChannels(result);
 			connectSocket(result);
 		}
@@ -48,13 +49,16 @@ const Chat = () => {
 	}
 	return (
 		<div>
+			<CreateChannel userChannels={userChannels} setUserChannels={setUserChannels} />
 			<div className="button-area">
 				{
-					userChannels.map((channel: UserChannelsDto, index: number) => {
-						var className: string = '';
-						if (index === selectedChannel)
-							className = 'selected-button';
-						return (<button className={className} key={index} onClick={() => setSelectedChannel(index)}>{channel.name}</button>);
+					userChannels.map((channel: ChannelDto, index: number) => {
+
+						return (<button
+							className={index === selectedChannel ? 'selected-button' : ''}
+							key={index} onClick={() => setSelectedChannel(index)}>
+							{channel.name}
+						</button>);
 					})
 				}
 			</div>

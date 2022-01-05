@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { User } from "../entities/user.entity";
+import { User } from "src/user/entities/user.entity";
 
 
 export class MessageDto
@@ -14,13 +14,17 @@ export class MessageDto
 	userId: number;
 }
 
-export class UserChannelsDto {
+export class ChannelDto {
 
 	@ApiProperty({description: 'id of the channel', example: 45})
 	id: number;
 
 	@ApiProperty({description: 'name of the channel', example: 'yolo'})
 	name: string;
+
+	@ApiProperty({description: 'type of the channel', example: 'private'})
+	channelType: string;
+
 
 	@ApiProperty({description: 'Owner of the channel', type: User})
 	owner: User;
