@@ -1,10 +1,10 @@
 import { useContext, useEffect, useRef } from "react";
 import LoginContext from "../../LoginContext";
 import { FetchStatusData } from "../../types/FetchStatusData";
-import { MessageDto, User, UserChannelsDto } from "./types/user-channels.dto";
+import { MessageDto, User, ChannelDto } from "./types/user-channels.dto";
 
 
-const ChatArea = ({ channel }: { channel: UserChannelsDto | undefined }) => {
+const ChatArea = ({ channel }: { channel: ChannelDto | undefined }) => {
 
 	let fetchStatusValue: { fetchStatus: FetchStatusData; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
 	const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -31,7 +31,7 @@ const ChatArea = ({ channel }: { channel: UserChannelsDto | undefined }) => {
 			channel?.messages.map((message: MessageDto, index: number) => {
 				return (<div className='message-chat' key={message.id}>
 					{
-						fetchStatusValue.fetchStatus.user.id === message.userId ?
+						fetchStatusValue.fetchStatus.user?.id === message.userId ?
 							<div className="message-self">
 								<div className='bubble-self'>
 									{

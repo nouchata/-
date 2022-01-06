@@ -1,3 +1,4 @@
+import { ChannelDto } from './../dtos/user-channels.dto';
 import { LeaveChannelDto } from './../dtos/leave-channel.dto';
 import { JoinChannelDto } from './../dtos/join-channel.dto';
 import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
@@ -13,13 +14,13 @@ export class ChannelController {
 
 	@Post('create')
 	@UseGuards(GroupGuard)
-	async createChannel(@Req() req: {user: User}, @Body() channel: CreateChannelDto ): Promise<Channel> {
+	async createChannel(@Req() req: {user: User}, @Body() channel: CreateChannelDto ): Promise<ChannelDto> {
 		return this.channelService.createChannel({...channel, owner: req.user});
 	}
 	
 	@Post('join')
 	@UseGuards(GroupGuard)
-	async joinChannel(@Req() req: {user: User}, @Body() channel: JoinChannelDto ): Promise<Channel> {
+	async joinChannel(@Req() req: {user: User}, @Body() channel: JoinChannelDto ): Promise<ChannelDto> {
 		return this.channelService.joinChannel(channel, req.user);
 	}
 
