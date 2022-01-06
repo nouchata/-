@@ -5,6 +5,7 @@ import { MessageDto, ChannelDto } from "./types/user-channels.dto";
 import './Chat.scss';
 import ChatArea from "./ChatArea";
 import CreateChannel from "./CreateChannel";
+import JoinChannel from "./JoinChannel";
 
 const Chat = () => {
 	const [userChannels, setUserChannels] = useState<ChannelDto[]>([]);
@@ -56,7 +57,9 @@ const Chat = () => {
 	return (
 		<div>
 			<CreateChannel userChannels={userChannels} addUserChannel={addUserChannel} />
+			<JoinChannel userChannels={userChannels} addUserChannel={addUserChannel} />
 			<div className="button-area">
+				<h4>channels joined</h4>
 				{
 					userChannels.map((channel: ChannelDto, index: number) => {
 

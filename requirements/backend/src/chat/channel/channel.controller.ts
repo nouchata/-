@@ -1,7 +1,8 @@
+import { GetChannelDto } from './../dtos/get-channel.dto';
 import { ChannelDto } from './../dtos/user-channels.dto';
 import { LeaveChannelDto } from './../dtos/leave-channel.dto';
 import { JoinChannelDto } from './../dtos/join-channel.dto';
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { GroupGuard } from 'src/auth/guards/group.guard';
 import { User } from 'src/user/entities/user.entity';
 import { CreateChannelDto } from '../dtos/create-channel.dto';
@@ -28,5 +29,29 @@ export class ChannelController {
 	async leaveChannel(@Req() req: {user: User}, @Body() channel: LeaveChannelDto ) {
 		this.channelService.leaveChannel(channel.id, req.user);
 		return {'status': 'ok'};
+	}
+
+	@Get('public')
+	async getPublicChannels(): Promise<GetChannelDto[]> {
+		return (await this.channelService.getPublicChannels()).map((channel) => {
+			let getChannelDto: GetChannelDto = {
+				id: channel.id,
+				name: channel.name,
+				channelType: channel.channelType,
+			};
+			return getChannelDto;
+		});
+	}
+
+	@Get('protected')
+	async getProtectedChannels(): Promise<GetChannelDto[]> {
+		return (await this.channelService.getProtectedChannels()).map((channel) => {
+			let getChannelDto: GetChannelDto = {
+				id: channel.id,
+				name: channel.name,
+				channelType: channel.channelType,
+			};
+			return getChannelDto;
+		});
 	}
 }

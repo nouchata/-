@@ -14,6 +14,7 @@ export class ChannelService {
 		@InjectRepository(Channel) private channelRepository: Repository<Channel>
 	) { }
 
+
 	async createChannel(channel: CreateChannelDto & { owner: User }): Promise<ChannelDto> {
 
 		// check if we have the password for protected channels
@@ -45,6 +46,14 @@ export class ChannelService {
 
 	async getChannel(channelId: number): Promise<Channel> {
 		return this.channelRepository.findOne(channelId, { relations: ['owner', 'users'] });
+	}
+
+	async getPublicChannels(): Promise<Channel[]> {
+		return this.channelRepository.find({ where: { channelType: 'public' } });
+	}
+
+	async getProtectedChannels(): Promise<Channel[]> {
+		return this.channelRepository.find({ where: { channelType: 'protected' } });
 	}
 
 	async joinChannel(channel: JoinChannelDto, user: User): Promise<ChannelDto> {
