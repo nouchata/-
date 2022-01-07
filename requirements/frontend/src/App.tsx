@@ -7,6 +7,7 @@ import Homepage from './Homepage';
 import HSocialField from './components/homepage/HSocialField';
 import Login from './Login';
 import LoadingContent from './LoadingContent';
+import { RequestWrapper } from './utils/RequestWrapper';
 import Axios from 'axios';
 
 import Profile from './components/profile/Profile';

@@ -1,6 +1,7 @@
 import { User } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { ChannelType } from "../dtos/create-channel.dto";
+import { ChannelDto, MessageDto } from "../dtos/user-channels.dto";
 import { Message } from "./message.entity";
 
 @Entity({ name: "channels" })
@@ -40,5 +41,27 @@ export class Channel {
 
 	canUserAccess(user: User): boolean {
 		return this.users.some(u => u.id === user.id);
+	}
+
+	toDto(): ChannelDto {
+		let messageDtos: MessageDto[] = [];
+			for (let message of this.messages) {
+				let messageDto: MessageDto = {
+					id: message.id,
+					text: message.text,
+					userId: message.user.id,
+				};
+				messageDtos.push(messageDto);
+			}
+			let channelDto: ChannelDto  = {
+				id: this.id,
+				name: this.name,
+				channelType: this.channelType,
+				owner: this.owner,
+				users: this.users,
+				admins: this.admins,
+				messages: messageDtos
+			};
+		return channelDto;
 	}
 }

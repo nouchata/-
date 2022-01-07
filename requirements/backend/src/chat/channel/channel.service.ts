@@ -6,6 +6,7 @@ import { CreateChannelDto } from '../dtos/create-channel.dto';
 import { Channel } from '../entities/channel.entity';
 import * as crypto from "crypto";
 import { JoinChannelDto } from '../dtos/join-channel.dto';
+import { ChannelDto } from '../dtos/user-channels.dto';
 
 @Injectable()
 export class ChannelService {
@@ -13,7 +14,7 @@ export class ChannelService {
 		@InjectRepository(Channel) private channelRepository: Repository<Channel>
 	) { }
 
-	async createChannel(channel: CreateChannelDto & { owner: User }): Promise<Channel> {
+	async createChannel(channel: CreateChannelDto & { owner: User }): Promise<ChannelDto> {
 
 		// check if we have the password for protected channels
 		if (channel.channelType === 'protected') {
@@ -39,14 +40,14 @@ export class ChannelService {
 		channelCreated.admins = [];
 		channelCreated.messages = [];
 		const newChannel: Channel = this.channelRepository.create(channelCreated);
-		return this.channelRepository.save(newChannel);
+		return (await this.channelRepository.save(newChannel)).toDto();
 	}
 
 	async getChannel(channelId: number): Promise<Channel> {
 		return this.channelRepository.findOne(channelId, { relations: ['owner', 'users'] });
 	}
 
-	async joinChannel(channel: JoinChannelDto, user: User): Promise<Channel> {
+	async joinChannel(channel: JoinChannelDto, user: User): Promise<ChannelDto> {
 		
 		const channelToJoin: Channel = await this.channelRepository.findOne(channel.id, { relations: ['users'] });
 		
@@ -70,7 +71,7 @@ export class ChannelService {
 		}
 
 		channelToJoin.users.push(user);
-		return this.channelRepository.save(channelToJoin);
+		return (await this.channelRepository.save(channelToJoin)).toDto();
 	}
 
 	async leaveChannel(channelId: number, user: User) {
