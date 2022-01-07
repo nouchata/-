@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
-import LoginContext from './LoginContext';
+import LoginContext from './contexts/LoginContext';
 import { FetchStatusData } from './types/FetchStatusData';
 import { LoginDataSet } from './types/LoginDataSet';
 import axios from 'axios';
@@ -26,26 +26,6 @@ const Login = () => {
 				p: 'The login occurs in a popup.',
 				img: resetAsset
 			});
-			(async () => {
-				let res: FetchStatusData = {loggedIn: false, fetched: false};
-				while (!fetchStatusValue.fetchStatus?.loggedIn) {
-					try {
-						res = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string +
-							'/auth/status',
-							{ withCredentials: true })).data;
-						res.fetched = true;
-					} catch { res.fetched = false; }
-					fetchStatusValue.setFetchStatus(res);
-					if (res.loggedIn)
-						break ;
-				}
-				setDataSet({
-					h1: 'You are logged in !',
-					p: 'Please wait a moment, you\'ll be redirected to your last location.',
-					img: tickAsset
-				});
-				setTimeout(() => history.goBack(), 2000);
-			})();
 		} else if (!fetchStatusValue.fetchStatus?.loggedIn && queryCode) {
 			setDataSet({
 				h1: 'Logging In ...',
@@ -82,7 +62,7 @@ const Login = () => {
 				setTimeout(() => history.goBack(), 2000);
 			})();
 		}
-	}, []); // eslint-disable-line
+	}, [fetchStatusValue.fetchStatus]); // eslint-disable-line
 
 	return (
 		<div className="login-stuff">

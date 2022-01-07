@@ -1,8 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
-import LoginContext from "../../LoginContext";
+import LoginContext from "../../contexts/LoginContext";
 import { FetchStatusData } from "../../types/FetchStatusData";
 import { MessageDto, User, UserChannelsDto } from "./types/user-channels.dto";
-
 
 const ChatArea = ({ channel }: { channel: UserChannelsDto | undefined }) => {
 

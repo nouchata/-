@@ -1,8 +1,8 @@
 import { useState, useContext, useEffect } from 'react';
 import LoadingContent from '../../LoadingContent';
-import LoginContext from '../../LoginContext';
+import LoginContext from '../../contexts/LoginContext';
+import ModalContext from '../../contexts/ModalContext';
 
-import DummyAsset from '../../assets/dummy.jpg';
 import ChatAsset from '../../assets/homepage/chat.png';
 import UserAsset from '../../assets/homepage/user.png';
 import CloseAsset from '../../assets/chat/close.png';
@@ -20,17 +20,22 @@ type ChatState = {
 	name: string
 };
 
+let msgModalSettings = { show: true, content: <p>msg</p> };
+let friendModalSettings = { show: true, content: <p>x</p> };
+
 const HSocialField = () : JSX.Element => {
 	const [ isFriendTabSelected, setIsFriendTabSelected ] = useState<boolean>(false);
-	const [ chatFocus, setChatFocus ] = useState<number>(NaN);
 	const [ chatStatus, setChatStatus ] = useState<ChatState>({ state: 'CLOSED', name: '' });
+	const [ isSocialFieldShowed, setIsSocialFieldShowed ] = useState<boolean>(true);
 	const [ socialData, setSocialData ] = useState<Array<JSX.Element>>();
-	const { fetchStatus } = useContext(LoginContext);
+	const { fetchStatus } = useContext(LoginContext); // eslint-disable-line
+	const { setModalProps } = useContext(ModalContext);
+
 
 	useEffect(() => {
 		let fetchedChannels: Array<any>;
 		let res: Array<JSX.Element> = [];
-		(async() => {
+		(async() => { // MESSAGE / FRIENDS FETCHER
 			if (isFriendTabSelected) {
 				return ;
 			} else {
@@ -57,6 +62,11 @@ const HSocialField = () : JSX.Element => {
 
 	return (
 		<div className='social-field'>
+			<button 
+			title={isSocialFieldShowed ? 'Hide social panel' : 'Show social panel'}
+			onClick={() => { socialToggleCSS(isSocialFieldShowed); setIsSocialFieldShowed(!isSocialFieldShowed); }}>
+				{isSocialFieldShowed ? '<' : '>'}
+			</button>
 			<div className='hsf-tab-selector'>
 				<button
 				className={isFriendTabSelected ? 'hsf-btn-selected' : ''}
@@ -73,7 +83,7 @@ const HSocialField = () : JSX.Element => {
 				{isFriendTabSelected ?
 				<LoadingContent widget={true} image={UserAsset} /> :
 				<ul>
-					{/* <li>
+					{/* <li> // LIST TEMPLATE
 						<figure>
 							<img src={HashAsset} alt='Message Tab' />
 							<figcaption>display_name</figcaption>
@@ -91,6 +101,7 @@ const HSocialField = () : JSX.Element => {
 					{socialData}
 				</ul>}
 			</div>
+
 			<div className={chatToggleCSS(chatStatus)}>
 				<div className='hsf-chat-controls'>
 					<h2>{chatStatus.name}</h2>
@@ -109,11 +120,14 @@ const HSocialField = () : JSX.Element => {
 					<button title='Close' onClick={() => setChatStatus({ state: 'CLOSED', name: chatStatus.name })}><img src={CloseAsset} alt='close' /></button>
 				</div>
 				<div className='hsf-chat-container'>
-					<LoadingContent widget={true} image={ChatAsset} /> {/* meant to be the chat component */}
+					<LoadingContent widget={true} image={ChatAsset} /> {/* CHAT CONTENT MEANT TO BE IN HERE */}
 				</div>
 			</div>
+
 			<div className='hsf-btn-new'>
-				<button>+ {isFriendTabSelected ? 'Add a new friend' : 'Create a new discussion'}</button>
+				<button onClick={() => setModalProps(isFriendTabSelected ? friendModalSettings : msgModalSettings)}>
+					+ {isFriendTabSelected ? 'Add a new friend' : 'Create a new discussion'}
+				</button>
 			</div>
 		</div>
 	);
@@ -130,6 +144,21 @@ function chatToggleCSS(cs: ChatState) : string {
 			break ;
 	}
 	return (ret);
+}
+
+function socialToggleCSS(isShowed: boolean) : void {
+	let elem : Element | null = document.querySelector('.main-content');
+	console.log(elem);
+	(elem as HTMLElement).style.animation = 'none';
+	setTimeout(() => {
+		if (elem) {
+			if (isShowed) {
+				(elem as HTMLElement).style.animation = '1s ease-in-out 0s 1 normal both running hsf-slide';
+			} else {
+				(elem as HTMLElement).style.animation = '1s ease-in-out 0s 1 reverse both running hsf-slide';
+			}
+		}
+	}, 0);
 }
 
 export default HSocialField;

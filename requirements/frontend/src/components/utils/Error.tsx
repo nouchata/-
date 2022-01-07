@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect } from 'react'; // eslint-disable-line
 
 type ErrorProps = {errorCode: string | undefined, message: string}
 

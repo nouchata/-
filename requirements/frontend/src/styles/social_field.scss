@@ -8,15 +8,30 @@ $hsf-chat-window-min-size: 50px;
 	justify-content: center;
 	align-items: center;
 	background-color: theme.$darkest-color;
-	overflow: hidden;
+	//overflow: hidden;
+	position: relative;
 	
 	> * {
 		flex: 1 1 1%;
 		//border-bottom: 1px solid theme.$primary-color;
 		width: 100%;
 	}
-}
 
+	> button {
+		display: block;
+		position: absolute;
+		height: 20px;
+		width: 20px;
+		top: 0;
+		right: -20px;
+		background-color: theme.$darkest-color;
+		border: none;
+		color: theme.$darker-color;
+		font-weight: bolder;
+		border-radius: 0 0 2px 0;
+		cursor: pointer;
+	}
+}
 
 .hsf-tab-selector {
 	flex: 0 0 50px;
@@ -49,8 +64,6 @@ $hsf-chat-window-min-size: 50px;
 		cursor: pointer;
 	}
 }
-
-
 
 .hsf-btn-selected {
 	margin-bottom: 0 !important;
@@ -233,4 +246,15 @@ $hsf-chat-window-min-size: 50px;
 
 .closed-state {
 	display: none;
+}
+
+/* ANIMATIONS */
+
+@keyframes hsf-slide {
+	from {
+		flex: 0 1 100%;
+	}
+	to {
+		flex: 0 0 100%;
+	}
 }

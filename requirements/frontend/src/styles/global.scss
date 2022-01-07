@@ -9,14 +9,15 @@ html {
 }
 
 body {
-	margin: inherit;
-	padding: inherit;
+	margin: 0;
+	padding: 0;
 	width: inherit;
+	height: 100%;
 	box-sizing: border-box;
 
 	/* TRUCS LIES AU THEME */
 	background-color: theme.$primary-color;
-	//font-family: 'Outfit', sans-serif;
+	// font-family: 'Outfit', sans-serif;
 }
 
 * {
@@ -25,4 +26,27 @@ body {
 
 button {
 	background-color: theme.$darker-color;
+
+	:hover {
+		cursor: pointer;
+	}
+}
+
+@keyframes moving-bg {
+	from {
+		background-position: 0%;
+	}
+	to {
+		background-position: 99%;
+	}
+}
+
+.App {
+	background-image: url('../assets/bg.png');
+	background-position: 99%;
+	animation-name: moving-bg;
+	animation-duration: 60s;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
 }

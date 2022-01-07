@@ -1,7 +1,10 @@
 import { UserRole } from "../components/chat/types/user-channels.dto";
 
-export interface User {
+interface IObjectKeys {
+	[key: string]: any;
+}
 
+export interface User extends IObjectKeys {
 	id: number;
 	login: string;
 	picture: string;
@@ -14,4 +17,5 @@ export interface User {
 	victories: number;
 	losses: number;
 	friends: User[];
+	history: string[];
 }

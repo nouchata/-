@@ -1,6 +1,6 @@
 
 import { FetchStatusData } from '../../types/FetchStatusData';
-import { BrowserRouter as Router, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Link } from 'react-router-dom'; // eslint-disable-line
 
 import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
