@@ -3,12 +3,12 @@ import axios from "axios";
 type CallbackError = (error: any) => void;
 
 export class RequestWrapper {
-	public static async get<T>(route: string, callbackError?: CallbackError): Promise<T | undefined> {
+	public static async get<T>(route: string, config?: any, callbackError?: CallbackError): Promise<T | undefined> {
 		try 
 		{
 			const response = await axios.get(
 				process.env.REACT_APP_BACKEND_ADDRESS + route,
-				{ withCredentials: true });
+				{ withCredentials: true, ...config });
 			return response.data;
 		}
 		catch (error: any)

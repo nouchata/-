@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
 import { MessageDto, ChannelDto } from "./types/user-channels.dto";
@@ -6,6 +5,7 @@ import './Chat.scss';
 import ChatArea from "./ChatArea";
 import CreateChannel from "./CreateChannel";
 import JoinChannel from "./JoinChannel";
+import { RequestWrapper } from "../../utils/RequestWrapper";
 
 const Chat = () => {
 	const [userChannels, setUserChannels] = useState<ChannelDto[]>([]);
@@ -34,11 +34,13 @@ const Chat = () => {
 		}
 
 		const fetchData = async () => {
-			const result: ChannelDto[] = (await axios(process.env.REACT_APP_BACKEND_ADDRESS + '/user/channels/list', { withCredentials: true })).data;
-			setUserChannels(result);
-			connectSocket(result);
-		}
+			const result = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
 
+			if (result) {
+				setUserChannels(result);
+				connectSocket(result);
+			}
+		}
 		fetchData();
 	}, []);
 

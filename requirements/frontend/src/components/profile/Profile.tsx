@@ -1,10 +1,10 @@
-import Axios from "axios";
 import React from "react";
 import { RouteComponentProps, withRouter } from "react-router";
 import { FetchUserData } from "../../types/FetchUserData";
 import UserDetails from "./UserDetails";
 import UserEdition from "./UserEdition";
 import '../../styles/profile.css';
+import { RequestWrapper } from "../../utils/RequestWrapper";
 
 interface ProfileRouterProps {
     id: string;
@@ -37,30 +37,26 @@ class Profile extends React.Component<IProps, IState> {
         }
     }
 
-    loadUserInfo = () => {
-        Axios.get<FetchUserData>(
-            process.env.REACT_APP_BACKEND_ADDRESS as string + `/user/${this.props.match.params.id}`,
-            { withCredentials: true }
-        )
-        .then( res => {
-            this.setState({
-                user: res.data,
-                isLoaded: true
-            });
-        })
-        .catch( e => {
-            if (e.response) {
-                this.setState({ error: {
-                    info: e.response.data.error,
-                    message: e.response.data.message
-                }});
-            } else {
-                this.setState({ error: {
-                    info: '',
-                    message: 'Unexpected Error !'
-                }});
-            }
-        })
+    loadUserInfo = async () => {
+		const fetchUserData = await RequestWrapper.get<FetchUserData>(
+			`/user/${this.props.match.params.id}`,
+			{},
+			(e) => {
+				if (e.response) {
+					this.setState({ error: {
+						info: e.response.data.error,
+						message: e.response.data.message
+					}});
+				}
+				else {
+					this.setState({ error: {
+						info: '',
+						message: 'Unexpected Error !'
+					}});
+				}
+			}
+		);
+		this.setState({ user: fetchUserData, isLoaded: true });	
     };
 
     componentDidMount() {

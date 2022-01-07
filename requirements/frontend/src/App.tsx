@@ -4,10 +4,10 @@ import { FetchStatusData } from './types/FetchStatusData';
 import LoginContext from './LoginContext';
 import Login from './Login';
 import LoadingContent from './LoadingContent';
-import axios from 'axios';
 import './styles/global.scss';
 import Profile from './components/profile/Profile';
 import Chat from './components/chat/Chat';
+import { RequestWrapper } from './utils/RequestWrapper';
 
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
@@ -18,16 +18,8 @@ const App = (): JSX.Element => {
 
 	useEffect(() => {
 		(async () => {
-			try {
-				let res: FetchStatusData = (await axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + '/auth/status', { withCredentials: true })).data;
-				setFetchStatus(res);
-			}
-			catch (e) {
-				setFetchStatus({
-					loggedIn: false,
-					user: undefined
-				});
-			}
+			let auth_status = await RequestWrapper.get<FetchStatusData>('/auth/status');
+			setFetchStatus(auth_status);
 		})();
 	}, []);
 
