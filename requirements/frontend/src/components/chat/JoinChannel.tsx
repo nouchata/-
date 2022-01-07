@@ -20,15 +20,11 @@ const JoinChannel = ({ userChannels, addUserChannel }:
 	useEffect(() => {
 
 		const fetchChannels = async () => {
-			const publicChannels = await RequestWrapper.get<GetChannelDto[]>('/channels/public');
-			const protectedChannels = (await axios.get<GetChannelDto[]>(
-				process.env.REACT_APP_BACKEND_ADDRESS + '/channel/protected',
-				{ withCredentials: true })).data;
+			const publicChannels = await RequestWrapper.get<GetChannelDto[]>('/channel/public');
+			const protectedChannels = await RequestWrapper.get<GetChannelDto[]>('/channel/protected');
 			
-			if (publicChannels)
-				setPublicChannels(publicChannels);
-			if (protectedChannels)
-				setProtectedChannels(protectedChannels);
+			publicChannels && setPublicChannels(publicChannels);
+			protectedChannels && setProtectedChannels(protectedChannels);
 		}
 
 		if (!channelFetched) {
@@ -77,11 +73,8 @@ const JoinChannel = ({ userChannels, addUserChannel }:
 								password: selectedChannel.channelType === 'protected' ? password : undefined
 							}
 							try {
-								let new_channel = (await axios.post<ChannelDto>(
-									process.env.REACT_APP_BACKEND_ADDRESS + '/channel/join',
-									joinChannelDto,
-									{ withCredentials: true })).data;
-								addUserChannel(new_channel);
+								let new_channel = await RequestWrapper.post<ChannelDto>('/channel/join', joinChannelDto);
+								new_channel && addUserChannel(new_channel);
 							}
 							catch (e) {
 								console.log(e);

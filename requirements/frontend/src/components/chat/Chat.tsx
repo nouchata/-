@@ -6,6 +6,7 @@ import ChatArea from "./ChatArea";
 import CreateChannel from "./CreateChannel";
 import JoinChannel from "./JoinChannel";
 import { RequestWrapper } from "../../utils/RequestWrapper";
+import SelectChannel from "./SelectChannel";
 
 const Chat = () => {
 	const [userChannels, setUserChannels] = useState<ChannelDto[]>([]);
@@ -60,19 +61,11 @@ const Chat = () => {
 		<div>
 			<CreateChannel userChannels={userChannels} addUserChannel={addUserChannel} />
 			<JoinChannel userChannels={userChannels} addUserChannel={addUserChannel} />
-			<div className="button-area">
-				<h4>channels joined</h4>
-				{
-					userChannels.map((channel: ChannelDto, index: number) => {
-
-						return (<button
-							className={index === selectedChannel ? 'selected-button' : ''}
-							key={index} onClick={() => setSelectedChannel(index)}>
-							{channel.name}
-						</button>);
-					})
-				}
-			</div>
+			<SelectChannel
+				userChannels={userChannels}
+				selectedChannel={selectedChannel}
+				setSelectedChannel={setSelectedChannel}
+			/>
 			<div className="chat">
 				<h1 className="channel-title">{userChannels[selectedChannel]?.name}</h1>
 				<ChatArea channel={userChannels[selectedChannel]} />
