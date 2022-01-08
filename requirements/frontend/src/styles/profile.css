@@ -46,7 +46,7 @@
 
 /****** SEPARATOR ******/
 
-h2 {
+.separator {
     display: flex;
     margin: 0 auto;
     margin-bottom: 10px;
@@ -56,18 +56,18 @@ h2 {
     text-align: center;
 }
 
-h2::after, h2::before {
+.separator::after, .separator::before {
     content: "";
     border: 2px solid rgb(184, 111, 83);
     border-radius: 15px;
     flex: 1;
 }
 
-h2:not(:empty)::before {
+.separator:not(:empty)::before {
     margin-right: 0.25em;
 }
   
-h2:not(:empty)::after {
+.separator:not(:empty)::after {
     margin-left: 0.25em;
 }
 
