@@ -1,4 +1,6 @@
+@use 'theme';
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;400;600&display=swap');
+
 
 html {
 	margin: 0;
@@ -7,12 +9,44 @@ html {
 }
 
 body {
-	margin: inherit;
-	padding: inherit;
+	margin: 0;
+	padding: 0;
 	width: inherit;
+	height: 100%;
 	box-sizing: border-box;
 
 	/* TRUCS LIES AU THEME */
-	background-color: rgba(255, 160, 122, 0.6);
+	background-color: theme.$primary-color;
+	// font-family: 'Outfit', sans-serif;
+}
+
+* {
 	font-family: 'Outfit', sans-serif;
+}
+
+button {
+	background-color: theme.$darker-color;
+
+	:hover {
+		cursor: pointer;
+	}
+}
+
+@keyframes moving-bg {
+	from {
+		background-position: 0%;
+	}
+	to {
+		background-position: 99%;
+	}
+}
+
+.App {
+	background-image: url('../assets/bg.png');
+	background-position: 99%;
+	animation-name: moving-bg;
+	animation-duration: 60s;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
 }
