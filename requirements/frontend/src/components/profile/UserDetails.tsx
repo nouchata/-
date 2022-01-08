@@ -66,7 +66,7 @@ const UserDetails = (props: IProps) => {
                 <p style={statusStyle}>◉ {props.data.general.status}</p>
             </div>
             
-            <h2>Ranking</h2>
+            <h2 className='separator'>Ranking</h2>
     
             <div className='label-ratio'>
                 <span className='label1'>victories</span>
@@ -93,7 +93,7 @@ const UserDetails = (props: IProps) => {
                 </div>
             </div>
 
-            <h2>History</h2>
+            <h2 className='separator'>History</h2>
             <div className='history'>
                 <HistoryTable data={props.data} />
             </div>

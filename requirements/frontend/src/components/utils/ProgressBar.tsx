@@ -32,7 +32,7 @@ const ProgressBar = (props: IProps) => {
             <div style={fillerStyles}>
                 <span style={labelStyles}>
                     {
-                        props.completed ?
+                        Number.isNaN(props.completed) === false ?
                             `${Math.floor(props.completed)}%` :
                             '100%' // avoid showing 'NaN%'
                     }
