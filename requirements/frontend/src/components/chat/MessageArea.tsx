@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef } from "react";
 import LoginContext from "../../LoginContext";
 import { FetchStatusData } from "../../types/FetchStatusData";
-import { MessageDto, User, ChannelDto } from "./types/user-channels.dto";
+import { MessageDto, User } from "./types/user-channels.dto";
 import { ChatSocket } from "./utils/ChatSocket";
 
 
@@ -30,39 +30,44 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSoc
 	}, {} as { [id: number]: User });
 
 	return (
-	<div className="message-area">
-		{
-			channel?.messages.map((message: MessageDto, index: number) => {
-				return (<div className='message-chat' key={index}>
-					{
-						fetchStatusValue.fetchStatus.user?.id === message.userId ?
-							<div className="message-self">
-								<div className='bubble-self'>
-									{
-										index === channel.messages.length - 1 ?
-											<p className="message-text" ref={messagesEndRef} >{message.text}</p>
-											:
-											<p className="message-text" >{message.text}</p>
-									}
+		<div className="message-area">
+			{
+				channel?.messages.map((message: MessageDto, index: number) => {
+					return (<div className='message-chat' key={index}>
+						{
+							message.messageType === 'system' ?
+								<div className='message-system'>
+									{message.text}
 								</div>
-							</div>
-							:
-							<div className="message">
-								<div className='bubble'>
-									<h5 className="message-display-name" >{users[message.userId] ? users[message.userId].displayName : 'unknow'}</h5>
-									{
-										index === channel.messages.length - 1 ?
-											<p className="message-text" ref={messagesEndRef} >{message.text}</p>
-											:
-											<p className="message-text" >{message.text}</p>
-									}
-								</div>
-							</div>
-					}
-				</div>);
-			})
-		}
-	</div>
+								:
+								fetchStatusValue.fetchStatus.user?.id === message.userId ?
+									<div className="message-self">
+										<div className='bubble-self'>
+											{
+												index === channel.messages.length - 1 ?
+													<p className="message-text" ref={messagesEndRef} >{message.text}</p>
+													:
+													<p className="message-text" >{message.text}</p>
+											}
+										</div>
+									</div>
+									:
+									<div className="message">
+										<div className='bubble'>
+											<h5 className="message-display-name" >{(message.userId && users[message.userId]) ? users[message.userId].displayName : 'unknow'}</h5>
+											{
+												index === channel.messages.length - 1 ?
+													<p className="message-text" ref={messagesEndRef} >{message.text}</p>
+													:
+													<p className="message-text" >{message.text}</p>
+											}
+										</div>
+									</div>
+						}
+					</div>);
+				})
+			}
+		</div>
 	);
 }
 

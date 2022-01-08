@@ -7,11 +7,13 @@ import { Channel } from '../entities/channel.entity';
 import * as crypto from "crypto";
 import { JoinChannelDto } from '../dtos/join-channel.dto';
 import { ChannelDto } from '../dtos/user-channels.dto';
+import { Message } from '../entities/message.entity';
 
 @Injectable()
 export class ChannelService {
 	constructor(
-		@InjectRepository(Channel) private channelRepository: Repository<Channel>
+		@InjectRepository(Channel) private channelRepository: Repository<Channel>,
+		@InjectRepository(Message) private messageRepository: Repository<Message>
 	) { }
 
 
@@ -24,7 +26,7 @@ export class ChannelService {
 			}
 		}
 
-		let channelCreated = new Channel();
+		let channelCreated: Channel = new Channel();
 
 		if (channel.channelType === 'protected') {
 			// generate salt
@@ -40,8 +42,20 @@ export class ChannelService {
 		channelCreated.users = [channel.owner];
 		channelCreated.admins = [];
 		channelCreated.messages = [];
-		const newChannel: Channel = this.channelRepository.create(channelCreated);
-		return (await this.channelRepository.save(newChannel)).toDto();
+
+		let newChannel: Channel = await this.channelRepository.save(this.channelRepository.create(channelCreated));
+		
+		
+		// add info message
+		const messageCreated: Message = new Message();
+		messageCreated.channel = newChannel;
+		messageCreated.messageType = 'system';
+		messageCreated.text = `${newChannel.owner.displayName} created channel ${newChannel.name}`;
+		const newMessage: Message = await this.messageRepository.save(this.messageRepository.create(messageCreated));
+		newChannel.messages.push(newMessage);
+
+
+		return newChannel.toDto();
 	}
 
 	async getChannel(channelId: number): Promise<Channel> {

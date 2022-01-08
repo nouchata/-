@@ -43,12 +43,14 @@ export class ChatGateway {
 			if (channelFound.canUserAccess(client.request.user)) {
 				let message = await this.chatService.addMessage({
 					text: text,
+					messageType: 'user',
 					user: client.request.user,
 					channel: channelFound
 				});
 
 				let msg: MessageDto & { channelId: number } = {
 					id: message.id,
+					messageType: message.messageType,
 					channelId: channelId,
 					text: text,
 					userId: client.request.user.id,
