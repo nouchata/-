@@ -11,8 +11,21 @@ const InputChat = ({
 	const [msgInput, setMsgInput] = useState<string>("");
 	return (
 		<div className="input-area">
-			<input className="input-field" type="text" placeholder="Type your message here" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
-			<button className="input-button"
+			<input
+			className="input-field"
+			type="text"
+			placeholder="Type your message here"
+			value={msgInput}
+			onChange={(e) => setMsgInput(e.target.value)}
+			onKeyPress={(e) => {
+				if (e.key === 'Enter') {
+					sendMessage(msgInput, selectChannelIndex);
+					setMsgInput("");
+				}
+			}}
+			/>
+			<button
+			className="input-button"
 			onClick={
 				() => {
 					sendMessage(msgInput, selectChannelIndex);
