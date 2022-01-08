@@ -2,9 +2,10 @@ import { useContext, useEffect, useRef } from "react";
 import LoginContext from "../../LoginContext";
 import { FetchStatusData } from "../../types/FetchStatusData";
 import { MessageDto, User, ChannelDto } from "./types/user-channels.dto";
+import { ChatSocket } from "./utils/ChatSocket";
 
 
-const ChatArea = ({ channel }: { channel: ChannelDto | undefined }) => {
+const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSocket | undefined }) => {
 
 	let fetchStatusValue: { fetchStatus: FetchStatusData; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
 	const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -17,6 +18,8 @@ const ChatArea = ({ channel }: { channel: ChannelDto | undefined }) => {
 
 	useEffect(scrollToBottom);
 
+	const channel = chatSocket?.channels[index];
+
 	if (!channel)
 		return <div>No channel selected</div>;
 
@@ -26,10 +29,11 @@ const ChatArea = ({ channel }: { channel: ChannelDto | undefined }) => {
 		return acc;
 	}, {} as { [id: number]: User });
 
-	return (<div className="message-area">
+	return (
+	<div className="message-area">
 		{
 			channel?.messages.map((message: MessageDto, index: number) => {
-				return (<div className='message-chat' key={message.id}>
+				return (<div className='message-chat' key={index}>
 					{
 						fetchStatusValue.fetchStatus.user?.id === message.userId ?
 							<div className="message-self">
@@ -58,7 +62,8 @@ const ChatArea = ({ channel }: { channel: ChannelDto | undefined }) => {
 				</div>);
 			})
 		}
-	</div>);
+	</div>
+	);
 }
 
-export default ChatArea;
+export default MessageArea;
