@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ChannelDto } from "./types/user-channels.dto";
 import './Chat.scss';
 import { RequestWrapper } from "../../utils/RequestWrapper";
@@ -6,6 +6,8 @@ import { ChatSocket } from "./utils/ChatSocket";
 import MessageArea from "./MessageArea";
 import InputChat from "./InputChat";
 import SelectChannel from "./SelectChannel";
+import { FetchStatusData } from "../../types/FetchStatusData";
+import LoginContext from "../../LoginContext";
 
 export type ChatSocketState = {
 	chatSocket: ChatSocket | undefined;
@@ -16,18 +18,23 @@ const Chat = () => {
 	const [channelsFetched, setChannelsFetched] = useState(false);
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const fetchStatusValue: {
+		fetchStatus: FetchStatusData,
+		setFetchStatus: (fetchStatus: FetchStatusData) => void
+	} = useContext(LoginContext);
+
 
 
 	useEffect(() => {
 		const fetchChannels = async () => {
-			const result = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
-			result && setChatSocket(new ChatSocket(result, { setChatSocket }));
+			const channels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
+			channels && setChatSocket(new ChatSocket(channels, { setChatSocket }, fetchStatusValue.fetchStatus.user));
 		}
 		if (!channelsFetched) {
 			fetchChannels();
 			setChannelsFetched(true);
 		}
-	}, [channelsFetched]);
+	}, [channelsFetched, fetchStatusValue.fetchStatus.user]);
 
 	return (
 		<div className="chat">

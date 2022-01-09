@@ -1,5 +1,6 @@
 import { User } from "src/user/entities/user.entity";
 import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { MessageDto } from "../dtos/user-channels.dto";
 import { Channel } from "./channel.entity";
 
 export type MessageType = "user" | "system";
@@ -23,5 +24,14 @@ export class Message {
 
 	@CreateDateColumn()
 	createdAt: Date;
+
+	toDto(): MessageDto {
+		return {
+			id: this.id,
+			messageType: this.messageType,
+			text: this.text,
+			userId: this.user?.id,
+		};
+	}
 
 }

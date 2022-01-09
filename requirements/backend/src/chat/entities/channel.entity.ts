@@ -45,15 +45,8 @@ export class Channel {
 
 	toDto(): ChannelDto {
 		let messageDtos: MessageDto[] = [];
-			for (let message of this.messages) {
-				let messageDto: MessageDto = {
-					id: message.id,
-					messageType: message.messageType,
-					text: message.text,
-					userId: message.user?.id,
-				};
-				messageDtos.push(messageDto);
-			}
+			for (let message of this.messages)
+				messageDtos.push(message.toDto());
 			let channelDto: ChannelDto  = {
 				id: this.id,
 				name: this.name,
