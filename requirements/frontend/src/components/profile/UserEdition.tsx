@@ -34,7 +34,7 @@ const UserEdition = (props: IProps) => {
             formData.append('picture', selectedFile as File);
         }
 
-		await RequestWrapper.post<any>('/user/edit', formData, () => {
+		await RequestWrapper.post('/user/edit', formData, () => {
 			alert('an error occured, going back to profile page.');
 		});
 		props.changeState();
