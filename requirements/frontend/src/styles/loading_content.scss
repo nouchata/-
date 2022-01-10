@@ -1,9 +1,19 @@
+@use 'theme';
+
 .loading-content {
 	height: 100vh;
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: center;
 	align-items: center;
+}
+
+.lc-widget {
+	height: 100%;
+}
+
+.lc-widget > img {
+	width: 50%;
 }
 
 .loading-content > img {

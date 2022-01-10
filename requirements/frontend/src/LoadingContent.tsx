@@ -1,9 +1,10 @@
 import './styles/loading_content.scss';
 
-const LoadingContent = () => {
-
+const LoadingContent = (props: any) => {
 	return (
-		<div className='loading-content'>
+		<div className={'loading-content' + (props.widget ? ' lc-widget' : '')}>
+			{props.image ?
+			<img src={props.image} alt="loading" /> :
 			<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAABHNCSVQICAgIf
 			AhkiAAAAAlwSFlzAAACxQAAAsUBidZ/7wAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAXuSURBVH
 			ic7Z1daFxFFMd/m1QTbBUFX3yqCEIEH1rbh0aLiVottWnFL1otKliUgFVEQURQV4UqFqpUxfhRFbVK6wc11fqttSrBzyd
@@ -28,7 +29,7 @@ const LoadingContent = () => {
 			pJB4DokV+LXyIsvFwB/tNqxxjWA691A3aV58f95MSle0XgF+Mhh+7A0LyJBowAeB0Yy6keQ28Gq0DgFHEISRd5B47OATV
 			iqWDWMAQ8kRTUapwAjhQlAOSYA5Uy3BhgATinDEaMwFrmMFZTtgzcasSlAOSYA5XTgKdecMSs52IG9ik0zeyrA6cC3eMg
 			4Zcwq9gOL6/nnTkVezNiLCaHdOYA8+LoT+DWwL4ZhGIZhGIZhGIZhGIZhGIZhFMx/63MJamcMedEAAAAASUVORK5CYII="
-			alt="loading" />
+			alt="loading" />}
 		</div>
 	);
 };
