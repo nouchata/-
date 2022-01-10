@@ -5,7 +5,6 @@ import { Socket, Server } from 'socket.io';
 import { User } from 'src/user/entities/user.entity'
 import { ChannelService } from './channel/channel.service';
 import { Channel } from './entities/channel.entity';
-import { ChatService } from './chat.service';
 import { MessageDto } from './dtos/user-channels.dto';
 
 @WebSocketGateway({ cors: true, namespace: 'chat' })
@@ -13,7 +12,6 @@ export class ChatGateway {
 	constructor(
 		@Inject(forwardRef(() => ChannelService))
 		private channelService: ChannelService,
-		private chatService: ChatService,
 	) { }
 
 	@WebSocketServer()
@@ -72,12 +70,12 @@ export class ChatGateway {
 
 		if (channelFound) {
 			if (channelFound.canUserAccess(client.request.user)) {
-				let message = await this.chatService.addMessage({
-					text: text,
-					messageType: 'user',
-					user: client.request.user,
-					channel: channelFound
-				});
+				let message = await this.channelService.createMessage(
+					channelFound,
+					'user',
+					text,
+					client.request.user
+				)
 
 				let msg: MessageDto & { channelId: number } = {
 					id: message.id,
