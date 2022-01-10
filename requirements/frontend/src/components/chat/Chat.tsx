@@ -7,7 +7,7 @@ import MessageArea from "./MessageArea";
 import InputChat from "./InputChat";
 import SelectChannel from "./SelectChannel";
 import { FetchStatusData } from "../../types/FetchStatusData";
-import LoginContext from "../../LoginContext";
+import LoginContext from "../../contexts/LoginContext";
 
 export type ChatSocketState = {
 	chatSocket: ChatSocket | undefined;

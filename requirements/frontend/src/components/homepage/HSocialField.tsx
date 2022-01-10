@@ -13,9 +13,10 @@ import HashAsset from '../../assets/social/hashtag.png';
 
 import '../../styles/social_field.scss';
 
-import Axios from 'axios';
+import { RequestWrapper } from '../../utils/RequestWrapper';
+import { ChannelDto } from '../chat/types/user-channels.dto';
 
-type ChatState = { 
+type ChatState = {
 	state: "OPENED" | "MINIMIZED" | "CLOSED",
 	name: string
 };
@@ -23,37 +24,39 @@ type ChatState = {
 let msgModalSettings = { show: true, content: <p>msg</p> };
 let friendModalSettings = { show: true, content: <p>x</p> };
 
-const HSocialField = () : JSX.Element => {
-	const [ isFriendTabSelected, setIsFriendTabSelected ] = useState<boolean>(false);
-	const [ chatStatus, setChatStatus ] = useState<ChatState>({ state: 'CLOSED', name: '' });
-	const [ isSocialFieldShowed, setIsSocialFieldShowed ] = useState<boolean>(true);
-	const [ socialData, setSocialData ] = useState<Array<JSX.Element>>();
+const HSocialField = (): JSX.Element => {
+	const [isFriendTabSelected, setIsFriendTabSelected] = useState<boolean>(false);
+	const [chatStatus, setChatStatus] = useState<ChatState>({ state: 'CLOSED', name: '' });
+	const [isSocialFieldShowed, setIsSocialFieldShowed] = useState<boolean>(true);
+	const [socialData, setSocialData] = useState<Array<JSX.Element>>();
 	const { fetchStatus } = useContext(LoginContext); // eslint-disable-line
 	const { setModalProps } = useContext(ModalContext);
 
 
 	useEffect(() => {
-		let fetchedChannels: Array<any>;
+
 		let res: Array<JSX.Element> = [];
-		(async() => { // MESSAGE / FRIENDS FETCHER
+		(async () => { // MESSAGE / FRIENDS FETCHER
 			if (isFriendTabSelected) {
-				return ;
+				return;
 			} else {
-				fetchedChannels = (await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS + '/user/channels/list', { withCredentials: true })).data;
-				for (let channel of fetchedChannels) {
-					res.push(
-						<li key={channel.id} onClick={(function(chInfos) {
-							function cb() {
-								setChatStatus({ state: 'OPENED', name: '#' + chInfos.name });
-							}
-							return cb;
-						})(channel)}>
-							<figure>
-								<img src={HashAsset} alt='Message Tab' className='hsf-content-channel-img' />
-								<figcaption>{channel.name}</figcaption>
-							</figure>
-						</li>
-					);
+				let fetchedChannels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
+				if (fetchedChannels) {
+					for (let channel of fetchedChannels) {
+						res.push(
+							<li key={channel.id} onClick={(function (chInfos) {
+								function cb() {
+									setChatStatus({ state: 'OPENED', name: '#' + chInfos.name });
+								}
+								return cb;
+							})(channel)}>
+								<figure>
+									<img src={HashAsset} alt='Message Tab' className='hsf-content-channel-img' />
+									<figcaption>{channel.name}</figcaption>
+								</figure>
+							</li>
+						);
+					}
 				}
 				setSocialData(res);
 			}
@@ -62,28 +65,28 @@ const HSocialField = () : JSX.Element => {
 
 	return (
 		<div className='social-field'>
-			<button 
-			title={isSocialFieldShowed ? 'Hide social panel' : 'Show social panel'}
-			onClick={() => { socialToggleCSS(isSocialFieldShowed); setIsSocialFieldShowed(!isSocialFieldShowed); }}>
+			<button
+				title={isSocialFieldShowed ? 'Hide social panel' : 'Show social panel'}
+				onClick={() => { socialToggleCSS(isSocialFieldShowed); setIsSocialFieldShowed(!isSocialFieldShowed); }}>
 				{isSocialFieldShowed ? '<' : '>'}
 			</button>
 			<div className='hsf-tab-selector'>
 				<button
-				className={isFriendTabSelected ? 'hsf-btn-selected' : ''}
-				onClick={() => !isFriendTabSelected && setIsFriendTabSelected(true)} >
+					className={isFriendTabSelected ? 'hsf-btn-selected' : ''}
+					onClick={() => !isFriendTabSelected && setIsFriendTabSelected(true)} >
 					Friends
 				</button>
 				<button
-				className={!isFriendTabSelected ? 'hsf-btn-selected' : ''}
-				onClick={() => isFriendTabSelected && setIsFriendTabSelected(false)}>
+					className={!isFriendTabSelected ? 'hsf-btn-selected' : ''}
+					onClick={() => isFriendTabSelected && setIsFriendTabSelected(false)}>
 					Messages
 				</button>
 			</div>
 			<div className='hsf-content'>
 				{isFriendTabSelected ?
-				<LoadingContent widget={true} image={UserAsset} /> :
-				<ul>
-					{/* <li> // LIST TEMPLATE
+					<LoadingContent widget={true} image={UserAsset} /> :
+					<ul>
+						{/* <li> // LIST TEMPLATE
 						<figure>
 							<img src={HashAsset} alt='Message Tab' />
 							<figcaption>display_name</figcaption>
@@ -98,8 +101,8 @@ const HSocialField = () : JSX.Element => {
 							<div className='hsf-content-status hsf-content-status-available'></div>
 						</figure>
 					</li> */}
-					{socialData}
-				</ul>}
+						{socialData}
+					</ul>}
 			</div>
 
 			<div className={chatToggleCSS(chatStatus)}>
@@ -111,7 +114,7 @@ const HSocialField = () : JSX.Element => {
 						<button title='Minimize' onClick={() => setChatStatus({ state: 'MINIMIZED', name: chatStatus.name })}>
 							<img src={MinusAsset} alt='minimize' />
 						</button>
-					:
+						:
 						<button title='Maximize' onClick={() => setChatStatus({ state: 'OPENED', name: chatStatus.name })}>
 							<img src={ContainMaxAsset} alt='maximize-in' />
 						</button>
@@ -133,21 +136,21 @@ const HSocialField = () : JSX.Element => {
 	);
 }
 
-function chatToggleCSS(cs: ChatState) : string {
+function chatToggleCSS(cs: ChatState): string {
 	let ret: string = 'hsf-chat';
-	switch(cs.state) {
+	switch (cs.state) {
 		case "MINIMIZED":
 			ret += ' minimize-state';
-			break ;
+			break;
 		case "CLOSED":
 			ret += ' closed-state';
-			break ;
+			break;
 	}
 	return (ret);
 }
 
-function socialToggleCSS(isShowed: boolean) : void {
-	let elem : Element | null = document.querySelector('.main-content');
+function socialToggleCSS(isShowed: boolean): void {
+	let elem: Element | null = document.querySelector('.main-content');
 	console.log(elem);
 	(elem as HTMLElement).style.animation = 'none';
 	setTimeout(() => {

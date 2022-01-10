@@ -8,7 +8,6 @@ import HSocialField from './components/homepage/HSocialField';
 import Login from './Login';
 import LoadingContent from './LoadingContent';
 import { RequestWrapper } from './utils/RequestWrapper'; // eslint-disable-line
-import Axios from 'axios';
 
 import Profile from './components/profile/Profile';
 import Chat from './components/chat/Chat';
@@ -34,16 +33,18 @@ const App = (): JSX.Element => {
 		[fetchStatus]
 	);
 
+	// TODO: transform this into a websocket (socket.io)
 	useEffect(() => {
 		(async () => {
 			while (true) { /* 1.5s cyclic fetching of user data & backend server uptime */
-				let res: FetchStatusData = {loggedIn: false, fetched: false};
-				try {
-					res = (await Axios.get(process.env.REACT_APP_BACKEND_ADDRESS as string + '/auth/status', { withCredentials: true })).data;
+				let status_data: FetchStatusData = {loggedIn: false, fetched: false};
+				const res = await RequestWrapper.get<FetchStatusData>('/auth/status');
+				if (res) {
+					status_data = res;
 					res.fetched = true;
-				} catch {}
-				if (!fetchStatus || (fetchStatus && res && !fetchStatusCompare(fetchStatus, res))) {
-					setFetchStatus(res);
+				}
+				if (!fetchStatus || (fetchStatus && status_data && !fetchStatusCompare(fetchStatus, status_data))) {
+					setFetchStatus(status_data);
 					break ;
 				}
 				await new Promise((resolve) => setTimeout(() => resolve(0), 1500));

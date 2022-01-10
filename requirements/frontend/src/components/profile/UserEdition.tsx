@@ -1,6 +1,6 @@
-import axios from "axios";
 import React, { useState } from "react";
 import { FetchUserData } from "../../types/FetchUserData";
+import { RequestWrapper } from "../../utils/RequestWrapper";
 
 interface IProps {
     data: FetchUserData,
@@ -26,7 +26,7 @@ const UserEdition = (props: IProps) => {
         setUsername(event.currentTarget.value);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         let formData = new FormData();
         formData.append('username', username);
 
@@ -34,18 +34,10 @@ const UserEdition = (props: IProps) => {
             formData.append('picture', selectedFile as File);
         }
 
-        axios.post(
-            process.env.REACT_APP_BACKEND_ADDRESS as string + `/user/edit`,
-            formData,
-            { withCredentials: true }
-        )
-        .then(() => {
-            props.changeState();
-        })
-        .catch(() => {
-            alert('an error occured, going back to profile page.');
-            props.changeState();
-        });
+		await RequestWrapper.post<any>('/user/edit', formData, () => {
+			alert('an error occured, going back to profile page.');
+		});
+		props.changeState();
     };
 
     return (
