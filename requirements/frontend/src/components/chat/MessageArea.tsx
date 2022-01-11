@@ -12,7 +12,8 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSoc
 
 	const scrollToBottom = () => {
 		if (messagesEndRef.current) {
-			messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+			// fast scrool to bottom
+			messagesEndRef.current.scrollIntoView();
 		}
 	}
 
