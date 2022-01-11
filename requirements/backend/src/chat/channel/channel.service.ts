@@ -1,4 +1,6 @@
-import { Injectable, HttpException } from '@nestjs/common';
+import { MessageType } from './../entities/message.entity';
+import { ChatGateway } from './../chat.gateway';
+import { Injectable, HttpException, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -7,12 +9,33 @@ import { Channel } from '../entities/channel.entity';
 import * as crypto from "crypto";
 import { JoinChannelDto } from '../dtos/join-channel.dto';
 import { ChannelDto } from '../dtos/user-channels.dto';
+import { Message } from '../entities/message.entity';
 
 @Injectable()
 export class ChannelService {
 	constructor(
-		@InjectRepository(Channel) private channelRepository: Repository<Channel>
-	) { }
+		@InjectRepository(Channel) private channelRepository: Repository<Channel>,
+		@InjectRepository(Message) private messageRepository: Repository<Message>,
+		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway
+	) {}
+
+	async createMessage(channel: Channel, messageType: MessageType, text: string, user?: User): Promise<Message> {
+		// add info message
+		const messageCreated: Message = new Message();
+		messageCreated.channel = channel;
+		messageCreated.messageType = messageType;
+		messageCreated.text = text;
+		messageCreated.user = user;
+		const newMessage: Message = await this.messageRepository.save(this.messageRepository.create(messageCreated));
+		return newMessage;
+	}
+
+	async sendMessage(message: Message): Promise<Channel> {
+		const channel: Channel = message.channel;
+		this.chatGateway.sendMessageToChannel(channel.id, message.toDto());
+		channel.messages.push(message);
+		return channel;
+	}
 
 	async createChannel(channel: CreateChannelDto & { owner: User }): Promise<ChannelDto> {
 
@@ -23,7 +46,7 @@ export class ChannelService {
 			}
 		}
 
-		let channelCreated = new Channel();
+		let channelCreated: Channel = new Channel();
 
 		if (channel.channelType === 'protected') {
 			// generate salt
@@ -39,17 +62,33 @@ export class ChannelService {
 		channelCreated.users = [channel.owner];
 		channelCreated.admins = [];
 		channelCreated.messages = [];
-		const newChannel: Channel = this.channelRepository.create(channelCreated);
-		return (await this.channelRepository.save(newChannel)).toDto();
+
+		let newChannel: Channel = await this.channelRepository.save(this.channelRepository.create(channelCreated));
+		
+		newChannel.messages.push(await this.createMessage(
+			newChannel,
+			'system',
+			`${channel.owner.displayName} created the channel`
+			));
+
+		return newChannel.toDto();
 	}
 
 	async getChannel(channelId: number): Promise<Channel> {
 		return this.channelRepository.findOne(channelId, { relations: ['owner', 'users'] });
 	}
 
+	async getPublicChannels(): Promise<Channel[]> {
+		return this.channelRepository.find({ where: { channelType: 'public' } });
+	}
+
+	async getProtectedChannels(): Promise<Channel[]> {
+		return this.channelRepository.find({ where: { channelType: 'protected' } });
+	}
+
 	async joinChannel(channel: JoinChannelDto, user: User): Promise<ChannelDto> {
 		
-		const channelToJoin: Channel = await this.channelRepository.findOne(channel.id, { relations: ['users'] });
+		let channelToJoin: Channel = await this.channelRepository.findOne(channel.id, { relations: ['users', 'owner', 'admins', 'messages'] });
 		
 		if (!channelToJoin) {
 			throw new HttpException('Channel not found', 404);
@@ -71,11 +110,16 @@ export class ChannelService {
 		}
 
 		channelToJoin.users.push(user);
+		channelToJoin = await this.sendMessage(await this.createMessage(
+			channelToJoin,
+			'system',
+			`${user.displayName} joined the channel`,
+		));
 		return (await this.channelRepository.save(channelToJoin)).toDto();
 	}
 
 	async leaveChannel(channelId: number, user: User) {
-		const channelToLeave: Channel = await this.channelRepository.findOne(channelId, { relations: ['users'] });
+		let channelToLeave: Channel = await this.channelRepository.findOne(channelId, { relations: ['users', 'admins', 'messages'] });
 		if (!channelToLeave) {
 			throw new HttpException('Channel not found', 404);
 		}
@@ -83,6 +127,15 @@ export class ChannelService {
 			throw new HttpException('User not in channel', 400);
 		}
 		channelToLeave.users = channelToLeave.users.filter(u => u.id !== user.id);
+		// add info message
+		channelToLeave = await this.sendMessage(await this.createMessage(
+			channelToLeave,
+			'system',
+			`${user.displayName} left the channel`
+		));
+		this.chatGateway.removeUserChannel(channelToLeave.id, user);
+
+
 		// check if channel is empty
 		if (channelToLeave.users.length === 0) {
 			// cascade delete
@@ -99,6 +152,11 @@ export class ChannelService {
 				} else {
 					channelToLeave.owner = channelToLeave.users[0];
 				}
+				channelToLeave = await this.sendMessage(await this.createMessage(
+					channelToLeave,
+					'system',
+					`${channelToLeave.owner.displayName} is now the owner of the channel`
+				));
 			}
 			this.channelRepository.save(channelToLeave);
 		}

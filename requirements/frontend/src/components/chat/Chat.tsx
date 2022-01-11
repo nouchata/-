@@ -1,73 +1,51 @@
-import { useEffect, useState } from "react";
-import socketIOClient from "socket.io-client";
-import { MessageDto, ChannelDto } from "./types/user-channels.dto";
+import { useContext, useEffect, useState } from "react";
+import { ChannelDto } from "./types/user-channels.dto";
 import './Chat.scss';
-import ChatArea from "./ChatArea";
 import { RequestWrapper } from "../../utils/RequestWrapper";
+import { ChatSocket } from "./utils/ChatSocket";
+import MessageArea from "./MessageArea";
+import InputChat from "./InputChat";
+import SelectChannel from "./SelectChannel";
+import { FetchStatusData } from "../../types/FetchStatusData";
+import LoginContext from "../../contexts/LoginContext";
+
+export type ChatSocketState = {
+	chatSocket: ChatSocket | undefined;
+	setChatSocket: (chatSocket: ChatSocket) => void;
+}
 
 const Chat = () => {
-	const [userChannels, setUserChannels] = useState<ChannelDto[]>([]);
-	// save selected channel by index
-	const [selectedChannel, setSelectedChannel] = useState<number>(0);
-	const [msgInput, setMsgInput] = useState<string>("");
-	const [socket, setSocket] = useState<any>(null);
+	const [channelsFetched, setChannelsFetched] = useState(false);
+	const [chatSocket, setChatSocket] = useState<ChatSocket>();
+	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const fetchStatusValue: {
+		fetchStatus: FetchStatusData,
+		setFetchStatus: (fetchStatus: FetchStatusData) => void
+	} = useContext(LoginContext);
+
+
 
 	useEffect(() => {
-		const connectSocket = (userChannels: ChannelDto[]) => {
-			const new_socket = socketIOClient(process.env.REACT_APP_BACKEND_ADDRESS + '/chat', { withCredentials: true });
-			setSocket(new_socket);
-			new_socket.on("receiveMessage", (data: MessageDto & { channelId: number }) => {
-				setUserChannels(userChannels.map(channel => {
-					if (channel.id === data.channelId) {
-						channel.messages.push(data);
-					}
-					return channel;
-				}
-				));
-			});
-
-			for (const channel of userChannels) {
-				new_socket.emit("joinChannel", { channelId: channel.id });
-			}
+		const fetchChannels = async () => {
+			const channels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
+			channels && setChatSocket(new ChatSocket(channels, { setChatSocket }, fetchStatusValue.fetchStatus.user));
 		}
-
-		const fetchData = async () => {
-			const result = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
-
-			if (result) {
-				setUserChannels(result);
-				connectSocket(result);
-			}
+		if (!channelsFetched) {
+			fetchChannels();
+			setChannelsFetched(true);
 		}
-		fetchData();
-	}, []);
+	}, [channelsFetched, fetchStatusValue.fetchStatus.user]);
 
-	const sendMessage = async () => {
-		if (msgInput.length > 0) {
-			socket.emit("sendMessage", { channelId: userChannels[selectedChannel].id, text: msgInput });
-		}
-		setMsgInput("");
-	}
 	return (
-		<div>
-			<div className="button-area">
-				{
-					userChannels.map((channel: ChannelDto, index: number) => {
-
-						return (<button
-							className={index === selectedChannel ? 'selected-button' : ''}
-							key={index} onClick={() => setSelectedChannel(index)}>
-							{channel.name}
-						</button>);
-					})
-				}
-			</div>
-			<div className="chat">
-				<h1 className="channel-title">{userChannels[selectedChannel]?.name}</h1>
-				<ChatArea channel={userChannels[selectedChannel]} />
-				<div className="input-area">
-					<input className="input-field" type="text" placeholder="Type your message here" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} />
-					<button className="input-button" onClick={sendMessage}>Send</button>
+		<div className="chat">
+			<SelectChannel channels={chatSocket?.channels} selectChannelIndex={selectChannelIndex} setSelectChannelIndex={setSelectChannelIndex} />
+			<div className="chat-container">
+				<div className="chat-box">
+					<h1 className="channel-title">{chatSocket ? chatSocket.channels[selectChannelIndex]?.name : 'Loading...'}</h1>
+					<MessageArea index={selectChannelIndex} chatSocket={chatSocket} />
+					<InputChat
+						selectChannelIndex={selectChannelIndex}
+						sendMessage={(text, channelIndex) => chatSocket?.sendMessage(text, channelIndex)} />
 				</div>
 			</div>
 		</div>
