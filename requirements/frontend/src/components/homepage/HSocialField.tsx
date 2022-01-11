@@ -92,36 +92,36 @@ const HSocialField = (): JSX.Element => {
 									</li>
 								)
 							})
-
 						}
 					</ul>}
 			</div>
+			{
+				chatSocket?.channels[selectChannelIndex] &&
+				<div className={chatToggleCSS(chatStatus)}>
+					<div className='hsf-chat-controls'>
+						<h2>{chatSocket?.channels[selectChannelIndex].name}</h2>
+						<button title='Maximize in another window'><img src={MaxAsset} alt='maximize' /></button>
 
-			<div className={chatToggleCSS(chatStatus)}>
-				<div className='hsf-chat-controls'>
-					<h2>{chatSocket?.channels[selectChannelIndex].name}</h2>
-					<button title='Maximize in another window'><img src={MaxAsset} alt='maximize' /></button>
+						{chatStatus.state === 'OPENED' ?
+							<button title='Minimize' onClick={() => setChatStatus({ state: 'MINIMIZED' })}>
+								<img src={MinusAsset} alt='minimize' />
+							</button>
+							:
+							<button title='Maximize' onClick={() => setChatStatus({ state: 'OPENED' })}>
+								<img src={ContainMaxAsset} alt='maximize-in' />
+							</button>
+						}
 
-					{chatStatus.state === 'OPENED' ?
-						<button title='Minimize' onClick={() => setChatStatus({ state: 'MINIMIZED' })}>
-							<img src={MinusAsset} alt='minimize' />
-						</button>
-						:
-						<button title='Maximize' onClick={() => setChatStatus({ state: 'OPENED' })}>
-							<img src={ContainMaxAsset} alt='maximize-in' />
-						</button>
-					}
-
-					<button title='Close' onClick={() => setChatStatus({ state: 'CLOSED' })}><img src={CloseAsset} alt='close' /></button>
+						<button title='Close' onClick={() => setChatStatus({ state: 'CLOSED' })}><img src={CloseAsset} alt='close' /></button>
+					</div>
+					<div className='hsf-chat-container'>
+						<MessageArea index={selectChannelIndex} chatSocket={chatSocket} />
+						<InputChat
+							selectChannelIndex={selectChannelIndex}
+							sendMessage={(text, channelIndex) => chatSocket?.sendMessage(text, channelIndex)} />
+					</div>
 				</div>
-				<div className='hsf-chat-container'>
-					<MessageArea index={selectChannelIndex} chatSocket={chatSocket} />
-					<InputChat
-						selectChannelIndex={selectChannelIndex}
-						sendMessage={(text, channelIndex) => chatSocket?.sendMessage(text, channelIndex)} />
-				</div>
-			</div>
-
+			}
 			<div className='hsf-btn-new'>
 				<button onClick={() => setModalProps(isFriendTabSelected ? friendModalSettings : msgModalSettings)}>
 					+ {isFriendTabSelected ? 'Add a new friend' : 'Create a new discussion'}
@@ -146,7 +146,6 @@ function chatToggleCSS(cs: ChatState): string {
 
 function socialToggleCSS(isShowed: boolean): void {
 	let elem: Element | null = document.querySelector('.main-content');
-	console.log(elem);
 	(elem as HTMLElement).style.animation = 'none';
 	setTimeout(() => {
 		if (elem) {

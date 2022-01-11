@@ -69,7 +69,6 @@ export class ChatSocket {
 			});
 
 			this._socket.on('removeUser', (user: User & { channelId: number }) => {
-				console.log(user);
 				// remove user from channel
 				// check if removed user is the current user
 				if (this._user && this._user.id === user.id) {
