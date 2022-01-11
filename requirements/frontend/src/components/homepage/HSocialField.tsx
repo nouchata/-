@@ -3,7 +3,6 @@ import LoadingContent from '../../LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 
-import ChatAsset from '../../assets/homepage/chat.png';
 import UserAsset from '../../assets/homepage/user.png';
 import CloseAsset from '../../assets/chat/close.png';
 import MaxAsset from '../../assets/chat/max.png';
@@ -12,56 +11,48 @@ import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
 
 import '../../styles/social_field.scss';
+import './styles/Chat.scss';
+
 
 import { RequestWrapper } from '../../utils/RequestWrapper';
 import { ChannelDto } from '../chat/types/user-channels.dto';
+import { ChatSocket } from '../chat/utils/ChatSocket';
+import { FetchStatusData } from '../../types/FetchStatusData';
+import InputChat from '../chat/InputChat';
+import MessageArea from '../chat/MessageArea';
 
 type ChatState = {
 	state: "OPENED" | "MINIMIZED" | "CLOSED",
-	name: string
 };
 
 let msgModalSettings = { show: true, content: <p>msg</p> };
 let friendModalSettings = { show: true, content: <p>x</p> };
 
-const HSocialField = (): JSX.Element => {
+const HSocialField = () => {
 	const [isFriendTabSelected, setIsFriendTabSelected] = useState<boolean>(false);
-	const [chatStatus, setChatStatus] = useState<ChatState>({ state: 'CLOSED', name: '' });
+	const [chatStatus, setChatStatus] = useState<ChatState>({ state: 'CLOSED' });
 	const [isSocialFieldShowed, setIsSocialFieldShowed] = useState<boolean>(true);
-	const [socialData, setSocialData] = useState<Array<JSX.Element>>();
-	const { fetchStatus } = useContext(LoginContext); // eslint-disable-line
 	const { setModalProps } = useContext(ModalContext);
+	const [channelsFetched, setChannelsFetched] = useState(false);
+	const [chatSocket, setChatSocket] = useState<ChatSocket>();
+	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const fetchStatusValue: {
+		fetchStatus: FetchStatusData,
+		setFetchStatus: (fetchStatus: FetchStatusData) => void
+	} = useContext(LoginContext);
+
 
 
 	useEffect(() => {
-
-		let res: Array<JSX.Element> = [];
-		(async () => { // MESSAGE / FRIENDS FETCHER
-			if (isFriendTabSelected) {
-				return;
-			} else {
-				let fetchedChannels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
-				if (fetchedChannels) {
-					for (let channel of fetchedChannels) {
-						res.push(
-							<li key={channel.id} onClick={(function (chInfos) {
-								function cb() {
-									setChatStatus({ state: 'OPENED', name: '#' + chInfos.name });
-								}
-								return cb;
-							})(channel)}>
-								<figure>
-									<img src={HashAsset} alt='Message Tab' className='hsf-content-channel-img' />
-									<figcaption>{channel.name}</figcaption>
-								</figure>
-							</li>
-						);
-					}
-				}
-				setSocialData(res);
-			}
-		})();
-	}, [isFriendTabSelected]);
+		const fetchChannels = async () => {
+			const channels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
+			channels && setChatSocket(new ChatSocket(channels, { setChatSocket }, fetchStatusValue.fetchStatus.user));
+		}
+		if (!channelsFetched) {
+			fetchChannels();
+			setChannelsFetched(true);
+		}
+	}, [channelsFetched, fetchStatusValue.fetchStatus.user]);
 
 	return (
 		<div className='social-field'>
@@ -79,54 +70,60 @@ const HSocialField = (): JSX.Element => {
 				<button
 					className={!isFriendTabSelected ? 'hsf-btn-selected' : ''}
 					onClick={() => isFriendTabSelected && setIsFriendTabSelected(false)}>
-					Messages
+					Channels
 				</button>
 			</div>
 			<div className='hsf-content'>
-				{isFriendTabSelected ?
+				{isFriendTabSelected || !channelsFetched ?
 					<LoadingContent widget={true} image={UserAsset} /> :
 					<ul>
-						{/* <li> // LIST TEMPLATE
-						<figure>
-							<img src={HashAsset} alt='Message Tab' />
-							<figcaption>display_name</figcaption>
-							<div className='hsf-content-status'></div>
-						</figure>
-					</li>
-					<li>
-						<figure>
-							<img src={DummyAsset} alt='Message Tab' />
-							<figcaption>display_name</figcaption>
-							<div className='hsf-content-notification'>9+</div>
-							<div className='hsf-content-status hsf-content-status-available'></div>
-						</figure>
-					</li> */}
-						{socialData}
+						{
+							chatSocket?.channels.map((channel, index) => {
+								return (
+									<li
+										key={index}
+										onClick={() => {
+											setSelectChannelIndex(index);
+											setChatStatus({ state: 'OPENED' });
+										}}
+									>
+										<figure>
+											<img src={HashAsset} alt='Message Tab' className='hsf-content-channel-img' />
+											<figcaption>{channel.name}</figcaption>
+										</figure>
+									</li>
+								)
+							})
+						}
 					</ul>}
 			</div>
+			{
+				chatSocket?.channels[selectChannelIndex] &&
+				<div className={chatToggleCSS(chatStatus)}>
+					<div className='hsf-chat-controls'>
+						<h2>{chatSocket?.channels[selectChannelIndex].name}</h2>
+						<button title='Maximize in another window'><img src={MaxAsset} alt='maximize' /></button>
 
-			<div className={chatToggleCSS(chatStatus)}>
-				<div className='hsf-chat-controls'>
-					<h2>{chatStatus.name}</h2>
-					<button title='Maximize in another window'><img src={MaxAsset} alt='maximize' /></button>
+						{chatStatus.state === 'OPENED' ?
+							<button title='Minimize' onClick={() => setChatStatus({ state: 'MINIMIZED' })}>
+								<img src={MinusAsset} alt='minimize' />
+							</button>
+							:
+							<button title='Maximize' onClick={() => setChatStatus({ state: 'OPENED' })}>
+								<img src={ContainMaxAsset} alt='maximize-in' />
+							</button>
+						}
 
-					{chatStatus.state === 'OPENED' ?
-						<button title='Minimize' onClick={() => setChatStatus({ state: 'MINIMIZED', name: chatStatus.name })}>
-							<img src={MinusAsset} alt='minimize' />
-						</button>
-						:
-						<button title='Maximize' onClick={() => setChatStatus({ state: 'OPENED', name: chatStatus.name })}>
-							<img src={ContainMaxAsset} alt='maximize-in' />
-						</button>
-					}
-
-					<button title='Close' onClick={() => setChatStatus({ state: 'CLOSED', name: chatStatus.name })}><img src={CloseAsset} alt='close' /></button>
+						<button title='Close' onClick={() => setChatStatus({ state: 'CLOSED' })}><img src={CloseAsset} alt='close' /></button>
+					</div>
+					<div className='hsf-chat-container'>
+						<MessageArea index={selectChannelIndex} chatSocket={chatSocket} />
+						<InputChat
+							selectChannelIndex={selectChannelIndex}
+							sendMessage={(text, channelIndex) => chatSocket?.sendMessage(text, channelIndex)} />
+					</div>
 				</div>
-				<div className='hsf-chat-container'>
-					<LoadingContent widget={true} image={ChatAsset} /> {/* CHAT CONTENT MEANT TO BE IN HERE */}
-				</div>
-			</div>
-
+			}
 			<div className='hsf-btn-new'>
 				<button onClick={() => setModalProps(isFriendTabSelected ? friendModalSettings : msgModalSettings)}>
 					+ {isFriendTabSelected ? 'Add a new friend' : 'Create a new discussion'}
@@ -151,7 +148,6 @@ function chatToggleCSS(cs: ChatState): string {
 
 function socialToggleCSS(isShowed: boolean): void {
 	let elem: Element | null = document.querySelector('.main-content');
-	console.log(elem);
 	(elem as HTMLElement).style.animation = 'none';
 	setTimeout(() => {
 		if (elem) {

@@ -66,7 +66,6 @@ class Profile extends React.Component<IProps, IState> {
     handleClick = () => {
         if (this.state.edition) {
             this.loadUserInfo();
-            console.log(this.state.user);
         }
         this.setState({ edition: !this.state.edition });
     }
