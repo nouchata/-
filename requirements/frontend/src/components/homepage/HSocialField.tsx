@@ -11,6 +11,8 @@ import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
 
 import '../../styles/social_field.scss';
+import './styles/Chat.scss';
+
 
 import { RequestWrapper } from '../../utils/RequestWrapper';
 import { ChannelDto } from '../chat/types/user-channels.dto';
@@ -26,7 +28,7 @@ type ChatState = {
 let msgModalSettings = { show: true, content: <p>msg</p> };
 let friendModalSettings = { show: true, content: <p>x</p> };
 
-const HSocialField = (): JSX.Element => {
+const HSocialField = () => {
 	const [isFriendTabSelected, setIsFriendTabSelected] = useState<boolean>(false);
 	const [chatStatus, setChatStatus] = useState<ChatState>({ state: 'CLOSED' });
 	const [isSocialFieldShowed, setIsSocialFieldShowed] = useState<boolean>(true);
@@ -72,7 +74,7 @@ const HSocialField = (): JSX.Element => {
 				</button>
 			</div>
 			<div className='hsf-content'>
-				{isFriendTabSelected ?
+				{isFriendTabSelected || !channelsFetched ?
 					<LoadingContent widget={true} image={UserAsset} /> :
 					<ul>
 						{

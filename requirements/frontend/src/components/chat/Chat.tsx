@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { ChannelDto } from "./types/user-channels.dto";
-import './Chat.scss';
+import './OldChat.scss';
 import { RequestWrapper } from "../../utils/RequestWrapper";
 import { ChatSocket } from "./utils/ChatSocket";
 import MessageArea from "./MessageArea";
