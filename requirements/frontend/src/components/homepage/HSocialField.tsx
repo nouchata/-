@@ -43,8 +43,6 @@ const HSocialField = () => {
 	} = useContext(LoginContext);
 	const notificationHandler = useContext(NotificationContext);
 
-
-
 	useEffect(() => {
 		const fetchChannels = async () => {
 			const channels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
@@ -57,6 +55,10 @@ const HSocialField = () => {
 								name: `${channel.name}`,
 								content: `${message.text}`,
 								context: 'chat',
+								openAction: () => {
+									setSelectChannelIndex(channels.findIndex(c => c.id === channel.id));
+									setChatStatus({ state: 'OPENED' });
+								}
 							})
 						}
 					},
@@ -99,6 +101,7 @@ const HSocialField = () => {
 										key={index}
 										onClick={() => {
 											setSelectChannelIndex(index);
+											notificationHandler?.removeNotificationContext('chat');
 											setChatStatus({ state: 'OPENED' });
 										}}
 									>

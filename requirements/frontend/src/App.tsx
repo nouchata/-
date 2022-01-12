@@ -10,7 +10,6 @@ import LoadingContent from './LoadingContent';
 import { RequestWrapper } from './utils/RequestWrapper'; // eslint-disable-line
 
 import Profile from './components/profile/Profile';
-import Chat from './components/chat/Chat';
 import Error from './components/utils/Error';
 import GenericModal from './components/utils/GenericModal';
 import { GenericModalProps } from './components/utils/GenericModal';
@@ -81,7 +80,6 @@ const App = (): JSX.Element => {
 									<Router>
 										<Switch>
 											{fetchStatus.loggedIn && <Route path="/profile/:id"><Profile /></Route>}
-											{fetchStatus.loggedIn && <Route path="/chat"><Chat /></Route>}
 											{fetchStatus.loggedIn && <Route path="/homepage"><Homepage /></Route>}
 											<Route path="/login"><Login /></Route>
 											<Route path="/">

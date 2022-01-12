@@ -23,7 +23,14 @@ const NotificationContainer = () => {
 							</div>
 							{
 								notification.openAction &&
-								<div className='notification-open-action' onClick={notification.openAction}>
+								<div
+									className='notification-open-action'
+									onClick={() => {
+										notification.openAction && notification.openAction();
+										notificationHandler?.removeNotificationContext('chat');
+
+									}}
+								>
 									<div className='notification-open-action-text'>Open</div>
 								</div>
 							}
