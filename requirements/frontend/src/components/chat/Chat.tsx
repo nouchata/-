@@ -8,6 +8,7 @@ import InputChat from "./InputChat";
 import SelectChannel from "./SelectChannel";
 import { FetchStatusData } from "../../types/FetchStatusData";
 import LoginContext from "../../contexts/LoginContext";
+import NotificationContext, { NotificationNH } from "../../contexts/NotificationContext";
 
 export type ChatSocketState = {
 	chatSocket: ChatSocket | undefined;
@@ -18,6 +19,8 @@ const Chat = () => {
 	const [channelsFetched, setChannelsFetched] = useState(false);
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const notificationHandler = useContext(NotificationContext);
+
 	const fetchStatusValue: {
 		fetchStatus: FetchStatusData,
 		setFetchStatus: (fetchStatus: FetchStatusData) => void
@@ -48,6 +51,19 @@ const Chat = () => {
 						sendMessage={(text, channelIndex) => chatSocket?.sendMessage(text, channelIndex)} />
 				</div>
 			</div>
+			<button
+				className="btn btn-primary"
+				onClick={() => notificationHandler?.addNotification(
+					new NotificationNH(
+						'New message',
+						'tmatis: test des notif',
+						'new-message',
+						() => console.log('open action')
+					))}
+			>
+				Add notification
+			</button>
+
 		</div>
 	)
 }
