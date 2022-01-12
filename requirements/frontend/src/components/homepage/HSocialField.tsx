@@ -51,9 +51,12 @@ const HSocialField = () => {
 					{
 						setChatSocket,
 						onMessage: (message, channel) => {
+							// find user in channel.users by id
+							const user = channel.users.find(u => u.id === message.userId);
+
 							notificationHandler?.addNotification({
-								name: `${channel.name}`,
-								content: `${message.text}`,
+								name: channel.name,
+								content: `${user?.displayName}: ${message.text}`,
 								context: 'chat',
 								openAction: () => {
 									setSelectChannelIndex(channels.findIndex(c => c.id === channel.id));
