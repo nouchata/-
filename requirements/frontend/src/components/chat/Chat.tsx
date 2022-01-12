@@ -51,18 +51,7 @@ const Chat = () => {
 						sendMessage={(text, channelIndex) => chatSocket?.sendMessage(text, channelIndex)} />
 				</div>
 			</div>
-			<button
-				className="btn btn-primary"
-				onClick={() => notificationHandler?.addNotification(
-					new NotificationNH(
-						'New message',
-						'tmatis: test des notif',
-						'new-message',
-						() => console.log('open action')
-					))}
-			>
-				Add notification
-			</button>
+			
 
 		</div>
 	)

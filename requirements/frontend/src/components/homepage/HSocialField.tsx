@@ -20,6 +20,7 @@ import { ChatSocket } from '../chat/utils/ChatSocket';
 import { FetchStatusData } from '../../types/FetchStatusData';
 import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
+import NotificationContext from '../../contexts/NotificationContext';
 
 type ChatState = {
 	state: "OPENED" | "MINIMIZED" | "CLOSED",
@@ -40,19 +41,33 @@ const HSocialField = () => {
 		fetchStatus: FetchStatusData,
 		setFetchStatus: (fetchStatus: FetchStatusData) => void
 	} = useContext(LoginContext);
+	const notificationHandler = useContext(NotificationContext);
 
 
 
 	useEffect(() => {
 		const fetchChannels = async () => {
 			const channels = await RequestWrapper.get<ChannelDto[]>('/user/channels/list');
-			channels && setChatSocket(new ChatSocket(channels, { setChatSocket }, fetchStatusValue.fetchStatus.user));
+			channels && setChatSocket(
+				new ChatSocket(channels,
+					{
+						setChatSocket,
+						onMessage: (message, channel) => {
+							notificationHandler?.addNotification({
+								name: `${channel.name}`,
+								content: `${message.text}`,
+								context: 'chat',
+							})
+						}
+					},
+					fetchStatusValue.fetchStatus.user
+				));
 		}
 		if (!channelsFetched) {
 			fetchChannels();
 			setChannelsFetched(true);
 		}
-	}, [channelsFetched, fetchStatusValue.fetchStatus.user]);
+	}, [channelsFetched, notificationHandler, fetchStatusValue.fetchStatus.user]);
 
 	return (
 		<div className='social-field'>
