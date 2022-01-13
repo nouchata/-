@@ -39,12 +39,16 @@ const UserEdition = (props: IProps) => {
             formData,
             { withCredentials: true }
         )
-        .then(() => {
+        .then((e) => {
             props.changeState();
         })
-        .catch(() => {
+        .catch((e) => {
+            if (e.response) {
+                alert(e.response.data.message);
+            } else {
             alert('an error occured, going back to profile page.');
             props.changeState();
+            }
         });
     };
 

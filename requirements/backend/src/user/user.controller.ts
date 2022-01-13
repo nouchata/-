@@ -1,6 +1,6 @@
 import { GroupGuard } from 'src/auth/guards/group.guard';
 import { EditUserDTO } from './dto/edit-user.dto';
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiResponse } from '@nestjs/swagger';
 import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
@@ -12,6 +12,7 @@ import { diskStorage } from 'multer';
 import path = require('path');
 import fs = require('fs');
 import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
+import { QueryExceptionFilter } from './utils/QueryExceptionFilter';
 
 @Controller('user')
 export class UserController {
@@ -75,6 +76,7 @@ export class UserController {
 		description: 'No id matching user'
 	})
 	@Post('edit/')
+	@UseFilters(QueryExceptionFilter)
 	@UseGuards(GroupGuard)
 	@UseInterceptors(FileInterceptor('picture', {
 		storage: diskStorage({
