@@ -46,8 +46,8 @@ const UserEdition = (props: IProps) => {
             if (e.response) {
                 alert(e.response.data.message);
             } else {
-            alert('an error occured, going back to profile page.');
-            props.changeState();
+                alert('an error occured, going back to profile page.');
+                props.changeState();
             }
         });
     };
@@ -74,6 +74,9 @@ const UserEdition = (props: IProps) => {
                     <br/>
                     <button onClick={handleSubmit}>
                         Save your changes
+                    </button>
+                    <button onClick={props.changeState}>
+                        Cancel
                     </button>
                 </div>
             </div>

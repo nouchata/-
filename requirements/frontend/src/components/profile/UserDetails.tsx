@@ -2,6 +2,7 @@ import { FetchUserData } from "../../types/FetchUserData";
 import HistoryTable from "./HistoryTable";
 import ProgressBar from "../utils/ProgressBar";
 import editAsset from "../../assets/profile/edit-solid.svg";
+import { Link } from "react-router-dom";
 
 interface IProps {
     data: FetchUserData,
@@ -39,10 +40,15 @@ const UserDetails = (props: IProps) => {
     return (
         
         <div className='profile'>
+
+                <Link to='/homepage'>
+                    Return to homepage
+                </Link>
+
             <div className='general-info'>
                 <img
-                        src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`}
-                        alt='avatar of the user'
+                    src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`}
+                    alt='avatar of the user'
                 />
 
                 <h1>
@@ -97,7 +103,6 @@ const UserDetails = (props: IProps) => {
             <div className='history'>
                 <HistoryTable data={props.data} />
             </div>
-
         </div>
 
     );
