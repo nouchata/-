@@ -83,7 +83,6 @@ export class ChatSocket {
 					let channel = this._channels.find(channel => channel.id === user.channelId);
 					if (channel) {
 						channel.users = channel.users.filter(u => u.id !== user.id);
-						this._channels = this._channels.map(channel => channel.id === user.channelId ? channel : channel);
 					}
 
 				}
