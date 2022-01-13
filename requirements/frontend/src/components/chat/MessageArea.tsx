@@ -17,10 +17,11 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSoc
 		}
 	}
 
-	// scroll to bottom on new message or open chat
+	const msg_length = chatSocket?.channels[index].messages.length || 0;
+
 	useEffect(() => {
 		scrollToBottom();
-	}, [chatSocket?.channels[index].messages.length]);
+	}, [msg_length]);
 
 	const channel = chatSocket?.channels[index];
 

@@ -56,7 +56,7 @@ const HSocialField = () => {
 
 							notificationHandler?.addNotification({
 								name: channel.name,
-								content: `${user?.displayName}: ${message.text}`,
+								content: `${user ? user.displayName : 'system'}: ${message.text}`,
 								context: 'chat',
 								openAction: () => {
 									setSelectChannelIndex(channels.findIndex(c => c.id === channel.id));
