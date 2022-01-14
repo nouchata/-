@@ -1,8 +1,19 @@
 /****** PROFILE ******/
 
+.return-button {
+    color: rgb(184, 111, 83);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.return-button:hover {
+    color: rgb(133, 78, 57);
+    text-decoration: underline;
+}
+
 .general-info {
     margin: 0 auto;
-    width: 50%;
+    width: 100%;
     text-align: center;
 }
 
@@ -24,12 +35,8 @@
     border: none;
     border-radius: 20px;
     color: black;
-    padding: 10px 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
+    text-align: left;
     font-size: 20px;
-    margin: 4px 2px;
     cursor: pointer;
 }
 
@@ -46,55 +53,48 @@
 
 /****** SEPARATOR ******/
 
-h2 {
+.separator {
     display: flex;
-    margin: 0 auto;
     margin-bottom: 10px;
     color:rgb(184, 111, 83);
-    width: 90%;
+    width: 100%;
     align-items: center;
     text-align: center;
 }
 
-h2::after, h2::before {
+.separator::after, .separator::before {
     content: "";
     border: 2px solid rgb(184, 111, 83);
     border-radius: 15px;
     flex: 1;
 }
 
-h2:not(:empty)::before {
+.separator:not(:empty)::before {
     margin-right: 0.25em;
 }
   
-h2:not(:empty)::after {
+.separator:not(:empty)::after {
     margin-left: 0.25em;
 }
 
 /****** RANKING ******/
 
-.ratio {
-    margin-top: 2;
-    display: flex;
-    text-align: center;
-}
-
-.label-ratio {
-    display: flex;
-}
-
 .label1 {
-    flex: 1;
-    margin-left: 5%;
+    float: left;
     color: green;
     text-align: left;
 }
 
 .label2 {
-    flex: 1;
-    margin-right: 5%;
+    float: right;
     color: red;
     text-align: right;
+}
+
+.ratio {
+    margin-top: 2;
+    display: flex;
+    text-align: center;
 }
 
 .victory-count {
@@ -126,7 +126,7 @@ h2:not(:empty)::after {
 .matches {
     margin: 0 auto;
     border-collapse: collapse;
-    width: 95%;
+    width: 100%;
 }
 
 .matches td, .matches th {
@@ -152,11 +152,11 @@ h2:not(:empty)::after {
 /****** EDITION ******/
 
 .edition-page {
-    margin-top: 50vh; /* poussé de la moitié de hauteur de viewport */
-    transform: translateY(-80%);
+    transform: translateY(50%);
 }
 
 .edition-page > h1 {
+    transform: translateY(-60%);
     text-align: center;
     font-size: 4em;
 }
@@ -173,18 +173,20 @@ h2:not(:empty)::after {
     height: 200px;
 }
 
-.forms {
-    margin: 2%;
-}
-
 .name-input {
+    transform: translateX(2%) translateY(10%);
+    width: 70%;
     border: none;
     border-radius: 10px;
-    padding: 10px;
+    height: 20%;
     font-size: 1em;
     text-align: center;
     color: white;
     background-color: rgb(184, 111, 83);
+}
+
+.name-input::placeholder {
+    color: white;
 }
 
 .file-input {
@@ -197,8 +199,8 @@ h2:not(:empty)::after {
 }
 
 .file-input + label {
-    margin: 7%;
-    margin-left: 10%;
+    margin: 2%;
+    margin-left: 9%;
     font-size: 1.25em;
     font-weight: 700;
     color: rgb(184, 111, 83);
@@ -213,9 +215,9 @@ h2:not(:empty)::after {
 .edition-page button {
     background-color: rgb(255, 160, 122);
     border: none;
-    border-radius: 20px;
+    border-radius: 15px;
     color: black;
-    padding: 20px;
+    padding: 10px 25px;
     font-size: 20px;
     cursor: pointer;
     margin-left: 4%;
@@ -223,4 +225,14 @@ h2:not(:empty)::after {
 
 .edition-page button:hover {
     background-color: rgb(184, 111, 83);
+}
+
+.edition-page .save {
+    margin-top: 8%;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+.edition-page .cancel {
+    margin-top: 2%;
 }

@@ -41,7 +41,7 @@ const UserDetails = (props: IProps) => {
         
         <div className='profile'>
 
-                <Link to='/homepage'>
+                <Link to='/homepage' className='return-button'>
                     Return to homepage
                 </Link>
 
@@ -72,12 +72,10 @@ const UserDetails = (props: IProps) => {
                 <p style={statusStyle}>◉ {props.data.general.status}</p>
             </div>
             
-            <h2>Ranking</h2>
+            <h2 className='separator'>Ranking</h2>
     
-            <div className='label-ratio'>
-                <span className='label1'>victories</span>
-                <span className='label2'>loses</span>
-            </div>
+            <span className='label1'>victories</span>
+            <span className='label2'>loses</span>
             <div className='ratio'>
                 <div className='victory-count'>
                     {props.data.ranking.vdRatio[0]}
@@ -99,7 +97,7 @@ const UserDetails = (props: IProps) => {
                 </div>
             </div>
 
-            <h2>History</h2>
+            <h2 className='separator'>History</h2>
             <div className='history'>
                 <HistoryTable data={props.data} />
             </div>
