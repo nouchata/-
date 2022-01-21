@@ -103,6 +103,12 @@ export class ChatSocket {
 	public get channels() {
 		return this._channels;
 	}
-	// setters
+	
+	/*
+	** update callback function
+	*/
+	public set onMessage(callback: (message: MessageDto, channel: ChannelDto) => void) {
+		this._callbacks.onMessage = callback;
+	}
 
 }

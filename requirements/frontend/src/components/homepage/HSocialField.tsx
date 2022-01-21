@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useCallback } from 'react';
 import LoadingContent from '../../LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
@@ -9,13 +9,14 @@ import MaxAsset from '../../assets/chat/max.png';
 import MinusAsset from '../../assets/chat/minus.png';
 import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
+import chatImage from '../../assets/homepage/chat.png';
 
 import '../../styles/social_field.scss';
 import './styles/Chat.scss';
 
 
 import { RequestWrapper } from '../../utils/RequestWrapper';
-import { ChannelDto } from '../chat/types/user-channels.dto';
+import { ChannelDto, MessageDto } from '../chat/types/user-channels.dto';
 import { ChatSocket } from '../chat/utils/ChatSocket';
 import { FetchStatusData } from '../../types/FetchStatusData';
 import InputChat from '../chat/InputChat';
@@ -34,14 +35,28 @@ const HSocialField = () => {
 	const [chatStatus, setChatStatus] = useState<ChatState>({ state: 'CLOSED' });
 	const [isSocialFieldShowed, setIsSocialFieldShowed] = useState<boolean>(true);
 	const { setModalProps } = useContext(ModalContext);
-	const [channelsFetched, setChannelsFetched] = useState(false);
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
 	const fetchStatusValue: {
 		fetchStatus: FetchStatusData,
 		setFetchStatus: (fetchStatus: FetchStatusData) => void
 	} = useContext(LoginContext);
-	const notificationHandler = useContext(NotificationContext);
+	let notificationHandler = useContext(NotificationContext);
+
+	const onMessage = useCallback((message: MessageDto, channel: ChannelDto) => {
+		// find user in channel.users by id
+		const user = channel.users.find(u => u.id === message.userId);
+
+		notificationHandler?.addNotification({
+			name: channel.name,
+			content: `${user ? user.displayName : 'system'}: ${message.text}`,
+			image: chatImage,
+			context: 'chat',
+			openAction: () => {
+				setChatStatus({ state: 'OPENED' });
+			}
+		})
+	}, [notificationHandler]);
 
 	useEffect(() => {
 		const fetchChannels = async () => {
@@ -50,29 +65,20 @@ const HSocialField = () => {
 				new ChatSocket(channels,
 					{
 						setChatSocket,
-						onMessage: (message, channel) => {
-							// find user in channel.users by id
-							const user = channel.users.find(u => u.id === message.userId);
-
-							notificationHandler?.addNotification({
-								name: channel.name,
-								content: `${user ? user.displayName : 'system'}: ${message.text}`,
-								context: 'chat',
-								openAction: () => {
-									setSelectChannelIndex(channels.findIndex(c => c.id === channel.id));
-									setChatStatus({ state: 'OPENED' });
-								}
-							})
-						}
+						onMessage
 					},
 					fetchStatusValue.fetchStatus.user
 				));
 		}
-		if (!channelsFetched) {
-			fetchChannels();
-			setChannelsFetched(true);
+		fetchChannels();
+		// eslint-disable-next-line
+	}, [fetchStatusValue.fetchStatus.user]);
+
+	useEffect(() => {
+		if (chatSocket) {
+			chatSocket.onMessage = onMessage;
 		}
-	}, [channelsFetched, notificationHandler, fetchStatusValue.fetchStatus.user]);
+	}, [notificationHandler, chatSocket, onMessage]);
 
 	return (
 		<div className='social-field'>
@@ -94,7 +100,7 @@ const HSocialField = () => {
 				</button>
 			</div>
 			<div className='hsf-content'>
-				{isFriendTabSelected || !channelsFetched ?
+				{isFriendTabSelected ?
 					<LoadingContent widget={true} image={UserAsset} /> :
 					<ul>
 						{
