@@ -152,7 +152,7 @@ export class NotificationHandler
 	** get the number of notifications
 	*/
 	public get numberOfNotifications(): number {
-		return Object.keys(this._notifications).length;
+		return this._notifications.length;
 	}
 
 	/*
