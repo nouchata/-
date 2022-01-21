@@ -98,8 +98,8 @@ export class NotificationHandler
 		// if there is 4 notification of the same context, remove the oldest one
 		let notifications_same_context = this._notifications.filter(n => n.context === notification.context);
 		if (notifications_same_context.length > 3) {
-			// get the uuid of the oldest notification
-			let oldest_notification_uuid = notifications_same_context[0].uuid;
+			// get the uuid of the oldest notification (oldest = last)
+			let oldest_notification_uuid = notifications_same_context[notifications_same_context.length - 1].uuid;
 			// remove the oldest notification
 			this._notifications = this._notifications.filter(n => n.uuid !== oldest_notification_uuid);
 		}

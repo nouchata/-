@@ -1,12 +1,12 @@
 import { useContext } from "react";
 import NotificationContext from "../../contexts/NotificationContext";
-import './NotificationContainer.scss';
+import './Notifications.scss';
 import close from '../../assets/chat/close.png';
 
-const NotificationContainer = () => {
+const Notifications = () => {
 	const notificationHandler = useContext(NotificationContext);
 	return (
-		<div className='notification-container'>
+		<div className='notification-center'>
 			{
 				// use uuid as key
 				notificationHandler &&
@@ -23,15 +23,17 @@ const NotificationContainer = () => {
 							</div>
 							{
 								notification.openAction &&
-								<div
-									className='notification-open-action'
-									onClick={() => {
-										notification.openAction && notification.openAction();
-										notificationHandler?.removeNotificationContext('chat');
+								<div className='notification-action'>
+									<div
+										className='notification-open-action'
+										onClick={() => {
+											notification.openAction && notification.openAction();
+											notificationHandler?.removeNotificationContext('chat');
 
-									}}
-								>
-									<div className='notification-open-action-text'>Open</div>
+										}}
+									>
+										<div className='notification-open-action-text'>Open</div>
+									</div>
 								</div>
 							}
 							<img
@@ -50,4 +52,4 @@ const NotificationContainer = () => {
 }
 
 
-export default NotificationContainer;
+export default Notifications;

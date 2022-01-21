@@ -22,7 +22,7 @@ import './styles/global.scss';
 import './styles/main_layout.scss';
 import './styles/profile_overview.scss';
 import NotificationContext, { NotificationHandler } from './contexts/NotificationContext';
-import NotificationContainer from './components/notification/NotificationContainer';
+import Notifications from './components/notification/Notifications';
 
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
@@ -64,7 +64,7 @@ const App = (): JSX.Element => {
 	return (
 		<LoginContext.Provider value={fetchStatusValue}>
 			<NotificationContext.Provider value={notificationHandler}>
-				<NotificationContainer />
+				<Notifications />
 				<ModalContext.Provider value={{ modalProps, setModalProps }}>
 					<GenericModal {...modalProps} />
 					{fetchStatus && <div className="App">
