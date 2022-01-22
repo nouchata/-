@@ -9,7 +9,11 @@ const NotificationCenter = () => {
 
 	return (
 		<div className={`notification-center ${open ? 'open' : ''}`}>
-			<div className="notification-center-open-button" onClick={() => setOpen(!open)}>
+			<div className="notification-center-open-button" onClick={() => {
+				setOpen(!open)
+				if (notificationHandler)
+					notificationHandler.show_new_notification = false;
+			}}>
 				<p className='notification-center-open-count'>{notificationHandler?.numberOfNotifications || 0}</p>
 				<img src={bell} alt="bell" />
 			</div>

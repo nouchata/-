@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import React from 'react';
+import { createContext } from 'react';
 
 type CallBacks = {
 	setNotificationHandler: (socket: NotificationHandler) => void;
@@ -58,27 +58,44 @@ export class NotificationNH {
 		this._uuid = uuid;
 	}
 
-	public get openAction(): (() => void ) | undefined {
+	public get openAction(): (() => void) | undefined {
 		return this._openAction;
 	}
 }
 
 
-export class NotificationHandler
-{
+export class NotificationHandler {
 	private _callbacks: CallBacks;
-
 	private _notifications: NotificationNH[];
+	private _show_new_notification: boolean;
+	private _show_new_notification_timeout?: NodeJS.Timeout;
 
-	private _updateNotificationHandler()
-	{
-		const notificationHandler = new NotificationHandler(this._callbacks, this._notifications);
+	private _updateNotificationHandler() {
+		const notificationHandler = new NotificationHandler(this._callbacks, this._notifications, this._show_new_notification, this._show_new_notification_timeout);
 		this._callbacks.setNotificationHandler(notificationHandler);
 	}
 
-	constructor(callbacks: CallBacks, notifications?: NotificationNH[]) {
+	private _updateNewNotification(show_new_notification: boolean) {
+		if (this._show_new_notification_timeout) {
+			clearTimeout(this._show_new_notification_timeout);
+			this._show_new_notification_timeout = undefined;
+		}
+		this._show_new_notification = show_new_notification;
+
+		if (show_new_notification) {
+			this._show_new_notification_timeout = setTimeout(() => {
+				this._show_new_notification = false;
+				this._updateNotificationHandler();
+			}, 3000);
+		}
+	}
+
+
+	constructor(callbacks: CallBacks, notifications?: NotificationNH[], show_new_notification?: boolean, show_new_notification_timeout?: NodeJS.Timeout) {
 		this._callbacks = callbacks;
 		this._notifications = notifications || [];
+		this._show_new_notification = show_new_notification || false;
+		this._show_new_notification_timeout = show_new_notification_timeout;
 	}
 
 	/*
@@ -105,6 +122,7 @@ export class NotificationHandler
 		}
 		// push front
 		this._notifications.unshift(notification);
+		this._updateNewNotification(true);
 		this._updateNotificationHandler();
 		return uuid;
 	}
@@ -114,6 +132,7 @@ export class NotificationHandler
 	*/
 	public removeNotification(uuid: string): void {
 		this._notifications = this._notifications.filter(n => n.uuid !== uuid);
+		this._updateNewNotification(false);
 		this._updateNotificationHandler();
 	}
 
@@ -123,6 +142,7 @@ export class NotificationHandler
 
 	public removeNotificationContext(context: string): void {
 		this._notifications = this._notifications.filter(n => n.context !== context);
+		this._updateNewNotification(false);
 		this._updateNotificationHandler();
 	}
 
@@ -131,13 +151,14 @@ export class NotificationHandler
 	*/
 	public removeAllNotifications(): void {
 		this._notifications = [];
+		this._updateNewNotification(false);
 		this._updateNotificationHandler();
 	}
 
 	/*
 	** get all notifications
 	*/
-	public get notifications(){
+	public get notifications() {
 		return this._notifications;
 	}
 
@@ -158,12 +179,21 @@ export class NotificationHandler
 	/*
 	** get the number of notifications for a context
 	*/
-	public  getNumberOfNotificationsForContext(context: string): number {
+	public getNumberOfNotificationsForContext(context: string): number {
 		return this._notifications.filter(n => n.context === context).length;
+	}
+
+	public get show_new_notification(): boolean {
+		return this._show_new_notification;
+	}
+
+	public set show_new_notification(show_new_notification: boolean) {
+		this._updateNewNotification(show_new_notification);
+		this._updateNotificationHandler();
 	}
 
 }
 
-const NotificationContext = React.createContext<NotificationHandler | undefined>(undefined);
+const NotificationContext = createContext<NotificationHandler | undefined>(undefined);
 
 export default NotificationContext;
