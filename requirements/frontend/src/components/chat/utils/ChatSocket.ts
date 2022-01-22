@@ -4,7 +4,7 @@ import socketIOClient, { Socket } from "socket.io-client";
 
 type CallBacks = {
 	setChatSocket: (socket: ChatSocket) => void;
-	onMessage?: (message: MessageDto & { channelId: number }) => void;
+	onMessage?: (message: MessageDto, channel: ChannelDto) => void;
 }
 
 
@@ -56,11 +56,14 @@ export class ChatSocket {
 			// we register the event
 			this._socket.on("receiveMessage", (msg: MessageDto & { channelId: number }) => {
 				// add message to channel matching channelId
-				this._channels.find(channel => channel.id === msg.channelId)?.messages.push(msg);
-				// we update the state
-				this._updateChatSocket();
-				// we call the callback if it exists
-				this._callbacks.onMessage && this._callbacks.onMessage(msg);
+				let channel_found = this._channels.find(channel => channel.id === msg.channelId);
+				if (channel_found) {
+					channel_found.messages.push(msg);
+					if (this._callbacks.onMessage)
+						this._callbacks.onMessage(msg, channel_found);
+					this._updateChatSocket();
+
+				}
 			});
 
 			this._socket.on('newUser', (user: User & { channelId: number }) => {
@@ -80,7 +83,6 @@ export class ChatSocket {
 					let channel = this._channels.find(channel => channel.id === user.channelId);
 					if (channel) {
 						channel.users = channel.users.filter(u => u.id !== user.id);
-						this._channels = this._channels.map(channel => channel.id === user.channelId ? channel : channel);
 					}
 
 				}
@@ -101,6 +103,12 @@ export class ChatSocket {
 	public get channels() {
 		return this._channels;
 	}
-	// setters
+	
+	/*
+	** update callback function
+	*/
+	public set onMessage(callback: (message: MessageDto, channel: ChannelDto) => void) {
+		this._callbacks.onMessage = callback;
+	}
 
 }

@@ -75,7 +75,7 @@ export class ChannelService {
 	}
 
 	async getChannel(channelId: number): Promise<Channel> {
-		return this.channelRepository.findOne(channelId, { relations: ['owner', 'users'] });
+		return this.channelRepository.findOne(channelId, { relations: ['users', 'owner', 'admins', 'messages'] });
 	}
 
 	async getPublicChannels(): Promise<Channel[]> {

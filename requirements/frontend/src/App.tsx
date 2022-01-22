@@ -10,7 +10,6 @@ import LoadingContent from './LoadingContent';
 import { RequestWrapper } from './utils/RequestWrapper'; // eslint-disable-line
 
 import Profile from './components/profile/Profile';
-import Chat from './components/chat/Chat';
 import Error from './components/utils/Error';
 import GenericModal from './components/utils/GenericModal';
 import { GenericModalProps } from './components/utils/GenericModal';
@@ -22,10 +21,20 @@ import JoyAsset from './assets/homepage/joystick.png';
 import './styles/global.scss';
 import './styles/main_layout.scss';
 import './styles/profile_overview.scss';
+import NotificationContext, { NotificationHandler } from './contexts/NotificationContext';
+import Notifications from './components/notification/Notifications';
 
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
 	const [modalProps, setModalProps] = useState<GenericModalProps>({ show: false, content: <div /> });
+	const [notificationHandler, setNotificationHandler] = useState<NotificationHandler>();
+
+	useEffect(() => {
+		if (!notificationHandler)
+			setNotificationHandler(new NotificationHandler({
+				setNotificationHandler: setNotificationHandler,
+			}));
+	}, [notificationHandler]);
 
 	/* should consider to change that at some point */
 	const fetchStatusValue = useMemo(
@@ -37,7 +46,7 @@ const App = (): JSX.Element => {
 	useEffect(() => {
 		(async () => {
 			while (true) { /* 1.5s cyclic fetching of user data & backend server uptime */
-				let status_data: FetchStatusData = {loggedIn: false, fetched: false};
+				let status_data: FetchStatusData = { loggedIn: false, fetched: false };
 				const res = await RequestWrapper.get<FetchStatusData>('/auth/status');
 				if (res) {
 					status_data = res;
@@ -45,7 +54,7 @@ const App = (): JSX.Element => {
 				}
 				if (!fetchStatus || (fetchStatus && status_data && !fetchStatusCompare(fetchStatus, status_data))) {
 					setFetchStatus(status_data);
-					break ;
+					break;
 				}
 				await new Promise((resolve) => setTimeout(() => resolve(0), 1500));
 			}
@@ -54,53 +63,55 @@ const App = (): JSX.Element => {
 
 	return (
 		<LoginContext.Provider value={fetchStatusValue}>
-		<ModalContext.Provider value={{modalProps, setModalProps}}>
-			<GenericModal {...modalProps} />
-			{fetchStatus && <div className="App">
-				{fetchStatus.loggedIn && /* PLAY AND CHAT BUTTONS */
-					<div className='material-like-fab'> 
-						<button><img src={ChatAsset} alt='Chats'/></button>
-						<button><img src={JoyAsset} alt='Play'/></button>
-					</div>
-				}
-				<div className='main-field'>
-					<div className='main-content'>
-						{fetchStatus.fetched ?
-						<Router>
-							<Switch>
-								{fetchStatus.loggedIn && <Route path="/profile/:id"><Profile /></Route>}
-								{fetchStatus.loggedIn && <Route path="/chat"><Chat /></Route>}
-								{fetchStatus.loggedIn && <Route path="/homepage"><Homepage /></Route>}
-								<Route path="/login"><Login /></Route>
-								<Route path="/">
-									{fetchStatus.loggedIn ?
-									<Redirect to='/homepage' />
-									:
-									<>
-										<h1> You are not logged in ! </h1>
-										<div>
-											<Link to="/login">Login</Link>
-										</div>
-									</>
-									}
-								</Route>
-							</Switch>
-						</Router>
-						: <Error errorCode='503' message='Server Unreachable' />
+			<NotificationContext.Provider value={notificationHandler}>
+				<Notifications />
+				<ModalContext.Provider value={{ modalProps, setModalProps }}>
+					<GenericModal {...modalProps} />
+					{fetchStatus && <div className="App">
+						{fetchStatus.loggedIn && /* PLAY AND CHAT BUTTONS */
+							<div className='material-like-fab'>
+								<button><img src={ChatAsset} alt='Chats' /></button>
+								<button><img src={JoyAsset} alt='Play' /></button>
+							</div>
 						}
+						<div className='main-field'>
+							<div className='main-content'>
+								{fetchStatus.fetched ?
+									<Router>
+										<Switch>
+											{fetchStatus.loggedIn && <Route path="/profile/:id"><Profile /></Route>}
+											{fetchStatus.loggedIn && <Route path="/homepage"><Homepage /></Route>}
+											<Route path="/login"><Login /></Route>
+											<Route path="/">
+												{fetchStatus.loggedIn ?
+													<Redirect to='/homepage' />
+													:
+													<>
+														<h1> You are not logged in ! </h1>
+														<div>
+															<Link to="/login">Login</Link>
+														</div>
+													</>
+												}
+											</Route>
+										</Switch>
+									</Router>
+									: <Error errorCode='503' message='Server Unreachable' />
+								}
+							</div>
+							{fetchStatus.loggedIn && <HSocialField />} {/* CHAT AND FRIEND THING */}
+						</div>
 					</div>
-					{fetchStatus.loggedIn && <HSocialField />} {/* CHAT AND FRIEND THING */}
-				</div>
-			</div>
-			}
-			{!fetchStatus && <LoadingContent />}
-		</ModalContext.Provider>
+					}
+					{!fetchStatus && <LoadingContent />}
+				</ModalContext.Provider>
+			</NotificationContext.Provider>
 		</LoginContext.Provider>
 	);
 }
 
-function fetchStatusCompare(first: FetchStatusData, second: FetchStatusData) : boolean {
-	if (first.loggedIn !== second.loggedIn || 
+function fetchStatusCompare(first: FetchStatusData, second: FetchStatusData): boolean {
+	if (first.loggedIn !== second.loggedIn ||
 		first.fetched !== second.fetched ||
 		typeof first.user !== typeof second.user)
 		return false;
