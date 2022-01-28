@@ -13,7 +13,6 @@ export class FortyTwoGuard extends AuthGuard('42') {
 			needed: request.user.twofa,
 			passed: false
 		};
-		// console.log(request.user);
 		return activate;
 	}
 }

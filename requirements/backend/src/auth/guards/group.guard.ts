@@ -19,7 +19,8 @@ export class GroupGuard implements CanActivate
 		if (request.isAuthenticated())
 		{
 			if ((request.session as Session & Session2FaDTO).twofa.needed
-			&& !(request.session as Session & Session2FaDTO).twofa.passed)
+			&& !(request.session as Session & Session2FaDTO).twofa.passed
+			&& context.getClass().name !== "TfaController")
 				throw new HttpException({
 					status: HttpStatus.UNAUTHORIZED,
 					error: "The 2FA authentication is not fulfilled"

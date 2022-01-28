@@ -36,6 +36,11 @@ export class TfaService {
     }
 
     codeChecker(request: {user: User, session: Session & Session2FaDTO}, code: string) {
-        return authenticator.check(code, request.user.twofa_secret);
+        return (authenticator.check(code, request.user.twofa_secret));
+    }
+
+    
+    tfaStatusChecker(request: {session: Session2FaDTO}) {
+        return (request.session.twofa);
     }
 };
