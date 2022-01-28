@@ -31,4 +31,9 @@ export class TfaService {
         });
         return (svgQrCode);
     }
+
+    // Penser à sauvegarder le secret dans la DB
+    codeChecker(request: {user: User, session: Session & Session2FaDTO}, code: string) {
+        return authenticator.check(code, request.session.twofa.secret);
+    }
 };

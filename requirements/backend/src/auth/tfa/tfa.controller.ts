@@ -1,4 +1,4 @@
-import { Controller, Req, Get } from "@nestjs/common";
+import { Controller, Req, Get, Post, Body, HttpException, HttpStatus } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Session } from "express-session";
 import { User } from "src/user/entities/user.entity";
@@ -26,5 +26,25 @@ export class TfaController {
         return (this.tfaService.generateTfaQrCode(
             await this.tfaService.generateTfaSecret(req)
         ));
+    }
+
+    @ApiResponse({
+		status: 201,
+		description: 'The code is correct'
+	})
+    @ApiResponse({
+		status: 400,
+		description: 'The code isn\'t correct'
+	})
+    @ApiTags('2fa')
+    @Post('checker')
+    validation(@Req() req: {user: User, session: Session & Session2FaDTO}, @Body() body: any) {
+        if (this.tfaService.codeChecker(req, body.givenCode))
+            req.session.twofa.passed = true;
+        else
+            throw new HttpException({
+                status: HttpStatus.BAD_REQUEST,
+                error: 'Your code is either wrong or outdated'
+            }, HttpStatus.BAD_REQUEST);
     }
 }
