@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Observable } from "rxjs";
 import { User } from "src/user/entities/user.entity";
@@ -13,8 +13,14 @@ export class GroupGuard implements CanActivate
 		const request = context.switchToHttp().getRequest();
 		const roles = this.reflector.get<string[]>('roles', context.getHandler());
 
+		// console.log(request.session);
 		if (request.isAuthenticated())
 		{
+			if (request.session.twofa?.needed && !request.session.twofa?.passed)
+				throw new HttpException({
+					status: HttpStatus.UNAUTHORIZED,
+					error: "The 2FA authentication is not fulfilled"
+				}, HttpStatus.UNAUTHORIZED);
 			if (!roles || roles.length === 0)
 				return (true);
 			else

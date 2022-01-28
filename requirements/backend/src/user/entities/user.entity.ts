@@ -132,6 +132,14 @@ export class User implements UserInterface {
 	})
 	status: UserStatus = 'online';
 
+	@Column({
+		default: false
+	})
+	@ApiProperty({
+		description: "Toggled to true if the 2fa authentication is used"
+	})
+	twofa: boolean;
+
 	hasRole(role: UserRole): boolean {
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));

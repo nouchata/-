@@ -35,7 +35,7 @@ export class UserController {
 		const userDB = await this.userService.findUserById(id);
 		const dto = await this.userService.createUserDTO(userDB);
 
-		dto.isEditable = (req.user.id === id);
+		dto.isEditable = (req.user?.id === id);
 		return dto;
 	}
 
