@@ -1,8 +1,9 @@
-import { Controller, Req, Get, Post, Body, HttpException, HttpStatus } from "@nestjs/common";
+import { Controller, Req, Get, Post, Body, HttpException, HttpStatus, ValidationPipe } from "@nestjs/common";
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Session } from "express-session";
 import { User } from "src/user/entities/user.entity";
-import { Session2FaDTO } from "./session-twofa.dto";
+import { CheckerBodyDTO } from "./dtos/checker-body.dto";
+import { Session2FaDTO } from "./dtos/session-2fa.dto";
 import { TfaService } from "./tfa.service";
 
 
@@ -38,7 +39,10 @@ export class TfaController {
 	})
     @ApiTags('2fa')
     @Post('checker')
-    validation(@Req() req: {user: User, session: Session & Session2FaDTO}, @Body() body: any) {
+    validation(
+        @Req() req: {user: User, session: Session & Session2FaDTO},
+        @Body(new ValidationPipe()) body: CheckerBodyDTO
+    ) {
         if (this.tfaService.codeChecker(req, body.givenCode))
             req.session.twofa.passed = true;
         else

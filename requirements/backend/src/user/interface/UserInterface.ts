@@ -1,3 +1,6 @@
+import { MatchHistory } from "../entities/match-history.entity";
+import { User } from "../entities/user.entity";
+
 export type UserRole = 'user' | 'moderator' | 'admin';
 
 export type UserStatus = 'online' | 'offline' | 'ingame';
@@ -9,4 +12,8 @@ export interface UserInterface {
 	email?: string;
 	picture?: string;
 	role: UserRole;
+	elo?: number;
+	losses?: number;
+	history?: MatchHistory[];
+	friends?: User[];
 }

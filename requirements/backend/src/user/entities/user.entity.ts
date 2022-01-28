@@ -140,6 +140,15 @@ export class User implements UserInterface {
 	})
 	twofa: boolean;
 
+	@Column({
+		default: true
+	})
+	@ApiProperty({
+		description: "Filled if 2FA is enabled (16 chars)",
+		example: "OFUQCLIWNMOQ24BF"
+	})
+	twofa_secret: string = '';
+
 	hasRole(role: UserRole): boolean {
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));

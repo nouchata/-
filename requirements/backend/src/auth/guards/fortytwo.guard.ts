@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Session } from "inspector";
-import { Session2FaDTO } from "../tfa/session-twofa.dto";
+import { Session2FaDTO } from "../../tfa/dtos/session-2fa.dto";
 
 @Injectable()
 export class FortyTwoGuard extends AuthGuard('42') {
@@ -11,8 +11,7 @@ export class FortyTwoGuard extends AuthGuard('42') {
 		await super.logIn(request);
 		(request.session as Session & Session2FaDTO).twofa = { 
 			needed: request.user.twofa,
-			passed: false,
-			secret: ''
+			passed: false
 		};
 		// console.log(request.user);
 		return activate;

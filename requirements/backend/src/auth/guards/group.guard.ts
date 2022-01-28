@@ -4,7 +4,7 @@ import { Session } from "express-session";
 import { Observable } from "rxjs";
 import { User } from "src/user/entities/user.entity";
 import { UserRole } from "src/user/interface/UserInterface";
-import { Session2FaDTO } from "../tfa/session-twofa.dto";
+import { Session2FaDTO } from "../../tfa/dtos/session-2fa.dto";
 
 @Injectable()
 export class GroupGuard implements CanActivate
