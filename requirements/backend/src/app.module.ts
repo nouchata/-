@@ -12,6 +12,7 @@ import { Message } from './chat/entities/message.entity';
 import { ChatModule } from './chat/chat.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path/posix';
+import { TfaModule } from './auth/tfa/tfa.module';
 
 let dyn_import: DynamicModule[] = []
 
@@ -50,6 +51,7 @@ else {
 	}), UserModule,
 		AuthModule,
 		ChatModule,
+		TfaModule,
 		PassportModule.register({ session: true }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'public')
