@@ -21,13 +21,14 @@ $pom-avatar-padding: 5px;
 			//border: 1px solid black;
 			flex: 0 0 auto;
 			display: flex;
-			flex-flow: row nowrap;
+			flex-flow: column nowrap;
 			justify-content: center;
 			align-items: center;
 
 			.pom-gp-ac-content {
-				flex: 0 1 100px;
-				height: 100px;
+				flex: 0 0 100px;
+				width: 100px;
+				max-height: 100px;
 				border: 1px solid black;
 				border-radius: 5px;
 				padding: $pom-avatar-padding;
@@ -66,6 +67,17 @@ $pom-avatar-padding: 5px;
 					height: 100%;
 					object-fit: cover;
 				}
+			}
+
+			> button {
+				border: 0;
+				padding: 0;
+				background: 0;
+				cursor: pointer;
+			}
+
+			> button:hover {
+				color: rgba(0, 0, 0, 0.4);
 			}
 
 		}
@@ -118,8 +130,9 @@ $pom-avatar-padding: 5px;
 				flex: 0 0 40%;
 
 				.pom-gp-ac-content {
-					flex: 0 1 200px;
-					height: 200px;
+					flex: 0 0 200px;
+					width: 200px;
+					max-height: 200px;
 				}
 			}
 

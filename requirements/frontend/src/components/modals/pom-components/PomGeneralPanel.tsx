@@ -2,13 +2,15 @@ import { FetchStatusData } from "../../../types/FetchStatusData";
 
 import "./styles/general_panel.scss";
 import EditAsset from "../../../assets/profile/write.png";
-import { useState } from "react";
+import React, { useRef, useState } from "react";
 
 const PomGeneralPanel = (props: {
 	fetchStatus: FetchStatusData,
 	setFetchStatus: (fetchStatus: FetchStatusData) => void
 }) : JSX.Element => {
 	const [ editAvatarBtnState, setEditAvatarBtnState ] = useState<boolean>(false);
+	const [ uploadedAvatarBlob, setUploadedAvatarBlob ] = useState<string>('');
+	const inputAvatar = useRef<HTMLInputElement>(null);
 
 	return (
 		<form className="pom-general-panel">
@@ -25,14 +27,33 @@ const PomGeneralPanel = (props: {
 								className="pom-gp-ac-edit"
 							>
 								<img alt="edit avatar" src={EditAsset}/>
-								<input id="pom-avatar-upload" type="file" />		
+								<input 
+									id="pom-avatar-upload"
+									type="file"
+									ref={inputAvatar}
+									onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+										if (e.target.files?.length && !e.target.files[0].type.search('image/[a-zA-Z]+'))
+											setUploadedAvatarBlob(URL.createObjectURL(e.target.files[0]));
+										else {
+											if (inputAvatar.current)
+												inputAvatar.current.value = '';
+											setUploadedAvatarBlob('');
+										}
+									}}
+								/>
 							</label>
 							<img 
-								src={process.env.REACT_APP_BACKEND_ADDRESS as string + 
+								src={uploadedAvatarBlob || process.env.REACT_APP_BACKEND_ADDRESS as string + 
 									'/' + props.fetchStatus.user?.picture}
 								alt='profile'
 							/>
 						</div>
+						<button onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+							e.preventDefault();
+							if (inputAvatar.current)
+								inputAvatar.current.value = '';
+							setUploadedAvatarBlob('');
+						}} disabled={!uploadedAvatarBlob.length}>Reset</button>
 					</div>
 					<div className="pom-gp-text-container">
 						<div className="pom-gp-tc-textfield">
