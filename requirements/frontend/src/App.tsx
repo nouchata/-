@@ -64,9 +64,9 @@ const App = (): JSX.Element => {
 	return (
 		<LoginContext.Provider value={fetchStatusValue}>
 			<NotificationContext.Provider value={notificationHandler}>
-				<Notifications />
 				<ModalContext.Provider value={{ modalProps, setModalProps }}>
 					<GenericModal {...modalProps} />
+					<Notifications />
 					{fetchStatus && <div className="App">
 						{fetchStatus.loggedIn && /* PLAY AND CHAT BUTTONS */
 							<div className='material-like-fab'>

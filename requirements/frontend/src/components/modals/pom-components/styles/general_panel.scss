@@ -1,0 +1,80 @@
+$pom-avatar-padding: 5px;
+
+.pom-general-panel {
+	width: 100%;
+	height: 100%;
+	border: 1px solid black;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: center;
+	gap: 2px;
+
+	> * {
+		border: 1px solid black;
+		
+	}
+
+	.pom-gp-data {
+		flex: 100%;
+		display: flex;
+		flex-flow: row wrap;
+		overflow-y: scroll;
+
+		.pom-gp-avatar-container {
+			box-sizing: border-box;
+			border: 1px solid black;
+			flex: 0 0 40%;
+			display: flex;
+			flex-flow: row nowrap;
+			justify-content: center;
+			align-items: center;
+
+			.pom-gp-ac-content {
+				flex: 0 1 200px;
+				height: 200px;
+				border: 1px solid black;
+				border-radius: 5px;
+				padding: $pom-avatar-padding;
+				position: relative;
+
+				.pom-gp-ac-edit {
+					width: calc(100% - ($pom-avatar-padding * 2));
+					height: calc(100% - ($pom-avatar-padding * 2));
+					position: absolute;
+					top: $pom-avatar-padding;
+					left: $pom-avatar-padding;
+					border: 0;
+					background-color: rgba(0, 0, 0, 0.2);
+					cursor: pointer;
+					display: flex;
+					flex-flow: row nowrap;
+					justify-content: center;
+					align-items: center;
+
+					> img {
+						flex: 0 0 50%;
+						//width: 50%;
+						height: 50%;
+						filter: invert(100);
+						opacity: 0.8;
+					}
+				}
+
+				> input {
+					display: none;
+				}
+
+				> img {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
+				}
+			}
+
+		}
+	}
+
+	.pom-gp-save {
+		flex: 0 0 50px;
+	}
+}
