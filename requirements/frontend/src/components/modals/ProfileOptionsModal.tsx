@@ -1,7 +1,7 @@
-
 import React, { useContext, useState } from 'react';
 import LoginContext from '../../contexts/LoginContext';
 import { FetchStatusData } from '../../types/FetchStatusData';
+import Pom2FAPanel from './pom-components/Pom2FAPanel';
 import PomGeneralPanel from './pom-components/PomGeneralPanel';
 import './styles/mprofile_options.scss'
 
@@ -25,7 +25,10 @@ const ProfileOptionsModal = () : JSX.Element => {
 	} = useContext(LoginContext);
 	const [panelSelected, setPanelSelected] = useState<number>(0);
 
-	const panels : Array<JSX.Element> = [ <PomGeneralPanel {...fetchStatusValue} /> ]
+	const panels : Array<JSX.Element> = [ 
+		<PomGeneralPanel {...fetchStatusValue} />,
+		<Pom2FAPanel {...fetchStatusValue} />
+	];
 	
 	return (
 		<div className="profile-options-modal">

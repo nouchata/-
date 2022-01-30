@@ -24,7 +24,11 @@ export class TfaService {
 
     generateTfaQrCode(otpauthUrl: string) {
         let svgQrCode: string;
-        qrcode.toString(otpauthUrl, { type: 'svg' }, (err, val) => {
+        qrcode.toString(otpauthUrl, { 
+            type: 'svg',
+            color: { light: '#0000' },
+            margin: 0
+        }, (err, val) => {
             if (err)
                 throw new HttpException({
                     status: HttpStatus.INTERNAL_SERVER_ERROR,

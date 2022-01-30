@@ -30,6 +30,7 @@ const PomGeneralPanel = (props: {
 								<input 
 									id="pom-avatar-upload"
 									type="file"
+									accept='image/*'
 									ref={inputAvatar}
 									onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 										if (e.target.files?.length && !e.target.files[0].type.search('image/[a-zA-Z]+'))

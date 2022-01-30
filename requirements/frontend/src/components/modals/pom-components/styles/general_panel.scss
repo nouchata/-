@@ -123,11 +123,12 @@ $pom-avatar-padding: 5px;
 	.pom-general-panel {
 		.pom-gp-data {
 			flex-flow: row nowrap;
+			justify-content: space-evenly;
 			gap: 0;
 			padding-top: 0;
 
 			.pom-gp-avatar-container {
-				flex: 0 0 40%;
+				flex: 0 0 200px;
 
 				.pom-gp-ac-content {
 					flex: 0 0 200px;
@@ -137,7 +138,7 @@ $pom-avatar-padding: 5px;
 			}
 
 			.pom-gp-text-container {
-				flex: 100%;
+				flex: 0 0 50%;
 				display: flex;
 				flex-flow: row wrap;
 				align-items: center;
