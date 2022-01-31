@@ -1,4 +1,3 @@
-import { AxiosResponse } from "axios";
 import { useEffect, useRef, useState } from "react";
 import "../../styles/tfa_code_input.scss";
 import { RequestWrapper } from "../../utils/RequestWrapper";
@@ -55,25 +54,28 @@ const codeFetcher = async(
 		{ givenCode: stitchedCode },
 		(error) => { returnCode = error.response.status }
 	);
-	for (const pair of inputValues) {
-		(pair[1] as ((num: undefined) => void))(undefined);
-	}
-	if (returnCode === '201') {
+	if (returnCode === '201') { // a good attempt will freeze the component
 		backResponse(TCIState.YES);
 		for (const ref of inputRefs) {
 			(ref.current as any).style.borderColor = 'green';
-			(ref.current as any).style.boxShadow = '0px 0px 10px 0px rgba(0, 255, 0, 0.5)';
+			(ref.current as any).style.color = 'green';
+			(ref.current as any).style.boxShadow = '0px 0px 10px 0px rgba(0, 255, 0, 0.2)';
 			(ref.current as any).style.backgroundColor = 'rgba(255, 255, 255, 0.6)';
 		}
 	} else { // a failed attempt will show red border for 0.5s and then reset
 		backResponse(TCIState.NO);
 		for (const ref of inputRefs) {
 			(ref.current as any).style.borderColor = 'red';
-			(ref.current as any).style.boxShadow = '0px 0px 10px 0px rgba(255, 0, 0, 0.5)';
+			(ref.current as any).style.color = 'red';
+			(ref.current as any).style.boxShadow = '0px 0px 10px 0px rgba(255, 0, 0, 0.2)';
 		}
 		setTimeout(() => {
+			for (const pair of inputValues) {
+				(pair[1] as ((num: undefined) => void))(undefined);
+			}
 			for (const ref of inputRefs) {
 				(ref.current as any).style.borderColor = 'black';
+				(ref.current as any).style.color = 'black';
 				(ref.current as any).style.boxShadow = 'none';
 			}
 			setCantInput(false);

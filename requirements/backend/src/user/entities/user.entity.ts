@@ -153,4 +153,6 @@ export class User implements UserInterface {
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
 	}
+
+	keepUpOnlineState: (() => void) | undefined = undefined;
 }
