@@ -16,7 +16,7 @@ const Login = () => {
 	let fetchStatusValue: { fetchStatus: FetchStatusData | undefined; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
 
 	useEffect(() => {
-		if (fetchStatusValue.fetchStatus?.loggedIn === false && !queryCode) {
+		if (!fetchStatusValue.fetchStatus?.loggedIn && !queryCode) {
 			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string +
 				'/auth/login', 'Login 42', 'scrollbars=no,resizable=no,' +
 			'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
@@ -43,7 +43,7 @@ const Login = () => {
 						});
 					}
 					);
-				if (res) {
+				if (res) { // add partial evaluation here
 					setDataSet({
 						h1: 'You are logged in !',
 						p: 'The window will automatically close.',

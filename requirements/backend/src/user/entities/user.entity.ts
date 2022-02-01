@@ -130,7 +130,7 @@ export class User implements UserInterface {
 		description: "The state of the user",
 		example: "online",
 	})
-	status: UserStatus = 'online';
+	status: UserStatus;
 
 	@Column({
 		default: false
@@ -147,12 +147,10 @@ export class User implements UserInterface {
 		description: "Filled if 2FA is enabled (16 chars)",
 		example: "OFUQCLIWNMOQ24BF"
 	})
-	twofa_secret: string = '';
+	twofa_secret: string;
 
 	hasRole(role: UserRole): boolean {
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
 		return (roles_table.indexOf(role) <= roles_table.indexOf(this.role));
 	}
-
-	keepUpOnlineState: (() => void) | undefined = undefined;
 }

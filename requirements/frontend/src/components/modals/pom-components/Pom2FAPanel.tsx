@@ -22,6 +22,7 @@ const spbLabel : Array<{ style: any, p: string }> = [
 	{ style: { color: 'red', borderColor: 'red' }, p: 'Disable 2FA' },
 	{ style: undefined, p: '...' },
 	{ style: undefined, p: 'Server error' },
+	{ style: { color: 'black', borderColor: 'black' }, p: '2FA disabled' },
 ];
 
 const tfaBtnHandler = async(
@@ -37,7 +38,19 @@ const tfaBtnHandler = async(
 		setQrCode(parse(code as string) as JSX.Element);
 		setTfaStartProcedure(true);
 	} else {
+		let form = new FormData();
+		let failedReq : boolean = false;
 
+		form.append('twofa', JSON.stringify(false));
+		let ret = await RequestWrapper.post(
+			'/user/edit', form,
+			(error) => {
+						setBtnText(3);
+						failedReq = true;
+			}
+		);
+		if (!failedReq)
+			setBtnText(0);
 	}
 };
 

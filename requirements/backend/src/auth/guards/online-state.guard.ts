@@ -1,10 +1,11 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Session } from "express-session";
 import { Observable } from "rxjs";
 import { Session2FaDTO } from "src/tfa/dtos/session-2fa.dto";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
+import { SessionOnlineStateDTO } from "../dtos/session-online-state.dto";
 
 @Injectable()
 export class OnlineStateGuard implements CanActivate {
@@ -27,13 +28,13 @@ export class OnlineStateGuard implements CanActivate {
 			&& !(contextUser.session as Session & Session2FaDTO).twofa.passed)
 				return (true);
 			// switch to online if the user wasn't
-			if ((contextUser.user as User).status === 'offline') {
+			if (!(contextUser.user as User).status || (contextUser.user as User).status === 'offline') {
 				(contextUser.user as User).status = 'online';
 				await this.userRepo.save((contextUser.user as User));
 			}
 			// set the debounced closure if it wasn't set
-			if (!(contextUser.user as User).keepUpOnlineState) {
-				(contextUser.user as User).keepUpOnlineState = ((userRepo : Repository<User>, userId: number) => {
+			if (!(contextUser.session as Session & SessionOnlineStateDTO).keepUpOnlineState) {
+				(contextUser.session as Session & SessionOnlineStateDTO).keepUpOnlineState = ((userRepo : Repository<User>, userId: number) => {
 					let flag: NodeJS.Timeout;
 					return function() : void {
 						if (flag)
@@ -48,7 +49,7 @@ export class OnlineStateGuard implements CanActivate {
 				})(this.userRepo, (contextUser.user as User).id);
 			}
 			// debounce
-			(contextUser.user as User).keepUpOnlineState();
+			(contextUser.session as Session & SessionOnlineStateDTO).keepUpOnlineState();
 		}
 		return (true);
 	}
