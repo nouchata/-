@@ -42,7 +42,7 @@ const tfaBtnHandler = async(
 		let failedReq : boolean = false;
 
 		form.append('twofa', JSON.stringify(false));
-		let ret = await RequestWrapper.post(
+		await RequestWrapper.post(
 			'/user/edit', form,
 			(error) => {
 						setBtnText(3);
@@ -67,16 +67,12 @@ const Pom2FAPanel = (props: {
 		if (authCodeStatus === TCIState.YES)
 			(async() => {
 				let form = new FormData();
-				let failedReq : boolean = false;
 
 				form.append('twofa', JSON.stringify(true));
 				await RequestWrapper.post(
 					'/user/edit',
 					form,
-					(error) => {
-						setAuthCodeStatus(4);
-						failedReq = true;
-					}
+					(error) => setAuthCodeStatus(4)
 				);
 			})();
 	}, [authCodeStatus]);

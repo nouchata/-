@@ -16,7 +16,6 @@ const Login = () => {
 	const queryCode = useQuery().get('code');
 	const history = useHistory();
 	const fetchStatusValue: { fetchStatus: FetchStatusData | undefined; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
-	const [ authCodeStatus, setAuthCodeStatus ] = useState<TCIState>(TCIState.INITIAL);
 
 	useEffect(() => {
 		if (!fetchStatusValue.fetchStatus?.loggedIn && !queryCode) {
@@ -54,8 +53,8 @@ const Login = () => {
 						p: 'The window will automatically close.',
 						img: tickAsset
 					});
+					window.close();
 				}
-				setTimeout(() => window.close(), 1000);
 			})();
 		} else if (fetchStatusValue.fetchStatus?.loggedIn === LoginState.LOGGED) {
 			setDataSet({
@@ -74,7 +73,7 @@ const Login = () => {
 			<div className="tfa-login-stuff">
 				<img src={GoogleAsset} className="onthespot" alt="google auth logo" />
 				<div className="login-2fa-container">
-					<TFACodeInput backResponse={setAuthCodeStatus} />
+					<TFACodeInput backResponse={(arg: TCIState) => {}} />
 				</div>
 			</div>
 		:
