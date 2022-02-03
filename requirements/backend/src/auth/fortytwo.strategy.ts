@@ -18,6 +18,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 
 	async validate(_accessToken: string, _refreshToken: string, profile: Profile42, cb: (err: Error, user: User) => void)
 	{
+		// console.log('validate breakpoint');
 		let email: string;
 		let picture:string;
 

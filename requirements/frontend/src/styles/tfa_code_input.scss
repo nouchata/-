@@ -1,0 +1,39 @@
+.tfa-code-input {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-flow: row nowrap;
+	gap: 1%;
+
+	> * {
+		display: block;
+		flex: 100%;
+		min-width: 0;
+		font-size: 3em;
+		text-align: center;
+	}
+
+	.separator {	
+		display: flex;
+		flex-flow: row nowrap;
+		overflow: hidden;
+		justify-content: center;
+		align-items: center;
+	}
+
+	input {
+		border-radius: 2px;
+		border: 1px solid black;
+		background-color: rgba(255, 255, 255, 0.4);
+	}
+
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	input[type=number] {
+		-moz-appearance: textfield;
+	}
+}

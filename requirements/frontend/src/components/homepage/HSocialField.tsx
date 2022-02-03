@@ -22,13 +22,17 @@ import { FetchStatusData } from '../../types/FetchStatusData';
 import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
 import NotificationContext from '../../contexts/NotificationContext';
+import { GenericModalProps } from '../utils/GenericModal';
 
 type ChatState = {
 	state: "OPENED" | "MINIMIZED" | "CLOSED",
 };
 
-let msgModalSettings = { show: true, content: <p>msg</p> };
-let friendModalSettings = { show: true, content: <p>x</p> };
+const msgModalSettings : GenericModalProps = 
+{ show: true, content: <p>msg</p>, height: '80%', width: '80%' };
+
+const friendModalSettings : GenericModalProps = 
+{ show: true, content: <p>x</p> };
 
 const HSocialField = () => {
 	const [isFriendTabSelected, setIsFriendTabSelected] = useState<boolean>(false);

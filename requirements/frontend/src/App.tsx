@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch, Redirect } from 'react-router-dom';
-import { FetchStatusData } from './types/FetchStatusData';
+import { FetchStatusData, LoginState } from './types/FetchStatusData';
 import LoginContext from './contexts/LoginContext';
 import ModalContext from './contexts/ModalContext';
 import Homepage from './Homepage';
@@ -46,7 +46,7 @@ const App = (): JSX.Element => {
 	useEffect(() => {
 		(async () => {
 			while (true) { /* 1.5s cyclic fetching of user data & backend server uptime */
-				let status_data: FetchStatusData = { loggedIn: false, fetched: false };
+				let status_data: FetchStatusData = { loggedIn: LoginState.NOT_LOGGED, fetched: false };
 				const res = await RequestWrapper.get<FetchStatusData>('/auth/status');
 				if (res) {
 					status_data = res;
@@ -64,11 +64,13 @@ const App = (): JSX.Element => {
 	return (
 		<LoginContext.Provider value={fetchStatusValue}>
 			<NotificationContext.Provider value={notificationHandler}>
-				<Notifications />
 				<ModalContext.Provider value={{ modalProps, setModalProps }}>
-					<GenericModal {...modalProps} />
+					{fetchStatus?.loggedIn === LoginState.LOGGED && <>
+						<GenericModal {...modalProps} />
+						<Notifications />
+					</>}
 					{fetchStatus && <div className="App">
-						{fetchStatus.loggedIn && /* PLAY AND CHAT BUTTONS */
+						{fetchStatus.loggedIn === LoginState.LOGGED && /* PLAY AND CHAT BUTTONS */
 							<div className='material-like-fab'>
 								<button><img src={ChatAsset} alt='Chats' /></button>
 								<button><img src={JoyAsset} alt='Play' /></button>
@@ -78,12 +80,16 @@ const App = (): JSX.Element => {
 							<div className='main-content'>
 								{fetchStatus.fetched ?
 									<Router>
+										{fetchStatus.loggedIn === LoginState.LOGGED &&
 										<Switch>
-											{fetchStatus.loggedIn && <Route path="/profile/:id"><Profile /></Route>}
-											{fetchStatus.loggedIn && <Route path="/homepage"><Homepage /></Route>}
+												<Route path="/profile/:id"><Profile /></Route>
+												<Route path="/homepage"><Homepage /></Route>
+										</Switch>
+										}
+										<Switch>
 											<Route path="/login"><Login /></Route>
 											<Route path="/">
-												{fetchStatus.loggedIn ?
+												{fetchStatus.loggedIn === LoginState.LOGGED ?
 													<Redirect to='/homepage' />
 													:
 													<>
@@ -99,7 +105,7 @@ const App = (): JSX.Element => {
 									: <Error errorCode='503' message='Server Unreachable' />
 								}
 							</div>
-							{fetchStatus.loggedIn && <HSocialField />} {/* CHAT AND FRIEND THING */}
+							{fetchStatus.loggedIn === LoginState.LOGGED && <HSocialField />} {/* CHAT AND FRIEND THING */}
 						</div>
 					</div>
 					}

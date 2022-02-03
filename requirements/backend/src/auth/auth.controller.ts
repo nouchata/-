@@ -6,7 +6,9 @@ import { AuthService } from './auth.service';
 import { StatusDTO } from './dtos/status.dto';
 import { FortyTwoGuard } from './guards/fortytwo.guard';
 import { GroupGuard } from './guards/group.guard';
+import { OnlineStateGuard } from './guards/online-state.guard';
 
+@UseGuards(OnlineStateGuard)
 @Controller('auth')
 export class AuthController {
 	constructor(private authService: AuthService ) {}

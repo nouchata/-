@@ -17,9 +17,17 @@ const GenericModal = (props: GenericModalProps) : JSX.Element | null => {
 	if (props.show)
 		return (
 			<div className="bg-modal">
-				<div className="modal" style={{height: props.height, width: props.width}} >
+				<div className="modal" style={{height: props.height, flex: `0 1 ${props.width}`}} >
 					{!props.cantBeClosed &&
-					<button onClick={() => setModalProps({show: false, content: <div />})}>
+					<button onClick={() => setModalProps(
+						{
+							show: false, 
+							content: <div />, 
+							cantBeClosed: undefined, 
+							height: undefined, 
+							width: undefined
+						}
+					)}>
 						<img src={CloseAsset} alt="close modal" />
 					</button>}
 					{props.content}

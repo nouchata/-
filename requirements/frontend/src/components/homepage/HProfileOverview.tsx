@@ -5,10 +5,24 @@ import { BrowserRouter as Router, Link } from 'react-router-dom'; // eslint-disa
 import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
 import StarAsset from '../../assets/profile/star.png';
+import { GenericModalProps } from '../utils/GenericModal';
+import ProfileOptionsModal from '../modals/ProfileOptionsModal';
+import { useContext } from 'react';
+import ModalContext from '../../contexts/ModalContext';
+import { RequestWrapper } from '../../utils/RequestWrapper';
 
 //import '../../styles/profile_overview.scss';
 
+const profileOptsModal : GenericModalProps = {
+	show: true,
+	content: <ProfileOptionsModal />,
+	height: '80%',
+	width: '80%'
+}
+
 const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
+	const { setModalProps } = useContext(ModalContext);
+
 	return (
 		<div className='profile-overview'>
 			<Link to={`/profile/${fetchStatus.user?.id}`}><img src={process.env.REACT_APP_BACKEND_ADDRESS as string + '/' + fetchStatus.user?.picture}
@@ -26,8 +40,10 @@ const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
 					</div>
 				</div>
 				<div className='profile-overview-actions'>
-					<button title='Log Out'><img src={CloseAsset} alt='btn' /></button>
-					<button title='Edit Profile'><img src={GearAsset} alt='btn' /></button>
+					<button title='Log Out' onClick={() => RequestWrapper.get('/auth/logout')} ><img src={CloseAsset} alt='btn' /></button>
+					<button title='Edit Profile' onClick={() => setModalProps(profileOptsModal)}>
+						<img src={GearAsset} alt='btn' />
+					</button>
 					<button title='HK'><img src={StarAsset} alt='btn' /></button>
 				</div>
 			</div> 

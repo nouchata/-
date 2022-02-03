@@ -1,17 +1,24 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { User } from "src/user/entities/user.entity";
 
-export class StatusDTO {
+enum LoginState {
+	NOT_LOGGED,
+	PARTIAL,
+	LOGGED
+};
+
+class StatusDTO {
 
 	@ApiProperty({
-		description: "Is user logged in",
-		example: true,
+		description: "Is user logged in"
 	})
-	loggedIn: boolean;
+	loggedIn: LoginState;
 
 	@ApiPropertyOptional({
 		description: "The user object",
 		type: User,
 	})
 	user?: User;
-}
+};
+
+export { StatusDTO, LoginState };

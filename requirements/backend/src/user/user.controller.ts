@@ -35,7 +35,7 @@ export class UserController {
 		const userDB = await this.userService.findUserById(id);
 		const dto = await this.userService.createUserDTO(userDB);
 
-		dto.isEditable = (req.user.id === id);
+		dto.isEditable = (req.user?.id === id);
 		return dto;
 	}
 
@@ -98,15 +98,18 @@ export class UserController {
 	}))
 	async uploadFile(
 		@Req() req,
-		@Body() body: { username: string },
+		@Body() body: { username: string, twofa: string },
 		@UploadedFile() file?: Express.Multer.File,
 	) : Promise<User>
 	{
-		const dto = EditUserDTO.from({
-			id: req.user.id,
-			displayName: body.username,
-			picture: file ? file.filename : undefined
-		})
+		let dto : EditUserDTO = new EditUserDTO();
+		dto.id = req.user.id;
+		if (body.username)
+			dto.displayName = body.username;
+		if (file)
+			dto.picture = file.filename;
+		if (body.twofa)
+			dto.twofa = body.twofa === 'true' ? true : false;
 
 		const prevUser = await this.userService.findUserById(req.user.id);
 		const newUser = await this.userService.editUser(dto);

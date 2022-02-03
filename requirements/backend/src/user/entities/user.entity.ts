@@ -130,7 +130,24 @@ export class User implements UserInterface {
 		description: "The state of the user",
 		example: "online",
 	})
-	status: UserStatus = 'online';
+	status: UserStatus;
+
+	@Column({
+		default: false
+	})
+	@ApiProperty({
+		description: "Toggled to true if the 2fa authentication is used"
+	})
+	twofa: boolean;
+
+	@Column({
+		default: true
+	})
+	@ApiProperty({
+		description: "Filled if 2FA is enabled (16 chars)",
+		example: "OFUQCLIWNMOQ24BF"
+	})
+	twofa_secret: string;
 
 	hasRole(role: UserRole): boolean {
 		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];

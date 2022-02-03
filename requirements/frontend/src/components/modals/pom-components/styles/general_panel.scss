@@ -1,0 +1,153 @@
+$pom-avatar-padding: 5px;
+
+.pom-general-panel {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-flow: column nowrap;
+	justify-content: center;
+	gap: 2px;
+
+	.pom-gp-data {
+		flex: 100%;
+		display: flex;
+		flex-flow: column wrap;
+		gap: 2px;
+		padding-top: 20px;
+		overflow-y: scroll;
+
+		.pom-gp-avatar-container {
+			box-sizing: border-box;
+			//border: 1px solid black;
+			flex: 0 0 auto;
+			display: flex;
+			flex-flow: column nowrap;
+			justify-content: center;
+			align-items: center;
+
+			.pom-gp-ac-content {
+				flex: 0 0 100px;
+				width: 100px;
+				max-height: 100px;
+				border: 1px solid black;
+				border-radius: 5px;
+				padding: $pom-avatar-padding;
+				position: relative;
+
+				.pom-gp-ac-edit {
+					width: calc(100% - ($pom-avatar-padding * 2));
+					height: calc(100% - ($pom-avatar-padding * 2));
+					position: absolute;
+					top: $pom-avatar-padding;
+					left: $pom-avatar-padding;
+					border: 0;
+					background-color: rgba(0, 0, 0, 0.2);
+					cursor: pointer;
+					display: flex;
+					flex-flow: row nowrap;
+					justify-content: center;
+					align-items: center;
+
+					> img {
+						flex: 0 0 50%;
+						//width: 50%;
+						height: 50%;
+						filter: invert(100);
+						opacity: 0.8;
+					}
+
+					> input {
+						display: none;
+					}
+				}
+
+
+				> img {
+					width: 100%;
+					height: 100%;
+					object-fit: cover;
+				}
+			}
+
+			> button {
+				border: 0;
+				padding: 0;
+				background: 0;
+				cursor: pointer;
+			}
+
+			> button:hover {
+				color: rgba(0, 0, 0, 0.4);
+			}
+
+		}
+
+		.pom-gp-text-container {
+			box-sizing: border-box;
+			padding: 2px;
+			flex: 0 0 auto;
+
+			.pom-gp-tc-textfield {
+				> * {
+					margin: 0;
+					padding: 0;
+				}
+				> label {
+					color:rgba(0, 0, 0, 0.4);
+					width: 100%;
+					font-size: 0.7rem;
+				}
+				> input {
+					width: 100%;
+					height: 30px;
+					font-size: 1.3rem;
+				}
+			}
+		}
+	}
+
+	.pom-gp-save {
+		flex: 0 0 50px;
+		border-radius: 5px;
+		border: 1px solid black;
+		font-size: 1rem;
+		cursor: pointer;
+	}
+
+	#pom-login {
+		cursor: not-allowed;
+	}
+}
+
+@media(min-width: 750px) {
+	.pom-general-panel {
+		.pom-gp-data {
+			flex-flow: row nowrap;
+			justify-content: space-evenly;
+			gap: 0;
+			padding-top: 0;
+
+			.pom-gp-avatar-container {
+				flex: 0 0 200px;
+
+				.pom-gp-ac-content {
+					flex: 0 0 200px;
+					width: 200px;
+					max-height: 200px;
+				}
+			}
+
+			.pom-gp-text-container {
+				flex: 0 0 50%;
+				display: flex;
+				flex-flow: row wrap;
+				align-items: center;
+				align-content: center;
+
+				> * {
+					flex: 0 0 100%;
+				}
+			}
+		}
+	}
+}
