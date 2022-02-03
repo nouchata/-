@@ -80,11 +80,13 @@ const App = (): JSX.Element => {
 							<div className='main-content'>
 								{fetchStatus.fetched ?
 									<Router>
+										{fetchStatus.loggedIn === LoginState.LOGGED &&
 										<Switch>
-											{fetchStatus.loggedIn === LoginState.LOGGED && <>
 												<Route path="/profile/:id"><Profile /></Route>
 												<Route path="/homepage"><Homepage /></Route>
-											</>}
+										</Switch>
+										}
+										<Switch>
 											<Route path="/login"><Login /></Route>
 											<Route path="/">
 												{fetchStatus.loggedIn === LoginState.LOGGED ?

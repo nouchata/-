@@ -9,6 +9,7 @@ import { GenericModalProps } from '../utils/GenericModal';
 import ProfileOptionsModal from '../modals/ProfileOptionsModal';
 import { useContext } from 'react';
 import ModalContext from '../../contexts/ModalContext';
+import { RequestWrapper } from '../../utils/RequestWrapper';
 
 //import '../../styles/profile_overview.scss';
 
@@ -39,7 +40,7 @@ const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
 					</div>
 				</div>
 				<div className='profile-overview-actions'>
-					<button title='Log Out'><img src={CloseAsset} alt='btn' /></button>
+					<button title='Log Out' onClick={() => RequestWrapper.get('/auth/logout')} ><img src={CloseAsset} alt='btn' /></button>
 					<button title='Edit Profile' onClick={() => setModalProps(profileOptsModal)}>
 						<img src={GearAsset} alt='btn' />
 					</button>
