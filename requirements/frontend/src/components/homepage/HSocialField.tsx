@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useCallback } from 'react';
-import LoadingContent from '../../LoadingContent';
+import LoadingContent from '../../utils/LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 

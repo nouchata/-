@@ -1,12 +1,11 @@
 // import { BrowserRouter as Link, Route, Redirect } from 'react-router-dom';
-import { useContext } from 'react';
-import HProfileOverview from './components/homepage/HProfileOverview';
-import LoginContext from './contexts/LoginContext';
-import { FetchStatusData } from './types/FetchStatusData';
+import { useContext, useEffect } from 'react';
+import HProfileOverview from './HProfileOverview';
+import LoginContext from '../../contexts/LoginContext';
+import { FetchStatusData } from '../../types/FetchStatusData';
 
-
-import './styles/homepage.scss';
-import './styles/profile_overview.scss';
+import '../../styles/homepage.scss';
+import '../../styles/profile_overview.scss';
 
 const Homepage = () : JSX.Element => {
 	const userCtx : { fetchStatus: FetchStatusData } = useContext(LoginContext);

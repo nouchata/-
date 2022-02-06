@@ -1,15 +1,15 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
-import LoginContext from './contexts/LoginContext';
-import { FetchStatusData, LoginState } from './types/FetchStatusData';
-import { LoginDataSet } from './types/LoginDataSet';
+import LoginContext from '../contexts/LoginContext';
+import { FetchStatusData, LoginState } from '../types/FetchStatusData';
+import { LoginDataSet } from '../types/LoginDataSet';
 // not-package-related importation
-import './styles/login.scss';
-import resetAsset from './assets/login/reset.png';
-import tickAsset from './assets/login/tick.png';
-import GoogleAsset from './assets/login/google.png';
-import { RequestWrapper } from './utils/RequestWrapper';
-import TFACodeInput, { TCIState } from './components/utils/TFACodeInput';
+import '../styles/login.scss';
+import resetAsset from '../assets/login/reset.png';
+import tickAsset from '../assets/login/tick.png';
+import GoogleAsset from '../assets/login/google.png';
+import { RequestWrapper } from '../utils/RequestWrapper';
+import TFACodeInput, { TCIState } from './utils/TFACodeInput';
 
 const Login = () => {
 	const [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });

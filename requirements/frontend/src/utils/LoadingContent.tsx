@@ -1,4 +1,4 @@
-import './styles/loading_content.scss';
+import '../styles/loading_content.scss';
 
 const LoadingContent = (props: any) => {
 	return (
