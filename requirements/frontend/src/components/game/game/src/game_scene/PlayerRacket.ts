@@ -111,12 +111,12 @@ class PlayerRacket extends Container {
 		if (actualPerPos > playerData.pos.y) { // to top
 			// lag proof smooth movement or teleportation if there's too much delay (10% ahead for a 50% per sec)
 			if (actualPerPos - playerData.pos.y > (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.yDistPPS / 5)
-				this.absolutePosition.y = playerData.pos.y;
+				this.absolutePosition.y = toPx(playerData.pos.y, this.appRef.screen.height);
 			else
 				this.manageMovementSpectator(delta, toPx(playerData.pos.y, this.appRef.screen.height));
 		} else if (actualPerPos < playerData.pos.y) {
 			if (playerData.pos.y - actualPerPos > (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.yDistPPS / 5)
-				this.absolutePosition.y = playerData.pos.y;
+				this.absolutePosition.y = toPx(playerData.pos.y, this.appRef.screen.height);
 			else
 				this.manageMovementSpectator(delta, toPx(playerData.pos.y, this.appRef.screen.height));
 		}
