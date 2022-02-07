@@ -21,21 +21,18 @@ export class GameGateway {
 	/* relie les joueurs à l'id de leur instance */
 	private associatedPlayers : { [userId: number]: number | undefined } = {};
 
-	handleConnection() {
-		console.log('game connected');
-	}
+	handleConnection() {}
 
 	handleDisconnect(client: Socket & { request: { user: User } }) {
 		if (this.associatedPlayers[client.request.user.id])
 			this.gameInstances[this.associatedPlayers[client.request.user.id]].updatePlayerNetState(client.request.user.id, false);
-		console.log('game disconnected');
 	}
 
 	@SubscribeMessage('joinGame')
 	joinGame(client: Socket & { request: { user: User } }, { instanceId }: { instanceId: number }) {
-		// if (!this.associatedPlayers[client.request.user.id])
-		// 	throw new WsException("You're not registered in any game");
-
+		
+		this.createInstance(1, 2, {}, 123456); // debug
+		
 		if (this.gameInstances[instanceId] === undefined)
 			throw new WsException("The given instance ID is invalid");
 		
@@ -46,16 +43,17 @@ export class GameGateway {
 		client.join("game#" + instanceId);
 
 		if (this.associatedPlayers[client.request.user.id] === instanceId)
-			this.gameInstances[instanceId].updatePlayerNetState(client.request.user.id, true);
+			this.gameInstances[instanceId].updatePlayerNetState(client.request.user.id, true);	
 	}
 
 	createInstance(
 		playerOneId: number,
 		playerTwoId: number,
-		gameOptions?: Partial<GameOptions>
+		gameOptions: Partial<GameOptions> = {},
+		givenInstanceId?: number
 	) : number {
-		let instanceId : number = 0;
-		let notYetGenerated : boolean = true;
+		let instanceId : number = givenInstanceId ? givenInstanceId : 0;
+		let notYetGenerated : boolean = givenInstanceId ? false : true;
 
 		for (let i : number = 0 ; notYetGenerated && i < 3 ; i++) {
 			instanceId = Number(String(playerOneId) + String(playerTwoId) + String(i + Date.now() % 10000000));
@@ -77,7 +75,7 @@ export class GameGateway {
 			associatedPlayers: this.associatedPlayers,
 			gameInstances: this.gameInstances,
 			playersId: { one: playerOneId, two: playerTwoId }
-		});
+		}, gameOptions);
 
 		return (instanceId);
 	}

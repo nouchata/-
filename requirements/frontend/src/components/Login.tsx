@@ -10,6 +10,7 @@ import tickAsset from '../assets/login/tick.png';
 import GoogleAsset from '../assets/login/google.png';
 import { RequestWrapper } from '../utils/RequestWrapper';
 import TFACodeInput, { TCIState } from './utils/TFACodeInput';
+import { useQuery } from '../utils/useQuery';
 
 const Login = () => {
 	const [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
@@ -83,11 +84,6 @@ const Login = () => {
 				<img className={dataSet.img === tickAsset ? "onthespot" : "rotation"} src={dataSet.img} alt="" />
 			</div>
 	);
-}
-
-function useQuery() {
-	const { search } = useLocation();
-	return useMemo(() => new URLSearchParams(search), [search]);
 }
 
 export default Login;

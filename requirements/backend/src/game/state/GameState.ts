@@ -2,6 +2,7 @@ import { GameOptions } from "../types/GameOptions";
 import { PlayerState } from "../types/PlayerState";
 import { StateSettings } from "../types/StateSettings";
 import { Server } from 'socket.io';
+import { ResponseState, RUNSTATE } from "../types/ResponseState";
 
 const samplePlayer : PlayerState = {
 	id: 0,
@@ -15,14 +16,6 @@ const samplePlayer : PlayerState = {
 	},
 	capacityLoaderPercentage: 0,
 	stockedCapacity: undefined
-};
-
-enum RUNSTATE {
-	WAITING,
-	ABOUT_TO_RUN,
-	RUNNING,
-	PLAYER_DISCONNECTED,
-	ENDED
 };
 
 class GameState {
@@ -49,8 +42,34 @@ class GameState {
 	};
 
 	// player related
-	private playerOne : PlayerState;
-	private playerTwo : PlayerState;
+	private playerOne : PlayerState = {
+		id: 0,
+		connected: false,
+		pos: { x: undefined, y: 50 },
+		flags: {
+			falsePosAnimation: false,
+			capacityCharging: false,
+			stunted: false,
+			rainbowing: false
+		},
+		capacityLoaderPercentage: 0,
+		stockedCapacity: undefined
+	};
+	private playerTwo : PlayerState = {
+		id: 0,
+		connected: false,
+		pos: { x: undefined, y: 50 },
+		flags: {
+			falsePosAnimation: false,
+			capacityCharging: false,
+			stunted: false,
+			rainbowing: false
+		},
+		capacityLoaderPercentage: 0,
+		stockedCapacity: undefined
+	};
+
+	private responseState : ResponseState;
 
 	constructor(
 		stateSettings : StateSettings,
@@ -67,8 +86,19 @@ class GameState {
 		this.wsRoom = "game#" + this.instanceId;
 
 		// player object creation
-		Object.assign(this.playerOne, samplePlayer, { id: stateSettings.playersId.one });
-		Object.assign(this.playerTwo, samplePlayer, { id: stateSettings.playersId.two });
+		this.playerOne.id = stateSettings.playersId.one;
+		this.playerTwo.id = stateSettings.playersId.two;
+
+		this.responseState = {
+			instanceId: this.instanceId,
+			gameOptions: this.gameOptions,
+			mSecElipsed: this.mSecElapsed,
+			runState: this.runState,
+			playerOne: this.playerOne,
+			playerTwo: this.playerTwo,
+			playerOneLastActionProcessed: 0,
+			playerTwoLastActionProcessed: 0
+		};
 
 		this.run();
 	}
@@ -77,7 +107,8 @@ class GameState {
 		while (this.runState !== RUNSTATE.ENDED) {
 			this.runStateHandler();
 
-			this.wsServer.to(this.wsRoom).emit('stateUpdate', {});
+			// console.log(this.responseState);
+			this.wsServer.to(this.wsRoom).emit('stateUpdate', { responseState: this.responseState });
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 			this.mSecElapsed += 100;
 		}
@@ -93,10 +124,10 @@ class GameState {
 				this.runStateSecCondition = this.mSecElapsed += 1000 * 120;
 			if (this.playerOne.connected && this.playerTwo.connected)
 				this.runState = RUNSTATE.ABOUT_TO_RUN;
-			else if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.ENDED;
-			}
+			// else if (this.runStateSecCondition === this.mSecElapsed) {
+			// 	this.runStateSecCondition = 0;
+			// 	this.runState = RUNSTATE.ENDED;
+			// }
 		}
 		else if (this.runState === RUNSTATE.ABOUT_TO_RUN)
 		{ // wait 5 seconds and launch the game
@@ -132,7 +163,8 @@ class GameState {
 			this.playerOne.connected = state;
 		else if (playerId === this.playerTwo.id)
 			this.playerTwo.connected = state;
+		console.log('player added');
 	}
 };
 
-export { GameState };
+export { GameState, RUNSTATE };
