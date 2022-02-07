@@ -24,10 +24,20 @@ export const formatDate = (date: Date) => {
     return `${format2Digit(date.getUTCDate())}/${format2Digit(date.getMonth() + 1)}/${date.getFullYear()}`;
 }
 
+export const getVictoryRatio = (victories: number, loses: number) => {
+    const ratio = victories * 100 / (victories + loses);
+
+    if (!Number.isNaN(ratio)) {
+        return Math.floor(ratio);
+    } else {
+        return 100; // avoid NaN value
+    }
+}
+
 const UserDetails = (props: IProps) => {
 
     // get the winrate of the user in percentage
-    let ratio = props.data.ranking.vdRatio[0] * 100 / (props.data.ranking.vdRatio[0] + props.data.ranking.vdRatio[1]);
+    let ratio = getVictoryRatio(props.data.ranking.vdRatio[0], props.data.ranking.vdRatio[1]);
 
     // choose the right color for the user status
     const statusStyle = { color: 'red' };
