@@ -23,13 +23,15 @@ class GameClientInstance {
 	app: TranscendanceApp;
 	wsClient: GameWS;
 	/* for the player of this instance if there is one */
-	canCompute: boolean = true;
+
 	computedGameActions: { [actionId: number]: GameAction | undefined } = {};
+	private lastCleanedCGAIndex: number = 0;
+
 	lastLocalGameActionComputed: number = -1;
 	lastlocalGameActionSended: number = -1;
 	/* states */
 	currentResponseState: ResponseState | undefined;
-	previousResponseState: ResponseState | undefined;
+	// previousResponseState: ResponseState | undefined;
 	currentServerTime: number = 0;
 	private customResizeEvent: Event = new Event('resizeGame');
 
@@ -54,9 +56,9 @@ class GameClientInstance {
 			}
 		);
 
-		// custom event to save calcul processing while resizing the window
+		// custom event to save calcul processing by debouncing the resizing event
 		window.addEventListener("resize", ((customResizeEvent: Event) => {
-			let flag : number = 0; // limit resize calls
+			let flag : number = 0;
 			return (function() {
 				if (flag) {
 					window.clearTimeout(flag);
@@ -79,13 +81,13 @@ class GameClientInstance {
 	run() {
 		this.gciState = GCI_STATE.RUNNING;
 
-		const l_racket : PlayerRacket = new PlayerRacket(this.app, PlayerRacketUnit.LEFT);
-		const r_racket : PlayerRacket = new PlayerRacket(this.app, PlayerRacketUnit.RIGHT);
-
 		if (this.currentResponseState?.playerOne.id === this.app.userId)
 			this.app.playerRacket = PlayerRacketUnit.LEFT;
 		else if (this.currentResponseState?.playerTwo.id === this.app.userId)
 			this.app.playerRacket = PlayerRacketUnit.RIGHT;
+
+		const l_racket : PlayerRacket = new PlayerRacket(this.app, PlayerRacketUnit.LEFT);
+		const r_racket : PlayerRacket = new PlayerRacket(this.app, PlayerRacketUnit.RIGHT);
 		
 		this.app.stage.addChild(l_racket);
 		this.app.stage.addChild(r_racket);
@@ -93,8 +95,15 @@ class GameClientInstance {
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
-		this.previousResponseState = this.currentResponseState;
+		// this.previousResponseState = this.currentResponseState;
 		this.currentResponseState = newState;
+		// cleaning for garbage collector
+		if (this.app.playerRacket)
+			this.computedGameActionsCleaner(
+				this.app.playerRacket === PlayerRacketUnit.LEFT ?
+				this.currentResponseState.playerOneLastActionProcessed :
+				this.currentResponseState.playerTwoLastActionProcessed
+			);
 		console.log(this.currentResponseState);
 		if (this.gciState === GCI_STATE.SETUP)
 			this.run();
@@ -143,34 +152,13 @@ class GameClientInstance {
 				this.app.actualKeysPressed.space = false;
 		}
 	}
+
+	private async computedGameActionsCleaner(index: number) {
+		let i: number = this.lastCleanedCGAIndex;
+		this.lastCleanedCGAIndex = index;
+		for (; i <= index ; i++)
+			this.computedGameActions[i] = undefined;
+	}
 };
 
 export { GameClientInstance };
-
-// var app: Application;
-
-// export function exec(wsServer: GameWS) {
-// 	const app = new GameClientInstance(wsServer);
-
-// 	const text: Text = new Text('yes!', { fontFamily: 'arial', fontSize: 32, fill: 0xFFFFFF });
-// 	// const zoneShow : Graphics = new Graphics();
-
-// 	const l_racket : PlayerRacket = new PlayerRacket(app.app, PlayerRacketUnit.LEFT);
-// 	const r_racket : PlayerRacket = new PlayerRacket(app.app, PlayerRacketUnit.RIGHT);
-
-// 	text.pivot.set(text.width / 2, text.height / 2);
-// 	text.x = app.app.screen.width / 2;
-// 	text.y = app.app.screen.height / 10 * 9;
-// 	text.angle = 0;
-
-// 	window.addEventListener("resize", (function(ev: UIEvent) {
-// 		text.x = app.app.screen.width / 2;
-// 		text.y = app.app.screen.height / 10 * 9;
-
-// 	}).bind(window));
-
-// 	// app.stage.addChild(zoneShow);
-// 	app.app.stage.addChild(text);
-// 	app.app.stage.addChild(l_racket);
-// 	app.app.stage.addChild(r_racket);
-// }

@@ -6,14 +6,39 @@ import { User } from 'src/user/entities/user.entity'
 import { OnlineStateGuard } from 'src/auth/guards/online-state.guard';
 import { GameState } from './state/GameState';
 import { GameOptions } from './types/GameOptions';
-import { GameAction } from './types/GameAction';
+import { GameAction, GA_KEY } from './types/GameAction';
 
 @UseGuards(OnlineStateGuard)
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
 	constructor() {
-		setTimeout(() => this.createInstance(1, 2, {}, 123456), 1000); // debug
+		// debug test fake p2
+		setTimeout(() => {
+			this.createInstance(1, 2, {}, 123456);
+			this.gameInstances[123456].updatePlayerNetState(2, true);
+			(async() => {
+				let percentage: number = 50;
+				let toTop: boolean = true;
+				while (true) {
+					if (toTop)
+						percentage -= (50 / 10);
+					else
+						percentage += (50 / 10);
+					this.gameInstances[123456].injectGameAction({ 
+						id: 0,
+						keyPressed: toTop ? GA_KEY.UP : GA_KEY.DOWN,
+						data: { y: percentage }
+					}, 2);
+					if (percentage >= 80)
+						toTop = true;
+					if (percentage <= 20)
+						toTop = false;
+					await new Promise((resolve) => setTimeout(() => resolve(1), 100));
+				}
+			})();
+		}, 1000);
+
 	}
 
 	@WebSocketServer()

@@ -3,6 +3,8 @@ import { GlitchFilter } from "@pixi/filter-glitch";
 import { Container, Filter, Graphics, PI_2, Rectangle } from "pixi.js";
 import { GA_KEY } from "../../types/GameAction";
 import { PlayerRacketFlags } from "../../types/PlayerRacketFlags";
+import { PlayerState } from "../../types/PlayerState";
+import { ResponseState } from "../../types/ResponseState";
 import { TranscendanceApp } from "../TranscendanceApp";
 
 const rSS : {
@@ -29,6 +31,14 @@ enum PlayerRacketUnit {
 	LEFT,
 	RIGHT
 };
+
+function toPer(value: number, currScreenSize: number) : number {
+	return ((value / (currScreenSize / 100)));
+} // to percentages
+
+function toPx(value: number, screenHeight: number) {
+	return (value * (screenHeight / 100));
+} // to screen scale
 
 class PlayerRacket extends Container {
 	private unit : PlayerRacketUnit;
@@ -80,23 +90,46 @@ class PlayerRacket extends Container {
 
 		// triggers
 		window.addEventListener("resizeGame", this.resize.bind(this));
-		// window.addEventListener("keydown", this.onKeyDown.bind(this));
-		// window.addEventListener("keyup", this.onKeyUp.bind(this));
 		if (this.appRef.playerRacket === this.unit)
 			this.actualKeysPressed = this.appRef.actualKeysPressed;
 
 		// ticker
-		this.appRef.ticker.add(this.update, this);
+		if (this.appRef.playerRacket === this.unit)
+			this.appRef.ticker.add(this.updatePlayer, this);
+		else
+			this.appRef.ticker.add(this.updateSpectator, this);
 	}
 
 	updateSpectator(delta: number) {
-
-	}
-
-	update(delta: number) {
+		let actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
 		this.deltaTotal += delta;
 
-		if (this.appRef.playerRacket === this.unit)
+		let playerData : PlayerState = this.unit === PlayerRacketUnit.LEFT ?
+		(this.appRef.gciMaster.currentResponseState as ResponseState).playerOne :
+		(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo;
+
+		if (actualPerPos > playerData.pos.y) { // to top
+			// lag proof smooth movement or teleportation if there's too much delay (10% ahead for a 50% per sec)
+			if (actualPerPos - playerData.pos.y > (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.yDistPPS / 5)
+				this.absolutePosition.y = playerData.pos.y;
+			else
+				this.manageMovementSpectator(delta, toPx(playerData.pos.y, this.appRef.screen.height));
+		} else if (actualPerPos < playerData.pos.y) {
+			if (playerData.pos.y - actualPerPos > (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.yDistPPS / 5)
+				this.absolutePosition.y = playerData.pos.y;
+			else
+				this.manageMovementSpectator(delta, toPx(playerData.pos.y, this.appRef.screen.height));
+		}
+
+		if (this.filterState.update) {
+			this.filterState.update = false;
+			this.filters = this.filterState.array;
+		}
+	}
+
+	updatePlayer(delta: number) {
+		this.deltaTotal += delta;
+
 		this.actualKeysPressed = this.appRef.actualKeysPressed;
 
 		if (!this.actualKeysPressed.space && this.flags.capacityCharging) {
@@ -134,7 +167,7 @@ class PlayerRacket extends Container {
 
 		this.updateSpatials({ pivot: true, filterArea: true, positionX: true });
 		// responsive height
-		this.absolutePosition.y = (this.absolutePosition.y / (this.currScreenSize / 100)) * (this.appRef.screen.height / 100);
+		this.absolutePosition.y = toPx(toPer(this.absolutePosition.y, this.currScreenSize), this.appRef.screen.height);
 		if (!this.flags.falsePosAnimation)
 			this.y = this.absolutePosition.y;
 		this.currScreenSize = this.appRef.screen.height;
@@ -162,65 +195,60 @@ class PlayerRacket extends Container {
 			);
 	}
 
-	private onKeyDown(e: KeyboardEvent) {
-		if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === " ") {
-			e.preventDefault();
-			e.stopPropagation();
-		}
-		if (e.key === "ArrowUp")
-			this.actualKeysPressed.up = true;
-		else if (e.key === "ArrowDown")
-			this.actualKeysPressed.down = true;
-		else if (e.key === " ")
-			this.actualKeysPressed.space = true;
-	}
-
-	private onKeyUp(e: KeyboardEvent) {
-		if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === " ") {
-			e.preventDefault();
-			e.stopPropagation();
-		}
-		if (e.key === "ArrowUp")
-			this.actualKeysPressed.up = false;
-		else if (e.key === "ArrowDown")
-			this.actualKeysPressed.down = false;
-		else if (e.key === " ")
-			this.actualKeysPressed.space = false;
-	}
-
 	private manageMovement(delta: number) {
-		if (this.actualKeysPressed.up && this.y > this.appRef.screen.height / rSS.heightFactor / 2) {
+		if (this.actualKeysPressed.up && this.absolutePosition.y > this.appRef.screen.height / rSS.heightFactor / 2) {
 			// movement
-			if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) > this.appRef.screen.height / rSS.heightFactor / 2)
-				this.absolutePosition.y = this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta);
+			if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta) > this.appRef.screen.height / rSS.heightFactor / 2)
+				this.absolutePosition.y = this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta);
 			else
 				this.absolutePosition.y = this.appRef.screen.height / rSS.heightFactor / 2;
 			// not update if it's an absolute animation bc itll do itself
 			if (!this.flags.falsePosAnimation)
 				this.y = this.absolutePosition.y;
-			
-			this.appRef.gciMaster.lastLocalGameActionComputed++;
-			this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
-				id: this.appRef.gciMaster.lastLocalGameActionComputed,
-				keyPressed: GA_KEY.UP,
-				data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
-			};
-		} else if (this.actualKeysPressed.down && this.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
-			// movement
-			if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2)
-				this.absolutePosition.y = this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta);
+			// upload if not spectator
+			if (this.appRef.playerRacket) {
+				this.appRef.gciMaster.lastLocalGameActionComputed++;
+				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
+					id: this.appRef.gciMaster.lastLocalGameActionComputed,
+					keyPressed: GA_KEY.UP,
+					data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
+				};
+			}
+		} else if (this.actualKeysPressed.down && this.absolutePosition.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
+			if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta) < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2)
+				this.absolutePosition.y = this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta);
 			else
 				this.absolutePosition.y = this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2;
+			if (!this.flags.falsePosAnimation)
+				this.y = this.absolutePosition.y;
+			if (this.appRef.playerRacket) {
+				this.appRef.gciMaster.lastLocalGameActionComputed++;
+				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
+					id: this.appRef.gciMaster.lastLocalGameActionComputed,
+					keyPressed: GA_KEY.DOWN,
+					data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
+				};
+			}
+		}
+	}
+
+	private manageMovementSpectator(delta: number, spectatorValue: number) {
+		if (this.absolutePosition.y > spectatorValue) {
+			// movement
+			if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta) > spectatorValue)
+				this.absolutePosition.y = this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta);
+			else
+				this.absolutePosition.y = spectatorValue;
 			// not update if it's an absolute animation bc itll do itself
 			if (!this.flags.falsePosAnimation)
 				this.y = this.absolutePosition.y;
-			
-			this.appRef.gciMaster.lastLocalGameActionComputed++;
-			this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
-				id: this.appRef.gciMaster.lastLocalGameActionComputed,
-				keyPressed: GA_KEY.DOWN,
-				data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
-			};
+		} else if (this.absolutePosition.y < spectatorValue) {
+			if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta) < spectatorValue)
+				this.absolutePosition.y = this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / this.appRef.ticker.FPS) * delta);
+			else
+				this.absolutePosition.y = spectatorValue;
+			if (!this.flags.falsePosAnimation)
+				this.y = this.absolutePosition.y;
 		}
 	}
 
