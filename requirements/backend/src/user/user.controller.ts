@@ -13,10 +13,23 @@ import path = require('path');
 import fs = require('fs');
 import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
 import { QueryExceptionFilter } from './utils/QueryExceptionFilter';
+import { LadderDTO } from './dto/ladder.dto';
 
 @Controller('user')
 export class UserController {
 	constructor(@Inject(UserService) private userService: UserService) { }
+
+	@Get('ladder')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [LadderDTO],
+		status: 200,
+		description: 'All the users, sorted by descending elo'
+	})
+	async getLadder(): Promise<LadderDTO[]> {
+		const dto = await this.userService.createLadderDTO();
+		return dto;
+	}
 
 	@ApiResponse({
 		type: FindUserDTO,

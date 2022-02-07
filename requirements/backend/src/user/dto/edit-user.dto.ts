@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString, Length } from "class-validator";
 import { DeepPartial } from "typeorm";
 import { User } from "../entities/user.entity";
 
@@ -12,6 +12,7 @@ export class EditUserDTO {
 
 	@ApiProperty({description: 'new displayName of the user', example: 'mamartin'})
     @IsString()
+    @Length(3, 20)
     displayName: string;
     
     @IsString()

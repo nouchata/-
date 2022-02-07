@@ -9,6 +9,7 @@ import { MatchHistoryDTO } from './dto/match-history.dto';
 import { Channel } from 'src/chat/entities/channel.entity';
 import download from './utils/download';
 import { ChannelDto, MessageDto } from 'src/chat/dtos/user-channels.dto';
+import { LadderDTO } from './dto/ladder.dto';
 
 @Injectable()
 export class UserService {
@@ -62,13 +63,16 @@ export class UserService {
 		return await this.userRepo.save(dto.toEntity());
 	}
 
-	async getRank(user: User) : Promise<number> {
-
-		const usersArray: User[] = await this.userRepo.find({
+	async getLadder() : Promise<User[]> {
+		const ladder: User[] = await this.userRepo.find({
 			order: { elo: "DESC" }
 		});
+		return ladder;
+	}
 
-		return usersArray.findIndex( (curr) => {
+	async getRank(user: User) : Promise<number> {
+		const ladder: User[] = await this.getLadder();
+		return ladder.findIndex( (curr) => {
 			return (curr.id === user.id);
 		}) + 1;
 	}
@@ -119,6 +123,15 @@ export class UserService {
 		})
 
         return dto;
+	}
+
+	async createLadderDTO() : Promise<LadderDTO[]> {
+		const ladder = await this.getLadder();
+		return ladder.map((user) => {
+			const {id, displayName, elo} = user;
+			const dto: LadderDTO = {id, displayName, elo};
+			return dto;
+		});
 	}
 
 	async getUserChannels(user: {id: number}) : Promise<ChannelDto[]>
