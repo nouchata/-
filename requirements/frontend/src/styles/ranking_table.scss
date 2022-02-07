@@ -1,0 +1,91 @@
+.row-buttons {
+    display: flex;
+    height: 30px;
+
+    > button {
+        width: 50%;
+        height: 100%;
+        
+        border: 2px solid #b35c39;
+        cursor: pointer;
+
+        font-size: larger;
+    }
+
+    > button:hover {
+        background-color: #c06440;
+    }
+
+    > .button-top {
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+    }
+
+    > .button-rank {
+        border-radius: 0 10px 10px 0;
+    }
+}
+
+.table-container {
+    height: 100%;
+    text-align: center;
+}
+
+.table-header {
+    display: flex;
+    width: 98%;
+    background-color: #e7bfaf;
+    border-radius: 10px;
+    font-size: 1.4em;
+    font-weight: bold;
+
+    > div {
+        flex: 1;
+        padding: 5px;
+    }
+}
+
+.rankings {
+    width: 100%;
+    height: 84%;
+    border-collapse: collapse;
+
+    > tbody {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+
+        > tr {
+            display: flex;
+            border-radius: 10px;
+
+            > .rank-column {
+                width: 10%;
+            }
+
+            > .profile-link {
+                cursor: pointer;
+            }
+
+            > .profile-link:hover {
+                color: #fd8c5f;
+            }
+
+            > td {
+                flex: 1;
+                padding: 3px;
+                width: 100%;
+            }
+        }
+
+        > tr:nth-child(even) {
+            background-color: #e7bfaf;
+        }
+
+        > tr.user-row {
+            border: 3px solid #fd8c5f;
+        }
+    }
+}
+  
