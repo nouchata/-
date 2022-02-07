@@ -189,12 +189,12 @@ class PlayerRacket extends Container {
 	}
 
 	private manageMovement(delta: number) {
-		if (this.actualKeysPressed.up) {// && this.y > this.appRef.screen.height / rSS.heightFactor / 2) {
+		if (this.actualKeysPressed.up && this.y > this.appRef.screen.height / rSS.heightFactor / 2) {
 			// movement
-			// if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) > this.appRef.screen.height / rSS.heightFactor / 2)
+			if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) > this.appRef.screen.height / rSS.heightFactor / 2)
 				this.absolutePosition.y = this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta);
-			// else
-			// 	this.absolutePosition.y = this.appRef.screen.height / rSS.heightFactor / 2;
+			else
+				this.absolutePosition.y = this.appRef.screen.height / rSS.heightFactor / 2;
 			// not update if it's an absolute animation bc itll do itself
 			if (!this.flags.falsePosAnimation)
 				this.y = this.absolutePosition.y;
@@ -205,12 +205,12 @@ class PlayerRacket extends Container {
 				keyPressed: GA_KEY.UP,
 				data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
 			};
-		} else if (this.actualKeysPressed.down){ // && this.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
+		} else if (this.actualKeysPressed.down && this.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
 			// movement
-			// if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2)
+			if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2)
 				this.absolutePosition.y = this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta);
-			// else
-			// 	this.absolutePosition.y = this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2;
+			else
+				this.absolutePosition.y = this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2;
 			// not update if it's an absolute animation bc itll do itself
 			if (!this.flags.falsePosAnimation)
 				this.y = this.absolutePosition.y;
