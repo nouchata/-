@@ -3,11 +3,26 @@ import { PlayerState } from "../types/PlayerState";
 import { StateSettings } from "../types/StateSettings";
 import { Server } from 'socket.io';
 import { ResponseState, RUNSTATE } from "../types/ResponseState";
-import { GameAction } from "../types/GameAction";
+import { GameAction, GA_KEY } from "../types/GameAction";
+import { cloneDeep } from "lodash";
+
+const samplePlayer : PlayerState = {
+	id: 0,
+	connected: false,
+	pos: { x: undefined, y: 50 },
+	flags: {
+		falsePosAnimation: false,
+		capacityCharging: false,
+		stunted: false,
+		rainbowing: false
+	},
+	capacityLoaderPercentage: 0,
+	stockedCapacity: undefined
+};
 
 class GameState {
 	// class related
-	private runState : RUNSTATE = RUNSTATE.WAITING;
+	private runState : RUNSTATE = RUNSTATE.RUNNING;
 
 	private mSecElapsed : number = 0;
 	/* used to define a condition based on time elapsed */
@@ -29,34 +44,10 @@ class GameState {
 	};
 
 	// player related
-	private playerOne : PlayerState = {
-		id: 0,
-		connected: false,
-		pos: { x: undefined, y: 50 },
-		flags: {
-			falsePosAnimation: false,
-			capacityCharging: false,
-			stunted: false,
-			rainbowing: false
-		},
-		capacityLoaderPercentage: 0,
-		stockedCapacity: undefined
-	};
+	private playerOne : PlayerState = cloneDeep(samplePlayer);
 	private playerOneReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
 	private playerOneLastActionProcessed: number = -1;
-	private playerTwo : PlayerState = {
-		id: 0,
-		connected: false,
-		pos: { x: undefined, y: 50 },
-		flags: {
-			falsePosAnimation: false,
-			capacityCharging: false,
-			stunted: false,
-			rainbowing: false
-		},
-		capacityLoaderPercentage: 0,
-		stockedCapacity: undefined
-	};
+	private playerTwo : PlayerState = cloneDeep(samplePlayer);
 	private playerTwoReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
 	private playerTwoLastActionProcessed: number = -1;
 	private responseState : ResponseState;
@@ -84,8 +75,8 @@ class GameState {
 			gameOptions: this.gameOptions,
 			mSecElipsed: this.mSecElapsed,
 			runState: this.runState,
-			playerOne: this.playerOne,
-			playerTwo: this.playerTwo,
+			playerOne: cloneDeep(this.playerOne),
+			playerTwo: cloneDeep(this.playerTwo),
 			playerOneLastActionProcessed: this.playerOneLastActionProcessed,
 			playerTwoLastActionProcessed: this.playerTwoLastActionProcessed
 		};
@@ -96,8 +87,8 @@ class GameState {
 	private async run() {
 		while (this.runState !== RUNSTATE.ENDED) {
 			this.runStateHandler();
-
-			this.responseState.mSecElipsed = this.mSecElapsed;
+			this.movementChecker();
+			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 			this.mSecElapsed += 100;
@@ -149,6 +140,56 @@ class GameState {
 		}
 	}
 
+	private responseRefresh() {
+		this.responseState.mSecElipsed = this.mSecElapsed;
+		this.responseState.runState = this.runState;
+		this.responseState.playerOne = cloneDeep(this.playerOne);
+		this.responseState.playerTwo = cloneDeep(this.playerTwo);
+		this.responseState.playerOneLastActionProcessed = this.playerOneLastActionProcessed;
+		this.responseState.playerTwoLastActionProcessed = this.playerTwoLastActionProcessed;
+	}
+
+	// incoming position changes
+	movementHandler(gameAction: GameAction, isPlayerOne: boolean) {
+		if (isPlayerOne) {
+			this.playerOne.pos.y = gameAction.data.y as number;
+			this.playerOneLastActionProcessed = gameAction.id;
+		}
+		else {
+			this.playerTwo.pos.y = gameAction.data.y as number;
+			this.playerOneLastActionProcessed = gameAction.id;
+		}
+	}
+
+	// speed anti-cheat
+	movementChecker() {
+		let hundredMsMovementAllowed: number = this.gameOptions.yDistPPS / 100 * 15; // 5% ease range
+		let percentageHalfRacketSize: number = 100 / this.gameOptions.racketSize / 2;
+			
+		if (this.playerOne.pos.y > this.responseState.playerOne.pos.y) { // goes bottom
+			if ((this.playerOne.pos.y - this.responseState.playerOne.pos.y) > hundredMsMovementAllowed)
+				this.playerOne.pos.y = this.responseState.playerOne.pos.y + hundredMsMovementAllowed;
+			if (this.playerOne.pos.y > 100 - percentageHalfRacketSize)
+				this.playerOne.pos.y = 100 - percentageHalfRacketSize;
+		} else if (this.playerOne.pos.y < this.responseState.playerOne.pos.y) {
+			if ((this.responseState.playerOne.pos.y - this.playerOne.pos.y) > hundredMsMovementAllowed)
+				this.playerOne.pos.y = this.responseState.playerOne.pos.y - hundredMsMovementAllowed;
+			if (this.playerOne.pos.y < percentageHalfRacketSize)
+				this.playerOne.pos.y = percentageHalfRacketSize;
+		}
+		if (this.playerTwo.pos.y > this.responseState.playerTwo.pos.y) { // goes bottom
+			if ((this.playerTwo.pos.y - this.responseState.playerTwo.pos.y) > hundredMsMovementAllowed)
+				this.playerTwo.pos.y = this.responseState.playerTwo.pos.y + hundredMsMovementAllowed;
+			if (this.playerTwo.pos.y > 100 - percentageHalfRacketSize)
+				this.playerTwo.pos.y = 100 - percentageHalfRacketSize;
+		} else if (this.playerTwo.pos.y < this.responseState.playerTwo.pos.y) {
+			if ((this.responseState.playerTwo.pos.y - this.playerTwo.pos.y) > hundredMsMovementAllowed)
+				this.playerTwo.pos.y = this.responseState.playerTwo.pos.y - hundredMsMovementAllowed;
+			if (this.playerTwo.pos.y < percentageHalfRacketSize)
+				this.playerTwo.pos.y = percentageHalfRacketSize;
+		}
+	}
+
 	// PUBLIC FUNCTIONS
 
 	updatePlayerNetState(playerId: number, state: boolean) {
@@ -159,12 +200,11 @@ class GameState {
 	}
 
 	injectGameAction(gameAction: GameAction, playerId: number) {
-		if (this.runState === RUNSTATE.RUNNING) {
-			if (playerId === this.playerOne.id) {
-				this.playerOneReceivedGameAction[gameAction.id] = gameAction;
-			} else if (playerId === this.playerTwo.id) {
-				this.playerOneReceivedGameAction[gameAction.id] = gameAction;
-			}
+		if (this.runState === RUNSTATE.RUNNING &&
+			(playerId === this.playerOne.id || playerId === this.playerTwo.id))
+		{
+			if (gameAction.keyPressed === GA_KEY.UP || gameAction.keyPressed === GA_KEY.DOWN)
+				this.movementHandler(gameAction, playerId === this.playerOne.id);
 		}
 	}
 };

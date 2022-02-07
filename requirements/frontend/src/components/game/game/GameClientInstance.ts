@@ -23,14 +23,15 @@ class GameClientInstance {
 	app: TranscendanceApp;
 	wsClient: GameWS;
 	/* for the player of this instance if there is one */
-	private canCompute: boolean = true;
-	private computedGameActions: { [actionId: number]: GameAction | undefined } = {};
-	private lastLocalGameActionComputed: number = -1;
-	private lastlocalGameActionSended: number = -1;
+	canCompute: boolean = true;
+	computedGameActions: { [actionId: number]: GameAction | undefined } = {};
+	lastLocalGameActionComputed: number = -1;
+	lastlocalGameActionSended: number = -1;
 	/* states */
-	private currentResponseState: ResponseState | undefined;
-	private previousResponseState: ResponseState | undefined;
-	private currentServerTime: number = 0;
+	currentResponseState: ResponseState | undefined;
+	previousResponseState: ResponseState | undefined;
+	currentServerTime: number = 0;
+	private customResizeEvent: Event = new Event('resizeGame');
 
 	private runState: RUNSTATE = RUNSTATE.WAITING;
 
@@ -38,6 +39,7 @@ class GameClientInstance {
 		this.wsClient = new GameWS(instanceId, this.onSocketStateUpdate.bind(this), this.onSocketError.bind(this));
 
 		this.app = new TranscendanceApp(
+			this,
 			userId,
 			{
 				view: document.getElementById("game-canvas") as HTMLCanvasElement,
@@ -51,6 +53,18 @@ class GameClientInstance {
 				height: 500
 			}
 		);
+
+		// custom event to save calcul processing while resizing the window
+		window.addEventListener("resize", ((customResizeEvent: Event) => {
+			let flag : number = 0; // limit resize calls
+			return (function() {
+				if (flag) {
+					window.clearTimeout(flag);
+					flag = 0;
+				}
+				flag = setTimeout(() => window.dispatchEvent(customResizeEvent), 100) as unknown as number;
+			});
+		})(this.customResizeEvent));
 
 		window.addEventListener("keydown", this.onKeyDown.bind(this));
 		window.addEventListener("keyup", this.onKeyUp.bind(this));
@@ -81,7 +95,7 @@ class GameClientInstance {
 	onSocketStateUpdate(newState: ResponseState) {
 		this.previousResponseState = this.currentResponseState;
 		this.currentResponseState = newState;
-		// console.log(this.currentResponseState);
+		console.log(this.currentResponseState);
 		if (this.gciState === GCI_STATE.SETUP)
 			this.run();
 	}

@@ -1,6 +1,7 @@
 import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
 import { GlitchFilter } from "@pixi/filter-glitch";
 import { Container, Filter, Graphics, PI_2, Rectangle } from "pixi.js";
+import { GA_KEY } from "../../types/GameAction";
 import { PlayerRacketFlags } from "../../types/PlayerRacketFlags";
 import { TranscendanceApp } from "../TranscendanceApp";
 
@@ -78,16 +79,7 @@ class PlayerRacket extends Container {
 		this.filterState.array = [new AdvancedBloomFilter({ blur: 5 })];
 
 		// triggers
-		window.addEventListener("resize", ((resizeCallback: Function) => {
-			let flag : number = 0; // limit resize calls
-			return (function() {
-				if (flag) {
-					window.clearTimeout(flag);
-					flag = 0;
-				}
-				flag = setTimeout(resizeCallback, 100);
-			});
-		})(this.resize.bind(this)));
+		window.addEventListener("resizeGame", this.resize.bind(this));
 		// window.addEventListener("keydown", this.onKeyDown.bind(this));
 		// window.addEventListener("keyup", this.onKeyUp.bind(this));
 		if (this.appRef.playerRacket === this.unit)
@@ -95,6 +87,10 @@ class PlayerRacket extends Container {
 
 		// ticker
 		this.appRef.ticker.add(this.update, this);
+	}
+
+	updateSpectator(delta: number) {
+
 	}
 
 	update(delta: number) {
@@ -193,24 +189,38 @@ class PlayerRacket extends Container {
 	}
 
 	private manageMovement(delta: number) {
-		if (this.actualKeysPressed.up && this.y > this.appRef.screen.height / rSS.heightFactor / 2) {
+		if (this.actualKeysPressed.up) {// && this.y > this.appRef.screen.height / rSS.heightFactor / 2) {
 			// movement
-			if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) > this.appRef.screen.height / rSS.heightFactor / 2)
+			// if (this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) > this.appRef.screen.height / rSS.heightFactor / 2)
 				this.absolutePosition.y = this.absolutePosition.y - (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta);
-			else
-				this.absolutePosition.y = this.appRef.screen.height / rSS.heightFactor / 2;
+			// else
+			// 	this.absolutePosition.y = this.appRef.screen.height / rSS.heightFactor / 2;
 			// not update if it's an absolute animation bc itll do itself
 			if (!this.flags.falsePosAnimation)
 				this.y = this.absolutePosition.y;
-		} else if (this.actualKeysPressed.down && this.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
+			
+			this.appRef.gciMaster.lastLocalGameActionComputed++;
+			this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
+				id: this.appRef.gciMaster.lastLocalGameActionComputed,
+				keyPressed: GA_KEY.UP,
+				data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
+			};
+		} else if (this.actualKeysPressed.down){ // && this.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
 			// movement
-			if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2)
+			// if (this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta) < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2)
 				this.absolutePosition.y = this.absolutePosition.y + (((this.appRef.screen.height / 100 * this.movSpeed) / 60) * delta);
-			else
-				this.absolutePosition.y = this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2;
+			// else
+			// 	this.absolutePosition.y = this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2;
 			// not update if it's an absolute animation bc itll do itself
 			if (!this.flags.falsePosAnimation)
 				this.y = this.absolutePosition.y;
+			
+			this.appRef.gciMaster.lastLocalGameActionComputed++;
+			this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
+				id: this.appRef.gciMaster.lastLocalGameActionComputed,
+				keyPressed: GA_KEY.DOWN,
+				data: { y: (this.absolutePosition.y / (this.currScreenSize / 100)) }
+			};
 		}
 	}
 
