@@ -1,13 +1,12 @@
-/* eslint-disable */
-
-import { AdvancedBloomFilter } from '@pixi/filter-advanced-bloom';
-import { GlitchFilter } from '@pixi/filter-glitch';
-import { Application, Container, Filter, Graphics, LINE_JOIN, PI_2, Rectangle, Sprite, Text, UPDATE_PRIORITY } from 'pixi.js'
-// import { PlayerRacket, PlayerRacketUnit } from './playerRacket';
+import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
+import { GlitchFilter } from "@pixi/filter-glitch";
+import { Container, Filter, Graphics, PI_2, Rectangle } from "pixi.js";
+import { PlayerRacketFlags } from "../../types/PlayerRacketFlags";
+import { TranscendanceApp } from "../TranscendanceApp";
 
 const rSS : {
 	width: number,
-	heightFactor: number, 
+	heightFactor: number,
 	thickness: number 
 } = {
 	width: 10,
@@ -15,49 +14,35 @@ const rSS : {
 	thickness: 3
 } // racketShapeSize
 
+// client
 const filterAreaFactor = 150;
 const angleFactor = 2;
 const borderDistFactor = 20;
+
+// server
 const defaultScreenHeightPercentagePerSec = 50;
 const capChargingPercentagePerSec = 100 / 3;
 
-type PlayerRacketFlags = {
-	/* stands for the not-meant-to-change-the-pos animations */
-	falsePosAnimation: boolean,
-	capacityCharging: boolean,
-	stunted: boolean,
-	rainbowing: boolean
-};
-
 enum PlayerRacketUnit {
+	NONE,
 	LEFT,
 	RIGHT
 };
 
 class PlayerRacket extends Container {
 	private unit : PlayerRacketUnit;
-	private appRef : Application;
+	private appRef : TranscendanceApp;
 	private shape : Graphics = new Graphics();
 	private deltaTotal : number = 0;
 	private movSpeed : number = defaultScreenHeightPercentagePerSec;
 	private capacityLoader : number = 0;
 	private racketColor : number = 0xFFFFFF;
 	private currScreenSize : number = 0;
-	private glitchFilter = new GlitchFilter({
-		// slices: 5
-		offset: 10
-		// direction: number
-		// fillMode: number;
-		// seed: number;
-		// average: boolean;
-		// minSize: number;
-		// sampleSize: number;
-	});
 
 	private absolutePosition : { x: number, y: number };
 
 	private filterState : {
-		update: boolean, array: Array<Filter> 
+		update: boolean, array: Array<Filter>
 	} = { update: false, array: [] };
 
 	private actualKeysPressed : { // controls
@@ -71,7 +56,7 @@ class PlayerRacket extends Container {
 		rainbowing: false
 	};
 
-	constructor(appRef : Application, unit : PlayerRacketUnit) {
+	constructor(appRef : TranscendanceApp, unit : PlayerRacketUnit) {
 		super();
 
 		this.appRef = appRef;
@@ -103,8 +88,10 @@ class PlayerRacket extends Container {
 				flag = setTimeout(resizeCallback, 100);
 			});
 		})(this.resize.bind(this)));
-		window.addEventListener("keydown", this.onKeyDown.bind(this));
-		window.addEventListener("keyup", this.onKeyUp.bind(this));
+		// window.addEventListener("keydown", this.onKeyDown.bind(this));
+		// window.addEventListener("keyup", this.onKeyUp.bind(this));
+		if (this.appRef.playerRacket === this.unit)
+			this.actualKeysPressed = this.appRef.actualKeysPressed;
 
 		// ticker
 		this.appRef.ticker.add(this.update, this);
@@ -112,6 +99,9 @@ class PlayerRacket extends Container {
 
 	update(delta: number) {
 		this.deltaTotal += delta;
+
+		if (this.appRef.playerRacket === this.unit)
+		this.actualKeysPressed = this.appRef.actualKeysPressed;
 
 		if (!this.actualKeysPressed.space && this.flags.capacityCharging) {
 			this.flags.capacityCharging = false;
@@ -140,7 +130,6 @@ class PlayerRacket extends Container {
 			this.filterState.update = false;
 			this.filters = this.filterState.array;
 		}
-		this.glitchFilter.refresh();
 	}
 
 	resize() {
@@ -178,8 +167,10 @@ class PlayerRacket extends Container {
 	}
 
 	private onKeyDown(e: KeyboardEvent) {
-		e.preventDefault();
-		e.stopPropagation();
+		if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === " ") {
+			e.preventDefault();
+			e.stopPropagation();
+		}
 		if (e.key === "ArrowUp")
 			this.actualKeysPressed.up = true;
 		else if (e.key === "ArrowDown")
@@ -189,15 +180,16 @@ class PlayerRacket extends Container {
 	}
 
 	private onKeyUp(e: KeyboardEvent) {
-		e.preventDefault();
-		e.stopPropagation();
+		if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === " ") {
+			e.preventDefault();
+			e.stopPropagation();
+		}
 		if (e.key === "ArrowUp")
 			this.actualKeysPressed.up = false;
 		else if (e.key === "ArrowDown")
 			this.actualKeysPressed.down = false;
-		else if (e.key === " ") {
+		else if (e.key === " ")
 			this.actualKeysPressed.space = false;
-		}
 	}
 
 	private manageMovement(delta: number) {
@@ -293,54 +285,9 @@ class PlayerRacket extends Container {
 			if (this.flags.capacityCharging && this.capacityLoader === 100) // in some cases the drawx needs to be triggered here
 				this.draw();
 		}
-		if (!this.flags.rainbowing && this.racketColor != 0xFFFFFF)
+		if (!this.flags.rainbowing && this.racketColor !== 0xFFFFFF)
 			this.racketColor = 0xFFFFFF;
 	}
 }
 
-
-
-
-
-
-
-
-
-
-var app: Application;
-
-export function exec() {
-	app = new Application({
-		view: document.getElementById("game-canvas") as HTMLCanvasElement,
-		resolution: window.devicePixelRatio || 1,
-		resizeTo: document.getElementsByClassName("game-display").item(0) as HTMLElement,
-		antialias: true,
-		autoDensity: true,
-		// backgroundColor: 0x6495ed,
-		backgroundColor: 0x000000,
-		width: 500,
-		height: 500
-	});
-
-	const text: Text = new Text('yes!', { fontFamily: 'arial', fontSize: 32, fill: 0xFFFFFF });
-	// const zoneShow : Graphics = new Graphics();
-
-	const l_racket : PlayerRacket = new PlayerRacket(app, PlayerRacketUnit.LEFT);
-	const r_racket : PlayerRacket = new PlayerRacket(app, PlayerRacketUnit.RIGHT);
-
-	text.pivot.set(text.width / 2, text.height / 2);
-	text.x = app.screen.width / 2;
-	text.y = app.screen.height / 10 * 9;
-	text.angle = 0;
-
-	window.addEventListener("resize", (function(ev: UIEvent) {
-		text.x = app.screen.width / 2;
-		text.y = app.screen.height / 10 * 9;
-
-	}).bind(window));
-
-	// app.stage.addChild(zoneShow);
-	app.stage.addChild(text);
-	app.stage.addChild(l_racket);
-	app.stage.addChild(r_racket);
-}
+export { PlayerRacket, PlayerRacketUnit };

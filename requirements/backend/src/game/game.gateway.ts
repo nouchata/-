@@ -6,12 +6,15 @@ import { User } from 'src/user/entities/user.entity'
 import { OnlineStateGuard } from 'src/auth/guards/online-state.guard';
 import { GameState } from './state/GameState';
 import { GameOptions } from './types/GameOptions';
+import { GameAction } from './types/GameAction';
 
 @UseGuards(OnlineStateGuard)
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
-	constructor() { }
+	constructor() {
+		setTimeout(() => this.createInstance(1, 2, {}, 123456), 1000); // debug
+	}
 
 	@WebSocketServer()
 	wsServer: Server;
@@ -31,8 +34,6 @@ export class GameGateway {
 	@SubscribeMessage('joinGame')
 	joinGame(client: Socket & { request: { user: User } }, { instanceId }: { instanceId: number }) {
 		
-		this.createInstance(1, 2, {}, 123456); // debug
-		
 		if (this.gameInstances[instanceId] === undefined)
 			throw new WsException("The given instance ID is invalid");
 		
@@ -44,6 +45,16 @@ export class GameGateway {
 
 		if (this.associatedPlayers[client.request.user.id] === instanceId)
 			this.gameInstances[instanceId].updatePlayerNetState(client.request.user.id, true);	
+	}
+
+	@SubscribeMessage('gameActionDispatcher')
+	gameActionDispatcher(
+		client: Socket & { request: { user: User } },
+		{ instanceId, gameAction }: { instanceId: number, gameAction: GameAction }
+	) {
+		if (this.associatedPlayers[client.request.user.id] !== instanceId)
+			throw new WsException("You don't belong to the given instance ID");
+		this.gameInstances[instanceId].injectGameAction(gameAction, client.request.user.id);
 	}
 
 	createInstance(

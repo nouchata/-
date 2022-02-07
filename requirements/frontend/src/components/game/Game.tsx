@@ -2,19 +2,25 @@ import { useContext, useEffect } from "react";
 import HideDisplayContext from "../../contexts/HideDisplayContext";
 import { HideDisplayData } from "../../types/HideDisplayData";
 import "./styles/game.scss";
-import { exec } from "./game/game";
+import { GameClientInstance } from "./game/GameClientInstance";
 import { useQuery } from "../../utils/useQuery";
 import { GameWS } from "./game/GameWS";
+import LoginContext from "../../contexts/LoginContext";
+import { FetchStatusData } from "../../types/FetchStatusData";
 
 const Game = () : JSX.Element => {
 	const [, setHideDisplay] = useContext(HideDisplayContext) as [HideDisplayData, Function];
+	const { fetchStatus } = useContext(LoginContext) as {
+		fetchStatus: FetchStatusData | undefined;
+		setFetchStatus: React.Dispatch<React.SetStateAction<FetchStatusData | undefined>>;
+	};
 	const queryCode = useQuery().get('play');
-	let wsClient : GameWS;
+	let gci : GameClientInstance;
 
 	useEffect(() => {
 		setHideDisplay({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true } as HideDisplayData);
-		setTimeout(() => exec(), 0);
-		wsClient = new GameWS(Number(queryCode), () => {});
+		setTimeout(() => gci = new GameClientInstance(fetchStatus?.user?.id as number, Number(queryCode)), 0);
+		
 
 		return function cleanup() {
 			setHideDisplay({});

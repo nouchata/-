@@ -3,20 +3,7 @@ import { PlayerState } from "../types/PlayerState";
 import { StateSettings } from "../types/StateSettings";
 import { Server } from 'socket.io';
 import { ResponseState, RUNSTATE } from "../types/ResponseState";
-
-const samplePlayer : PlayerState = {
-	id: 0,
-	connected: false,
-	pos: { x: undefined, y: 50 },
-	flags: {
-		falsePosAnimation: false,
-		capacityCharging: false,
-		stunted: false,
-		rainbowing: false
-	},
-	capacityLoaderPercentage: 0,
-	stockedCapacity: undefined
-};
+import { GameAction } from "../types/GameAction";
 
 class GameState {
 	// class related
@@ -55,6 +42,8 @@ class GameState {
 		capacityLoaderPercentage: 0,
 		stockedCapacity: undefined
 	};
+	private playerOneReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
+	private playerOneLastActionProcessed: number = -1;
 	private playerTwo : PlayerState = {
 		id: 0,
 		connected: false,
@@ -68,7 +57,8 @@ class GameState {
 		capacityLoaderPercentage: 0,
 		stockedCapacity: undefined
 	};
-
+	private playerTwoReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
+	private playerTwoLastActionProcessed: number = -1;
 	private responseState : ResponseState;
 
 	constructor(
@@ -96,8 +86,8 @@ class GameState {
 			runState: this.runState,
 			playerOne: this.playerOne,
 			playerTwo: this.playerTwo,
-			playerOneLastActionProcessed: 0,
-			playerTwoLastActionProcessed: 0
+			playerOneLastActionProcessed: this.playerOneLastActionProcessed,
+			playerTwoLastActionProcessed: this.playerTwoLastActionProcessed
 		};
 
 		this.run();
@@ -107,8 +97,8 @@ class GameState {
 		while (this.runState !== RUNSTATE.ENDED) {
 			this.runStateHandler();
 
-			// console.log(this.responseState);
-			this.wsServer.to(this.wsRoom).emit('stateUpdate', { responseState: this.responseState });
+			this.responseState.mSecElipsed = this.mSecElapsed;
+			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 			this.mSecElapsed += 100;
 		}
@@ -121,18 +111,20 @@ class GameState {
 		if (this.runState === RUNSTATE.WAITING)
 		{ // if both players aren't connected after 2 minutes the game is kill
 			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed += 1000 * 120;
-			if (this.playerOne.connected && this.playerTwo.connected)
+				this.runStateSecCondition = this.mSecElapsed + (1000 * 120);
+			if (this.playerOne.connected && this.playerTwo.connected) {
+				this.runStateSecCondition = 0;
 				this.runState = RUNSTATE.ABOUT_TO_RUN;
-			// else if (this.runStateSecCondition === this.mSecElapsed) {
-			// 	this.runStateSecCondition = 0;
-			// 	this.runState = RUNSTATE.ENDED;
-			// }
+			}
+			else if (this.runStateSecCondition === this.mSecElapsed) {
+				this.runStateSecCondition = 0;
+				this.runState = RUNSTATE.ENDED;
+			}
 		}
 		else if (this.runState === RUNSTATE.ABOUT_TO_RUN)
 		{ // wait 5 seconds and launch the game
 			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed += 1000 * 5;
+				this.runStateSecCondition = this.mSecElapsed + (1000 * 5);
 			if (this.runStateSecCondition === this.mSecElapsed) {
 				this.runStateSecCondition = 0;
 				this.runState = RUNSTATE.RUNNING;
@@ -140,16 +132,17 @@ class GameState {
 		}
 		else if (this.runState === RUNSTATE.RUNNING)
 		{
-			if (!this.playerOne.connected || !this.playerTwo.connected)
-				this.runState = RUNSTATE.PLAYER_DISCONNECTED;
+			// if (!this.playerOne.connected || !this.playerTwo.connected)
+			// 	this.runState = RUNSTATE.PLAYER_DISCONNECTED;
 		}
 		else if (this.runState === RUNSTATE.PLAYER_DISCONNECTED)
 		{ // wait 2 minutes for player to connect again or kill the game
 			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed += 1000 * 120;
-			if (this.playerOne.connected && this.playerTwo.connected)
+				this.runStateSecCondition = this.mSecElapsed + (1000 * 120);
+			if (this.playerOne.connected && this.playerTwo.connected) {
+				this.runStateSecCondition = 0;
 				this.runState = RUNSTATE.RUNNING;
-			else if (this.runStateSecCondition === this.mSecElapsed) {
+			} else if (this.runStateSecCondition === this.mSecElapsed) {
 				this.runStateSecCondition = 0;
 				this.runState = RUNSTATE.ENDED;
 			}
@@ -163,7 +156,16 @@ class GameState {
 			this.playerOne.connected = state;
 		else if (playerId === this.playerTwo.id)
 			this.playerTwo.connected = state;
-		console.log('player added');
+	}
+
+	injectGameAction(gameAction: GameAction, playerId: number) {
+		if (this.runState === RUNSTATE.RUNNING) {
+			if (playerId === this.playerOne.id) {
+				this.playerOneReceivedGameAction[gameAction.id] = gameAction;
+			} else if (playerId === this.playerTwo.id) {
+				this.playerOneReceivedGameAction[gameAction.id] = gameAction;
+			}
+		}
 	}
 };
 

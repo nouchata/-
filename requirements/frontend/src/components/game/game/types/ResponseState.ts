@@ -22,3 +22,5 @@ export type ResponseState = {
 	playerOneLastActionProcessed: number;
 	playerTwoLastActionProcessed: number;
 };
+
+export { RUNSTATE };

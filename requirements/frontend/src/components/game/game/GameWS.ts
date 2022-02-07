@@ -1,47 +1,35 @@
 import socketIOClient, { Socket } from "socket.io-client";
+import { GameAction } from "./types/GameAction";
 import { ResponseState } from "./types/ResponseState";
 
 
 
 class GameWS {
-	private socket : Socket;
-	private stateUpdater : Function;
+	socket : Socket;
+	instanceId : number;
+	error : string | undefined;
 
-	private actionsToSubmit : any;
-	private receivedState : ResponseState | undefined;
+	constructor(
+		instanceId: number,
+		stateCallback: (newState: ResponseState) => void,
+		errorCallback: (e: any) => void
+	) {
+		this.instanceId = instanceId;
 
-	constructor(instanceId: number, stateUpdater: Function) {
 		this.socket = socketIOClient(
 			process.env.REACT_APP_BACKEND_ADDRESS + '/game',
 			{ withCredentials: true }
 		);
 
-		this.stateUpdater = stateUpdater;
+		this.socket.on('exception', errorCallback);
 
-		this.socket.on('exception', (e) => { console.log(e); });
+		this.socket.on('stateUpdate', stateCallback);
 
-
-		this.socket.on('stateUpdate', (newState: ResponseState) => this.recvState(newState));
-		// this.socket.on('stateUpdate', () => console.log('x'));
-
-		console.log(instanceId);
-		this.socket.emit('joinGame', { instanceId: instanceId });
+		this.socket.emit('joinGame', { instanceId: this.instanceId });
 	}
 
-	private recvState(newState: ResponseState) {
-		
-		this.receivedState = newState;
-		console.log(newState);
-		this.stateUpdater(newState);
-	}
-
-	getActionsToSubmit() {
-		return (this.actionsToSubmit);
-	}
-
-
-
-	emit() {
+	emit(gameAction: GameAction) {
+		this.socket.emit('gameActionDispatcher', { instanceId: this.instanceId, gameAction });
 	}
 
 	destroy() {
