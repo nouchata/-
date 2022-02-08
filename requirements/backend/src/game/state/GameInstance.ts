@@ -1,6 +1,6 @@
 import { GameOptions } from "../types/GameOptions";
 import { PlayerState } from "../types/PlayerState";
-import { StateSettings } from "../types/StateSettings";
+import { InstanceSettings } from "../types/InstanceSettings";
 import { Server } from 'socket.io';
 import { ResponseState, RUNSTATE } from "../types/ResponseState";
 import { GameAction, GA_KEY } from "../types/GameAction";
@@ -20,7 +20,7 @@ const samplePlayer : PlayerState = {
 	stockedCapacity: undefined
 };
 
-class GameState {
+class GameInstance {
 	// class related
 	private runState : RUNSTATE = RUNSTATE.RUNNING;
 
@@ -28,7 +28,7 @@ class GameState {
 	/* used to define a condition based on time elapsed */
 	private runStateSecCondition : number = 0;
 	private instanceId : number;
-	private gameInstances : { [instanceId: number]: GameState | undefined };
+	private gameInstances : { [instanceId: number]: GameInstance | undefined };
 	private associatedPlayers : { [userId: number]: number | undefined };
 
 	// ws related
@@ -53,22 +53,22 @@ class GameState {
 	private responseState : ResponseState;
 
 	constructor(
-		stateSettings : StateSettings,
+		instanceSettings : InstanceSettings,
 		givenGameOptions? : Partial<GameOptions>
 	) {
 		if (givenGameOptions)
 			Object.assign(this.gameOptions, givenGameOptions);
 
 		// class vars
-		this.instanceId = stateSettings.instanceId;
-		this.gameInstances = stateSettings.gameInstances;
-		this.associatedPlayers = stateSettings.associatedPlayers;
-		this.wsServer = stateSettings.wsServer;
+		this.instanceId = instanceSettings.instanceId;
+		this.gameInstances = instanceSettings.gameInstances;
+		this.associatedPlayers = instanceSettings.associatedPlayers;
+		this.wsServer = instanceSettings.wsServer;
 		this.wsRoom = "game#" + this.instanceId;
 
 		// player object creation
-		this.playerOne.id = stateSettings.playersId.one;
-		this.playerTwo.id = stateSettings.playersId.two;
+		this.playerOne.id = instanceSettings.playersId.one;
+		this.playerTwo.id = instanceSettings.playersId.two;
 
 		this.responseState = {
 			instanceId: this.instanceId,
@@ -157,7 +157,7 @@ class GameState {
 		}
 		else {
 			this.playerTwo.pos.y = gameAction.data.y as number;
-			this.playerOneLastActionProcessed = gameAction.id;
+			this.playerTwoLastActionProcessed = gameAction.id;
 		}
 	}
 
@@ -209,4 +209,4 @@ class GameState {
 	}
 };
 
-export { GameState, RUNSTATE };
+export { GameInstance, RUNSTATE };

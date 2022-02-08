@@ -1,4 +1,4 @@
-type PlayerRacketFlags = {
+export type RacketFlags = {
 	/* stands for the not-meant-to-change-the-pos animations */
 	falsePosAnimation: boolean,
 	/* is the player currently charging his capacity bar */
@@ -8,5 +8,3 @@ type PlayerRacketFlags = {
 	/* is the racket rainbowing */
 	rainbowing: boolean
 };
-
-export { PlayerRacketFlags };

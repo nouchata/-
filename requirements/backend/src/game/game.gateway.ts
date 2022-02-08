@@ -4,7 +4,7 @@ import { WsGroupGuard } from 'src/auth/guards/group.guard';
 import { Socket, Server } from 'socket.io';
 import { User } from 'src/user/entities/user.entity'
 import { OnlineStateGuard } from 'src/auth/guards/online-state.guard';
-import { GameState } from './state/GameState';
+import { GameInstance } from './state/GameInstance';
 import { GameOptions } from './types/GameOptions';
 import { GameAction, GA_KEY } from './types/GameAction';
 
@@ -20,13 +20,14 @@ export class GameGateway {
 			(async() => {
 				let percentage: number = 50;
 				let toTop: boolean = true;
+				let id: number = 0;
 				while (true) {
 					if (toTop)
 						percentage -= (50 / 10);
 					else
 						percentage += (50 / 10);
 					this.gameInstances[123456].injectGameAction({ 
-						id: 0,
+						id: ++id,
 						keyPressed: toTop ? GA_KEY.UP : GA_KEY.DOWN,
 						data: { y: percentage }
 					}, 2);
@@ -45,7 +46,7 @@ export class GameGateway {
 	wsServer: Server;
 
 	/* relie les instances à leur id */
-	private gameInstances : { [instanceId: number]: GameState | undefined } = {};
+	private gameInstances : { [instanceId: number]: GameInstance | undefined } = {};
 	/* relie les joueurs à l'id de leur instance */
 	private associatedPlayers : { [userId: number]: number | undefined } = {};
 
@@ -105,7 +106,7 @@ export class GameGateway {
 		this.associatedPlayers[playerOneId] = instanceId;
 		this.associatedPlayers[playerTwoId] = instanceId;
 
-		this.gameInstances[instanceId] = new GameState({
+		this.gameInstances[instanceId] = new GameInstance({
 			wsServer: this.wsServer,
 			instanceId: instanceId,
 			associatedPlayers: this.associatedPlayers,

@@ -1,12 +1,12 @@
-import { GameState } from "../state/GameState";
+import { GameInstance } from "../state/GameInstance";
 import { Server } from 'socket.io';
 
-type StateSettings = {
+type InstanceSettings = {
 	wsServer: Server
 	instanceId: number;
-	gameInstances : { [instanceId: number]: GameState | undefined };
+	gameInstances : { [instanceId: number]: GameInstance | undefined };
 	associatedPlayers : { [userId: number]: number | undefined };
 	playersId : { one: number, two: number };
 }
 
-export { StateSettings } ;
+export { InstanceSettings } ;

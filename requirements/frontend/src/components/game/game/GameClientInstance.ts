@@ -4,11 +4,13 @@ import { AdvancedBloomFilter } from '@pixi/filter-advanced-bloom';
 import { GlitchFilter } from '@pixi/filter-glitch';
 import { Container, Filter, Graphics, LINE_JOIN, PI_2, Rectangle, Sprite, Text, UPDATE_PRIORITY } from 'pixi.js'
 import { GameWS } from './GameWS';
-import { PlayerRacket, PlayerRacketUnit } from './src/game_scene/PlayerRacket';
+import { PlayerRacket } from './src/game_scene/racket/PlayerRacket';
+import { Racket, RacketUnit } from './src/game_scene/racket/Racket';
+import { SpectatorRacket } from './src/game_scene/racket/SpectatorRacket';
 import { TranscendanceApp } from './src/TranscendanceApp';
 import { GameAction } from './types/GameAction';
 import { ResponseState, RUNSTATE } from './types/ResponseState';
-// import { PlayerRacket, PlayerRacketUnit } from './playerRacket';
+// import { PlayerRacket, RacketUnit } from './playerRacket';
 
 enum GCI_STATE {
 	SETUP,
@@ -82,12 +84,12 @@ class GameClientInstance {
 		this.gciState = GCI_STATE.RUNNING;
 
 		if (this.currentResponseState?.playerOne.id === this.app.userId)
-			this.app.playerRacket = PlayerRacketUnit.LEFT;
+			this.app.playerRacket = RacketUnit.LEFT;
 		else if (this.currentResponseState?.playerTwo.id === this.app.userId)
-			this.app.playerRacket = PlayerRacketUnit.RIGHT;
-
-		const l_racket : PlayerRacket = new PlayerRacket(this.app, PlayerRacketUnit.LEFT);
-		const r_racket : PlayerRacket = new PlayerRacket(this.app, PlayerRacketUnit.RIGHT);
+			this.app.playerRacket = RacketUnit.RIGHT;
+		
+		const l_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.app, RacketUnit.LEFT) : new SpectatorRacket(this.app, RacketUnit.LEFT);
+		const r_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.app, RacketUnit.RIGHT) : new SpectatorRacket(this.app, RacketUnit.RIGHT);;
 		
 		this.app.stage.addChild(l_racket);
 		this.app.stage.addChild(r_racket);
@@ -100,7 +102,7 @@ class GameClientInstance {
 		// cleaning for garbage collector
 		if (this.app.playerRacket)
 			this.computedGameActionsCleaner(
-				this.app.playerRacket === PlayerRacketUnit.LEFT ?
+				this.app.playerRacket === RacketUnit.LEFT ?
 				this.currentResponseState.playerOneLastActionProcessed :
 				this.currentResponseState.playerTwoLastActionProcessed
 			);

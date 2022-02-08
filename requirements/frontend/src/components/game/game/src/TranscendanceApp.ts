@@ -1,10 +1,10 @@
 import { Application, IApplicationOptions } from "pixi.js";
 import { GameClientInstance } from "../GameClientInstance";
-import { PlayerRacketUnit } from "./game_scene/PlayerRacket";
+import { RacketUnit } from "./game_scene/racket/Racket";
 
 class TranscendanceApp extends Application {
 	userId: number;
-	playerRacket: PlayerRacketUnit = PlayerRacketUnit.NONE;
+	playerRacket: RacketUnit = RacketUnit.NONE;
 	gciMaster: GameClientInstance;
 	actualKeysPressed : { // controls
 		up: boolean, down: boolean, space: boolean

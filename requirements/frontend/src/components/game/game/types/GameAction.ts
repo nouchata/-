@@ -1,4 +1,5 @@
 enum GA_KEY {
+	NONE,
 	UP,
 	DOWN,
 	SPACE
