@@ -4,7 +4,7 @@ export type RacketFlags = {
 	/* is the player currently charging his capacity bar */
 	capacityCharging: boolean,
 	/* is the player stunted */
-	stunted: boolean,
+	stuned: boolean,
 	/* is the racket rainbowing */
 	rainbowing: boolean
 };

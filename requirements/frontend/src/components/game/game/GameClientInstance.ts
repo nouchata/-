@@ -106,7 +106,7 @@ class GameClientInstance {
 				this.currentResponseState.playerOneLastActionProcessed :
 				this.currentResponseState.playerTwoLastActionProcessed
 			);
-		console.log(this.currentResponseState);
+		// console.log(this.currentResponseState);
 		if (this.gciState === GCI_STATE.SETUP)
 			this.run();
 	}

@@ -59,7 +59,7 @@ class Racket extends Container {
 	protected flags : RacketFlags = {
 		falsePosAnimation: false,
 		capacityCharging: false,
-		stunted: false,
+		stuned: false,
 		rainbowing: false
 	};
 
@@ -77,7 +77,8 @@ class Racket extends Container {
 
 		// container settings
 		this.addChild(this.shape);
-		this.y = this.appRef.screen.height / 2;
+		
+		this.y = toPx((this.selectCorrectUnit() as PlayerState).pos.y, this.appRef.screen.height);
 		this.updateSpatials({ pivot: true, filterArea: true, positionX: true });
 		this.absolutePosition = { x: this.x, y: this.y };
 
@@ -195,6 +196,18 @@ class Racket extends Container {
 		}
 		if (!this.flags.rainbowing && this.racketColor !== 0xFFFFFF)
 			this.racketColor = 0xFFFFFF;
+	}
+
+	protected selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {
+		if (this.unit === RacketUnit.LEFT)
+			return (getLastActionProcessed ? 
+				(this.appRef.gciMaster.currentResponseState as ResponseState).playerOneLastActionProcessed :
+				(this.appRef.gciMaster.currentResponseState as ResponseState).playerOne
+			);
+		return (getLastActionProcessed ? 
+			(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwoLastActionProcessed :
+			(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo
+		);
 	}
 }
 

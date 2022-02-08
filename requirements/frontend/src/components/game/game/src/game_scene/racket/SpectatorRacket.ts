@@ -11,12 +11,10 @@ class SpectatorRacket extends Racket {
 	}
 
 	update(delta: number) {
-		let actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
+		const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
 		this.deltaTotal += delta;
 
-		let playerData : PlayerState = this.unit === RacketUnit.LEFT ?
-		(this.appRef.gciMaster.currentResponseState as ResponseState).playerOne :
-		(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo;
+		const playerData : PlayerState = this.selectCorrectUnit() as PlayerState;
 
 		if (actualPerPos > playerData.pos.y) { // to top
 			// lag proof smooth movement or teleportation if there's too much delay (10% ahead for a 50% per sec)

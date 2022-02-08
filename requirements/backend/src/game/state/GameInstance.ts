@@ -13,7 +13,7 @@ const samplePlayer : PlayerState = {
 	flags: {
 		falsePosAnimation: false,
 		capacityCharging: false,
-		stunted: false,
+		stuned: false,
 		rainbowing: false
 	},
 	capacityLoaderPercentage: 0,

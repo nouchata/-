@@ -1,7 +1,8 @@
-import { GA_KEY } from "../../../types/GameAction";
+import { GameAction, GA_KEY } from "../../../types/GameAction";
+import { PlayerState } from "../../../types/PlayerState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
-import { Racket, RacketUnit } from "./Racket";
+import { Racket, RacketUnit, toPer, toPx } from "./Racket";
 
 class PlayerRacket extends Racket {
 	constructor(appRef : TranscendanceApp, unit : RacketUnit) {
@@ -10,7 +11,9 @@ class PlayerRacket extends Racket {
 	}
 
 	update(delta: number) {
+		// const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
 		this.deltaTotal += delta;
+		this.absolutePosition.y = toPx(this.manageMovementReconciliation(), this.appRef.screen.height);
 
 		if (!this.appRef.actualKeysPressed.space && this.flags.capacityCharging) {
 			this.flags.capacityCharging = false;
@@ -73,7 +76,19 @@ class PlayerRacket extends Racket {
 			};
 			return (GA_KEY.DOWN);
 		}
+		if (!this.flags.falsePosAnimation)
+			this.y = this.absolutePosition.y;
 		return (GA_KEY.NONE);
+	}
+
+	protected manageMovementReconciliation() : number {
+		let serverState: PlayerState = this.selectCorrectUnit() as PlayerState;
+		let lastServProcessedAction: number = this.selectCorrectUnit(true) as number + 1;
+		let reconciliatedPos: number = serverState.pos.y;
+		for (; this.appRef.gciMaster.computedGameActions[lastServProcessedAction] ; lastServProcessedAction++)
+			if ((this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y)
+				reconciliatedPos = (this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y as number;
+		return (reconciliatedPos);
 	}
 }
 
