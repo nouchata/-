@@ -5,6 +5,7 @@ import { TranscendanceApp } from "../../TranscendanceApp";
 import { Racket, RacketUnit, toPer, toPx } from "./Racket";
 
 class PlayerRacket extends Racket {
+
 	constructor(appRef : TranscendanceApp, unit : RacketUnit) {
 		super(appRef, unit);
 		this.appRef.ticker.add(this.update, this);
@@ -12,29 +13,18 @@ class PlayerRacket extends Racket {
 
 	update(delta: number) {
 		// const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
+		let redraw: boolean = false;
+
 		this.deltaTotal += delta;
 		this.absolutePosition.y = toPx(this.manageMovementReconciliation(), this.appRef.screen.height);
 
-		if (!this.appRef.actualKeysPressed.space && this.flags.capacityCharging) {
-			this.flags.capacityCharging = false;
-			this.flags.falsePosAnimation = false;
-			this.flags.rainbowing = false;
-
-			// sometimes there is pos artifacts after twitching w/out that
-			this.x = this.absolutePosition.x;
-			this.y = this.absolutePosition.y;
-		}
-		if (this.appRef.actualKeysPressed.space && !this.flags.capacityCharging /* && other conditions like having a power available */) {
-			this.flags.capacityCharging = true;
-			this.flags.falsePosAnimation = true;
-			this.flags.rainbowing = true;
-			this.capacityLoader = 0;
-		}
-
 		// various updates
 		this.manageAngle(delta, this.manageMovement(delta));
-		this.capacityCharging(delta);
-		this.rainbowingRacket(delta);
+		redraw = this.capacityCharging(delta) || redraw;
+		redraw = this.rainbowingRacket(delta) || redraw;
+		if (redraw)
+			this.draw();
+		this.handleCapacityCharging();
 
 		// filters update
 		if (this.filterState.update) {
@@ -81,6 +71,37 @@ class PlayerRacket extends Racket {
 		return (GA_KEY.NONE);
 	}
 
+	protected capacityCharging(delta: number) : boolean {
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
+			let playerState: PlayerState = this.selectCorrectUnit() as PlayerState;
+			if (this.localCapacityChargingState) {
+				this.x = this.absolutePosition.x + (Math.cos(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
+				this.y = this.absolutePosition.y + (Math.sin(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
+				if (this.capacityLoader < 100) {
+					this.capacityLoader = 
+						this.capacityLoader + delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS) > 100 ? 
+						100 : this.capacityLoader + delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS);
+					// 20% ease range
+					if (this.capacityLoader - playerState.capacityLoaderPercentage > 20 || this.capacityLoader - playerState.capacityLoaderPercentage < -20)
+						this.capacityLoader = playerState.capacityLoaderPercentage;
+					return (true);
+				}
+			}
+			if (!this.localCapacityChargingState) {
+				if (this.capacityLoader) {
+					this.capacityLoader = 
+						this.capacityLoader - delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS) < 0 ?
+						0 : this.capacityLoader - delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS);
+					this.x = this.absolutePosition.x;
+					this.y = this.absolutePosition.y;
+					return (true);
+				}
+			}
+		}
+		return (false);
+	}
+
+	// network related functions
 	protected manageMovementReconciliation() : number {
 		let serverState: PlayerState = this.selectCorrectUnit() as PlayerState;
 		let lastServProcessedAction: number = this.selectCorrectUnit(true) as number + 1;
@@ -89,6 +110,31 @@ class PlayerRacket extends Racket {
 			if ((this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y)
 				reconciliatedPos = (this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y as number;
 		return (reconciliatedPos);
+	}
+
+	protected handleCapacityCharging(): void {
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
+			if (!this.localCapacityChargingState && this.appRef.actualKeysPressed.space && !(this.selectCorrectUnit() as PlayerState).flags.capacityCharging) {
+				this.appRef.gciMaster.lastLocalGameActionComputed++;
+				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
+					id: this.appRef.gciMaster.lastLocalGameActionComputed,
+					keyPressed: GA_KEY.SPACE,
+					data: { chargingOn: true }
+				};
+				this.localCapacityChargingState = true;
+				this.capacityLoader = 0;
+			} else if (this.localCapacityChargingState && !this.appRef.actualKeysPressed.space && (this.selectCorrectUnit() as PlayerState).flags.capacityCharging) {
+				this.appRef.gciMaster.lastLocalGameActionComputed++;
+				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
+					id: this.appRef.gciMaster.lastLocalGameActionComputed,
+					keyPressed: GA_KEY.SPACE,
+					data: { chargingOn: false }
+				};
+				this.localCapacityChargingState = false;
+				this.x = this.absolutePosition.x;
+				this.y = this.absolutePosition.y;
+			}
+		} 
 	}
 }
 

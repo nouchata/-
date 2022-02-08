@@ -12,6 +12,8 @@ class SpectatorRacket extends Racket {
 
 	update(delta: number) {
 		const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
+		let redraw: boolean = false;
+
 		this.deltaTotal += delta;
 
 		const playerData : PlayerState = this.selectCorrectUnit() as PlayerState;
@@ -28,6 +30,11 @@ class SpectatorRacket extends Racket {
 			else
 				this.manageAngle(delta, this.manageMovement(delta, toPx(playerData.pos.y, this.appRef.screen.height)));
 		}
+
+		redraw = this.capacityCharging(delta) || redraw;
+		redraw = this.rainbowingRacket(delta) || redraw;
+		if (redraw)
+			this.draw();
 
 		if (this.filterState.update) {
 			this.filterState.update = false;
@@ -56,6 +63,45 @@ class SpectatorRacket extends Racket {
 			return (GA_KEY.DOWN);
 		}
 		return (GA_KEY.NONE);
+	}
+
+	protected capacityCharging(delta: number) : boolean {
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
+			let playerState: PlayerState = this.selectCorrectUnit() as PlayerState;
+			if (playerState.flags.capacityCharging) {
+				if (!this.localCapacityChargingState) {
+					this.localCapacityChargingState = true;
+					this.capacityLoader = 0;
+				}
+				this.x = this.absolutePosition.x + (Math.cos(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
+				this.y = this.absolutePosition.y + (Math.sin(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
+				if (this.capacityLoader < 100) {
+					this.capacityLoader = 
+						this.capacityLoader + delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS) > 100 ? 
+						100 : this.capacityLoader + delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS);
+					// 20% ease range
+					if (this.capacityLoader - playerState.capacityLoaderPercentage > 20 || this.capacityLoader - playerState.capacityLoaderPercentage < -20)
+						this.capacityLoader = playerState.capacityLoaderPercentage;
+					return (true);
+				}
+			}
+			if (!playerState.flags.capacityCharging) {
+				if (this.localCapacityChargingState) {
+					this.localCapacityChargingState = false;
+					this.x = this.absolutePosition.x;
+					this.y = this.absolutePosition.y;
+				}
+				if (this.capacityLoader) {
+					this.capacityLoader = 
+						this.capacityLoader - delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS) < 0 ?
+						0 : this.capacityLoader - delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS);
+					this.x = this.absolutePosition.x;
+					this.y = this.absolutePosition.y;
+					return (true);
+				}
+			}
+		}
+		return (false);
 	}
 }
 

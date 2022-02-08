@@ -8,7 +8,7 @@ enum GA_KEY {
 type GameAction = {
 	id: number;
 	keyPressed: GA_KEY;
-	data: { x?: number, y?: number };
+	data: { x?: number, y?: number, chargingOn?: boolean };
 };
 
 export { GameAction, GA_KEY };

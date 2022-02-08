@@ -47,6 +47,7 @@ class Racket extends Container {
 	protected deltaTotal : number = 0;
 	protected movSpeed : number = defaultScreenHeightPercentagePerSec;
 	protected capacityLoader : number = 0;
+	protected localCapacityChargingState: boolean = false;
 	protected racketColor : number = 0xFFFFFF;
 	protected currScreenSize : number = 0;
 
@@ -78,7 +79,10 @@ class Racket extends Container {
 		// container settings
 		this.addChild(this.shape);
 		
+		// server copying
+		this.localCapacityChargingState = (this.selectCorrectUnit() as PlayerState).flags.capacityCharging;
 		this.y = toPx((this.selectCorrectUnit() as PlayerState).pos.y, this.appRef.screen.height);
+
 		this.updateSpatials({ pivot: true, filterArea: true, positionX: true });
 		this.absolutePosition = { x: this.x, y: this.y };
 
@@ -169,33 +173,18 @@ class Racket extends Container {
 		this.shape.endFill();
 	}
 
-	protected capacityCharging(delta: number) {
-		if (this.flags.capacityCharging) {
-			this.x = this.absolutePosition.x + (Math.cos(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
-			this.y = this.absolutePosition.y + (Math.sin(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
-			if (this.capacityLoader < 100) {
-				this.capacityLoader = this.capacityLoader + delta * (capChargingPercentagePerSec / this.appRef.ticker.FPS) > 100 ? 100 : this.capacityLoader + delta * (capChargingPercentagePerSec / this.appRef.ticker.FPS);
-				this.draw();
-			}
-		}
-		if (this.capacityLoader && !this.flags.capacityCharging) {
-			this.capacityLoader = this.capacityLoader - delta * (capChargingPercentagePerSec / this.appRef.ticker.FPS) < 0 ? 0 : this.capacityLoader - delta * (capChargingPercentagePerSec / this.appRef.ticker.FPS);
-			this.x = this.absolutePosition.x;
-			this.y = this.absolutePosition.y;
-			this.draw();
-		}
-	}
-
-	protected rainbowingRacket(delta: number) {
+	protected rainbowingRacket(delta: number) : boolean {
 		const colorFactor : number = 1000;
 
-		if (this.flags.rainbowing) {
+		if ((this.selectCorrectUnit() as PlayerState).flags.rainbowing) {
 			this.racketColor -= this.racketColor - colorFactor * delta < 0 ? 0xFFFFFF : colorFactor * delta;
-			if (this.flags.capacityCharging && this.capacityLoader === 100) // in some cases the drawx needs to be triggered here
-				this.draw();
+			return (true);
 		}
-		if (!this.flags.rainbowing && this.racketColor !== 0xFFFFFF)
+		if (!(this.selectCorrectUnit() as PlayerState).flags.rainbowing && this.racketColor !== 0xFFFFFF) {
 			this.racketColor = 0xFFFFFF;
+			return (true);
+		}
+		return (false);
 	}
 
 	protected selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {

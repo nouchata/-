@@ -45,10 +45,10 @@ class GameInstance {
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
-	private playerOneReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
+	// private playerOneReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
 	private playerOneLastActionProcessed: number = -1;
 	private playerTwo : PlayerState = cloneDeep(samplePlayer);
-	private playerTwoReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
+	// private playerTwoReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
 	private playerTwoLastActionProcessed: number = -1;
 	private responseState : ResponseState;
 
@@ -88,6 +88,7 @@ class GameInstance {
 		while (this.runState !== RUNSTATE.ENDED) {
 			this.runStateHandler();
 			this.movementChecker();
+			this.chargingChecker();
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
@@ -150,7 +151,7 @@ class GameInstance {
 	}
 
 	// incoming position changes
-	movementHandler(gameAction: GameAction, isPlayerOne: boolean) {
+	private movementHandler(gameAction: GameAction, isPlayerOne: boolean) {
 		if (isPlayerOne) {
 			this.playerOne.pos.y = gameAction.data.y as number;
 			this.playerOneLastActionProcessed = gameAction.id;
@@ -161,8 +162,22 @@ class GameInstance {
 		}
 	}
 
+	private chargingHandler(gameAction: GameAction, isPlayerOne: boolean) {
+		let playerState: PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
+		if (!playerState.flags.stuned && this.gameOptions.gameType === "extended") {
+			if (gameAction.data.chargingOn) {
+				playerState.flags.capacityCharging = true;
+				playerState.flags.rainbowing = true;
+			}
+			else {
+				playerState.flags.capacityCharging = false;
+				playerState.flags.rainbowing = false;
+			}
+		}
+	}
+
 	// speed anti-cheat
-	movementChecker() {
+	private movementChecker() {
 		let hundredMsMovementAllowed: number = this.gameOptions.yDistPPS / 100 * 15; // 5% ease range
 		let percentageHalfRacketSize: number = 100 / this.gameOptions.racketSize / 2;
 			
@@ -190,6 +205,32 @@ class GameInstance {
 		}
 	}
 
+	// charging state update
+	private chargingChecker() {
+		if (this.gameOptions.gameType === "extended") {
+			if (this.playerOne.flags.capacityCharging) {
+				if (this.playerOne.capacityLoaderPercentage < 100) {
+					this.playerOne.capacityLoaderPercentage += this.gameOptions.capChargingPPS / 10;
+					if (this.playerOne.capacityLoaderPercentage > 100)
+						this.playerOne.capacityLoaderPercentage = 100;
+				}
+			} else {
+				if (this.playerOne.capacityLoaderPercentage)
+					this.playerOne.capacityLoaderPercentage = 0;
+			}
+			if (this.playerTwo.flags.capacityCharging) {
+				if (this.playerTwo.capacityLoaderPercentage < 100) {
+					this.playerTwo.capacityLoaderPercentage += this.gameOptions.capChargingPPS / 10;
+					if (this.playerTwo.capacityLoaderPercentage > 100)
+						this.playerTwo.capacityLoaderPercentage = 100;
+				}
+			} else {
+				if (this.playerTwo.capacityLoaderPercentage)
+					this.playerTwo.capacityLoaderPercentage = 0;
+			}
+		}
+	}
+
 	// PUBLIC FUNCTIONS
 
 	updatePlayerNetState(playerId: number, state: boolean) {
@@ -205,6 +246,8 @@ class GameInstance {
 		{
 			if (gameAction.keyPressed === GA_KEY.UP || gameAction.keyPressed === GA_KEY.DOWN)
 				this.movementHandler(gameAction, playerId === this.playerOne.id);
+			if (gameAction.keyPressed === GA_KEY.SPACE)
+				this.chargingHandler(gameAction, playerId === this.playerOne.id);
 		}
 	}
 };

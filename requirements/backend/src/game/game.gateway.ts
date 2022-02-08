@@ -15,12 +15,12 @@ export class GameGateway {
 	constructor() {
 		// debug test fake p2
 		setTimeout(() => {
-			this.createInstance(1, 2, {}, 123456);
+			this.createInstance(1, 2, { gameType: "extended" }, 123456);
 			this.gameInstances[123456].updatePlayerNetState(2, true);
+			let id: number = 0;
 			(async() => {
 				let percentage: number = 50;
 				let toTop: boolean = true;
-				let id: number = 0;
 				while (true) {
 					if (toTop)
 						percentage -= (50 / 10);
@@ -36,6 +36,26 @@ export class GameGateway {
 					if (percentage <= 20)
 						toTop = false;
 					await new Promise((resolve) => setTimeout(() => resolve(1), 100));
+				}
+			})();
+			(async() => {
+				for (let i = 0 ; i < 7 ; i++) {
+					await new Promise((resolve) => setTimeout(() => {
+						this.gameInstances[123456].injectGameAction({ 
+							id: ++id,
+							keyPressed: GA_KEY.SPACE,
+							data: { chargingOn: true }
+						}, 2);
+						resolve(1);
+					}, 1000));
+					await new Promise((resolve) => setTimeout(() => {
+						this.gameInstances[123456].injectGameAction({ 
+							id: ++id,
+							keyPressed: GA_KEY.SPACE,
+							data: { chargingOn: false }
+						}, 2);
+						resolve(1);
+					}, 2000));
 				}
 			})();
 		}, 1000);
