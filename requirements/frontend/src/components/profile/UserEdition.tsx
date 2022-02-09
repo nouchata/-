@@ -34,8 +34,13 @@ const UserEdition = (props: IProps) => {
             formData.append('picture', selectedFile as File);
         }
 
-		await RequestWrapper.post('/user/edit', formData, () => {
-			alert('an error occured, going back to profile page.');
+		await RequestWrapper.post('/user/edit', formData, (e) => {
+            if (e.response) {
+                alert(e.response.data.message);
+            } else {
+                alert('an error occured, going back to profile page.');
+                props.changeState();
+            }
 		});
 		props.changeState();
     };
@@ -55,13 +60,22 @@ const UserEdition = (props: IProps) => {
                 />
     
                 <div className='forms'>
-                    <input type='text' className='name-input' value={username} onChange={handleUsernameChange}/>
+                    <input
+                        type='text'
+                        className='name-input'
+                        value={username}
+                        onChange={handleUsernameChange}
+                        placeholder='your new username'
+                    />
                     <br/>
                     <input type='file' id='file' className='file-input' name='picture' accept='image/*' onChange={handleAvatarChange}/>
                     <label htmlFor='file'>Change your picture</label>
                     <br/>
-                    <button onClick={handleSubmit}>
+                    <button className='save' onClick={handleSubmit}>
                         Save your changes
+                    </button>
+                    <button className='cancel' onClick={props.changeState}>
+                        Cancel
                     </button>
                 </div>
             </div>
