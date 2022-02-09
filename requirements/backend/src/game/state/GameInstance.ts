@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import { ResponseState, RUNSTATE } from "../types/ResponseState";
 import { GameAction, GA_KEY } from "../types/GameAction";
 import { cloneDeep } from "lodash";
+import { BallState } from "../types/BallState";
 
 const samplePlayer : PlayerState = {
 	id: 0,
@@ -19,6 +20,20 @@ const samplePlayer : PlayerState = {
 	capacityLoaderPercentage: 0,
 	stockedCapacity: undefined
 };
+
+const sampleBall : BallState = {
+	pos: { x: 50, y: 50 },
+	directionVector: { x: 1, y: 0.5 },
+	headingRight: true,
+	headingTop: true,
+	speedPPS: 50,
+	flags: {
+		rainbow: false,
+		smash: false,
+		freezed: false,
+		showed: false
+	}
+}
 
 class GameInstance {
 	// class related
@@ -40,8 +55,12 @@ class GameInstance {
 		gameType: "standard",
 		capChargingPPS: 100 / 3,
 		yDistPPS: 50,
-		racketSize: 6
+		racketSize: 6,
+		ballSpeedPPS: 50
 	};
+
+	// ball related
+	private ballState : BallState = cloneDeep(sampleBall);
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
@@ -70,11 +89,15 @@ class GameInstance {
 		this.playerOne.id = instanceSettings.playersId.one;
 		this.playerTwo.id = instanceSettings.playersId.two;
 
+		// ball stuff
+		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
+
 		this.responseState = {
 			instanceId: this.instanceId,
 			gameOptions: this.gameOptions,
 			mSecElipsed: this.mSecElapsed,
 			runState: this.runState,
+			ballState: cloneDeep(this.ballState),
 			playerOne: cloneDeep(this.playerOne),
 			playerTwo: cloneDeep(this.playerTwo),
 			playerOneLastActionProcessed: this.playerOneLastActionProcessed,

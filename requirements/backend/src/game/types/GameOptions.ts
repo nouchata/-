@@ -7,6 +7,8 @@ type GameOptions = {
 	yDistPPS: number;
 	/* vertical size of the rackets (100 / racketSize) */
 	racketSize: number;
+	/* default ball speed */
+	ballSpeedPPS: number;
 }
 
 export { GameOptions };
