@@ -1,3 +1,4 @@
+import { BallState } from "./BallState";
 import { GameOptions } from "./GameOptions";
 import { PlayerState } from "./PlayerState";
 
@@ -15,6 +16,7 @@ export type ResponseState = {
 	gameOptions: GameOptions;
 	mSecElipsed: number;
 	runState: RUNSTATE;
+	ballState: BallState;
 
 	// player related
 	playerOne: PlayerState;

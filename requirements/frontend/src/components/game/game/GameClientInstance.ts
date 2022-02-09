@@ -4,6 +4,7 @@ import { AdvancedBloomFilter } from '@pixi/filter-advanced-bloom';
 import { GlitchFilter } from '@pixi/filter-glitch';
 import { Container, Filter, Graphics, LINE_JOIN, PI_2, Rectangle, Sprite, Text, UPDATE_PRIORITY } from 'pixi.js'
 import { GameWS } from './GameWS';
+import { Ball } from './src/game_scene/ball/Ball';
 import { PlayerRacket } from './src/game_scene/racket/PlayerRacket';
 import { Racket, RacketUnit } from './src/game_scene/racket/Racket';
 import { SpectatorRacket } from './src/game_scene/racket/SpectatorRacket';
@@ -89,10 +90,12 @@ class GameClientInstance {
 			this.app.playerRacket = RacketUnit.RIGHT;
 		
 		const l_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.app, RacketUnit.LEFT) : new SpectatorRacket(this.app, RacketUnit.LEFT);
-		const r_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.app, RacketUnit.RIGHT) : new SpectatorRacket(this.app, RacketUnit.RIGHT);;
+		const r_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.app, RacketUnit.RIGHT) : new SpectatorRacket(this.app, RacketUnit.RIGHT);
+		const ball : Ball = new Ball(this.app);
 		
 		this.app.stage.addChild(l_racket);
 		this.app.stage.addChild(r_racket);
+		this.app.stage.addChild(ball);
 		this.app.ticker.add(this.actionSender, this);
 	}
 

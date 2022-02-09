@@ -9,11 +9,9 @@ import { TranscendanceApp } from "../../TranscendanceApp";
 
 const rSS : {
 	width: number,
-	heightFactor: number,
 	thickness: number 
 } = {
 	width: 10,
-	heightFactor: 6,
 	thickness: 3
 } // racketShapeSize
 
@@ -32,12 +30,12 @@ enum RacketUnit {
 	RIGHT
 };
 
-function toPer(value: number, currScreenSize: number) : number {
-	return ((value / (currScreenSize / 100)));
+function toPer(value: number, screenValue: number) : number {
+	return (value / (screenValue / 100));
 } // to percentages
 
-function toPx(value: number, screenHeight: number) : number {
-	return (value * (screenHeight / 100));
+function toPx(value: number, screenValue: number) : number {
+	return (value * (screenValue / 100));
 } // to screen scale
 
 class Racket extends Container {
@@ -128,13 +126,13 @@ class Racket extends Container {
 	}
 
 	protected manageAngle(delta: number, key: GA_KEY) {
-		if (key === GA_KEY.UP && this.y > this.appRef.screen.height / rSS.heightFactor / 2) {
+		if (key === GA_KEY.UP && this.y > this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize / 2) {
 			if (this.angle > -angleFactor && this.unit === RacketUnit.RIGHT) {
 				this.angle = this.angle - delta * 1 < -angleFactor ? -angleFactor : this.angle - delta * 1;
 			} else if (this.angle < angleFactor && this.unit === RacketUnit.LEFT) {
 				this.angle = this.angle + delta * 1 > angleFactor ? angleFactor : this.angle + delta * 1;
 			}
-		} else if (key === GA_KEY.DOWN && this.y < this.appRef.screen.height - this.appRef.screen.height / rSS.heightFactor / 2) {
+		} else if (key === GA_KEY.DOWN && this.y < this.appRef.screen.height - this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize / 2) {
 			if (this.angle < angleFactor && this.unit === RacketUnit.RIGHT) {
 				this.angle = this.angle + delta * 1 > angleFactor ? angleFactor : this.angle + delta * 1;
 			} else if (this.angle > -angleFactor && this.unit === RacketUnit.LEFT) {
@@ -155,19 +153,19 @@ class Racket extends Container {
 		this.shape.clear();
 		this.shape.beginFill(this.racketColor);
 		this.shape.drawRect(0, 0, rSS.thickness, 
-			this.appRef.screen.height / rSS.heightFactor);
+			this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize);
 		this.shape.drawRect(rSS.width, 0, rSS.thickness, 
-			this.appRef.screen.height / rSS.heightFactor);
+			this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize);
 		this.shape.drawRect(0, 0, rSS.width, rSS.thickness);
 		this.shape.drawRect(0, this.appRef.screen.height /
-			rSS.heightFactor - rSS.thickness, rSS.width, 3);
+			(this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize - rSS.thickness, rSS.width, rSS.thickness);
 
 		if (this.capacityLoader)
 			this.shape.drawRect(
 				0,
-				this.appRef.screen.height / rSS.heightFactor,
+				this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize,
 				rSS.width,
-				-(this.capacityLoader * (this.appRef.screen.height / rSS.heightFactor) / 100)
+				-(this.capacityLoader * (this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize) / 100)
 			);
 
 		this.shape.endFill();
