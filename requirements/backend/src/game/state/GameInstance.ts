@@ -61,6 +61,7 @@ class GameInstance {
 
 	// ball related
 	private ballState : BallState = cloneDeep(sampleBall);
+	private lastMsPlayerBallCollision : number = 0;
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
@@ -112,6 +113,7 @@ class GameInstance {
 			this.runStateHandler();
 			this.movementChecker();
 			this.chargingChecker();
+			this.ballHandler();
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
@@ -169,6 +171,7 @@ class GameInstance {
 		this.responseState.runState = this.runState;
 		this.responseState.playerOne = cloneDeep(this.playerOne);
 		this.responseState.playerTwo = cloneDeep(this.playerTwo);
+		this.responseState.ballState = cloneDeep(this.ballState);
 		this.responseState.playerOneLastActionProcessed = this.playerOneLastActionProcessed;
 		this.responseState.playerTwoLastActionProcessed = this.playerTwoLastActionProcessed;
 	}
@@ -196,6 +199,59 @@ class GameInstance {
 				playerState.flags.capacityCharging = false;
 				playerState.flags.rainbowing = false;
 			}
+		}
+	}
+
+	private ballHandler() {
+		this.ballState.pos.x += this.ballState.directionVector.x * (this.ballState.speedPPS / 10);
+		this.ballState.pos.y += this.ballState.directionVector.y * (this.ballState.speedPPS / 10);
+		// could be better computed
+		if (this.ballState.pos.y < 0) {
+			this.ballState.pos.y *= -1;
+			this.ballState.directionVector.y *= -1;
+		}
+		else if (this.ballState.pos.y > 100) {
+			this.ballState.pos.y = 100 - (this.ballState.pos.y - 100);
+			this.ballState.directionVector.y *= -1;
+		}
+		if (this.ballState.pos.x < 0) {
+			this.ballState.pos.x *= -1;
+			this.ballState.directionVector.x *= -1;
+		}
+		else if (this.ballState.pos.x > 100) {
+			this.ballState.pos.x = 100 - (this.ballState.pos.x - 100);
+			this.ballState.directionVector.x *= -1;
+		}
+	}
+
+	private ballCollisionPlayerChecker(gameAction: GameAction, isPlayerOne: boolean) {
+		let differencePlayerY : number = 0;
+		let differenceBall : number[] = [];
+		console.log("collision init");
+		if (isPlayerOne && gameAction.data.ballPos.x <= 25) {
+			differencePlayerY = this.playerOne.pos.y - gameAction.data.y;
+			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
+			differenceBall[0] = this.ballState.pos.y - gameAction.data.ballPos.y;
+			console.log("collision check start");
+			// if ((differencePlayerY < -10 || differencePlayerY > 10) ||
+			// (differenceBall[0] < -10 || differenceBall[0] > 10) ||
+			// (differenceBall[1] < -10 || differenceBall[1] > 10))
+			// 	return ;
+			this.ballState.directionVector.x = 1;
+			this.ballState.directionVector.y = (Math.floor(Math.random() * (8 - 2 + 1)) + 2) / 10;
+			this.lastMsPlayerBallCollision = this.mSecElapsed;
+			console.log("collision check done");
+		} else if (!isPlayerOne && gameAction.data.ballPos.x >= 75) {
+			differencePlayerY = this.playerOne.pos.y - gameAction.data.y;
+			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
+			differenceBall[0] = this.ballState.pos.y - gameAction.data.ballPos.y;
+			if ((differencePlayerY < -10 || differencePlayerY > 10) ||
+			(differenceBall[0] < -10 || differenceBall[0] > 10) ||
+			(differenceBall[1] < -10 || differenceBall[1] > 10))
+				return ;
+			this.ballState.directionVector.x = -1;
+			this.ballState.directionVector.y = (Math.floor(Math.random() * (8 - 2 + 1)) + 2) / 10;
+			this.lastMsPlayerBallCollision = this.mSecElapsed;
 		}
 	}
 
@@ -271,6 +327,8 @@ class GameInstance {
 				this.movementHandler(gameAction, playerId === this.playerOne.id);
 			if (gameAction.keyPressed === GA_KEY.SPACE)
 				this.chargingHandler(gameAction, playerId === this.playerOne.id);
+			if (gameAction.keyPressed === GA_KEY.NONE && gameAction.data.ballPos)
+				this.ballCollisionPlayerChecker(gameAction, playerId === this.playerOne.id);
 		}
 	}
 };

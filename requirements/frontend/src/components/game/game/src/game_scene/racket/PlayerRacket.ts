@@ -107,7 +107,8 @@ class PlayerRacket extends Racket {
 		let lastServProcessedAction: number = this.selectCorrectUnit(true) as number + 1;
 		let reconciliatedPos: number = serverState.pos.y;
 		for (; this.appRef.gciMaster.computedGameActions[lastServProcessedAction] ; lastServProcessedAction++)
-			if ((this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y)
+			if ((this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y &&
+			(this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).keyPressed)
 				reconciliatedPos = (this.appRef.gciMaster.computedGameActions[lastServProcessedAction] as GameAction).data.y as number;
 		return (reconciliatedPos);
 	}

@@ -90,12 +90,15 @@ class GameClientInstance {
 			this.app.playerRacket = RacketUnit.RIGHT;
 		
 		const l_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.app, RacketUnit.LEFT) : new SpectatorRacket(this.app, RacketUnit.LEFT);
-		const r_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.app, RacketUnit.RIGHT) : new SpectatorRacket(this.app, RacketUnit.RIGHT);
-		const ball : Ball = new Ball(this.app);
-		
 		this.app.stage.addChild(l_racket);
+		const r_racket : PlayerRacket | SpectatorRacket = this.app.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.app, RacketUnit.RIGHT) : new SpectatorRacket(this.app, RacketUnit.RIGHT);
 		this.app.stage.addChild(r_racket);
+		const ball : Ball = new Ball(this.app);
 		this.app.stage.addChild(ball);
+		
+		// this.app.stage.addChild(l_racket);
+		// this.app.stage.addChild(r_racket);
+		// this.app.stage.addChild(ball);
 		this.app.ticker.add(this.actionSender, this);
 	}
 

@@ -39,7 +39,7 @@ function toPx(value: number, screenValue: number) : number {
 } // to screen scale
 
 class Racket extends Container {
-	protected unit : RacketUnit;
+	unit : RacketUnit;
 	protected appRef : TranscendanceApp;
 	protected shape : Graphics = new Graphics();
 	protected deltaTotal : number = 0;
@@ -49,7 +49,7 @@ class Racket extends Container {
 	protected racketColor : number = 0xFFFFFF;
 	protected currScreenSize : number = 0;
 
-	protected absolutePosition : { x: number, y: number };
+	absolutePosition : { x: number, y: number };
 
 	protected filterState : {
 		update: boolean, array: Array<Filter>
