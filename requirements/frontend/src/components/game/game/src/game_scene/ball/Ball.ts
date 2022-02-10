@@ -23,6 +23,7 @@ class Ball extends Container {
 	protected lastCollision : number = 0;
 	protected scaleFactor : number = 1;
 	protected oldServerDirectionVector : { x: number, y: number } = { x: 0, y: 0 };
+	protected oldServerPosVector : { x: number, y: number } = { x: 0, y: 0 };
 	protected rackets : Racket[] = [];
 	protected localBallState : BallState = {
 		/* in percentage */
@@ -63,6 +64,8 @@ class Ball extends Container {
 
 		this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
 		this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+		this.oldServerPosVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
+		this.oldServerPosVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
 		this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
 		this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
 
@@ -118,8 +121,8 @@ class Ball extends Container {
 	}
 
 	protected manageMovement(delta: number) {
-		this.localBallState.pos.x += this.localBallState.directionVector.x * (this.localBallState.speedPPS / this.appRef.ticker.FPS) * delta;
-		this.localBallState.pos.y += this.localBallState.directionVector.y * (this.localBallState.speedPPS / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.x += this.localBallState.directionVector.x * (this.localBallState.speedPPS / 60) * delta;
+		this.localBallState.pos.y += this.localBallState.directionVector.y * (this.localBallState.speedPPS / 60) * delta;
 		if (this.localBallState.pos.y < 0) {
 			this.localBallState.pos.y *= -1;
 			this.localBallState.directionVector.y *= -1;
@@ -137,6 +140,10 @@ class Ball extends Container {
 	}
 
 	protected serverCorrection() {
+		console.log(
+			`x: s${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x} c${this.localBallState.pos.x}
+y: s${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y} c${this.localBallState.pos.y}`
+						);
 		// angle after collision correction
 		if (this.oldServerDirectionVector.y && this.oldServerDirectionVector.y !== (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y) {
 			this.oldServerDirectionVector.x = 0;
@@ -147,17 +154,18 @@ class Ball extends Container {
 			this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
 		}
 		// position correction (10% ease range)
-		let posDifferentialY : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y - this.localBallState.pos.y;
-		let posDifferentialX : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x - this.localBallState.pos.x;
-		if ((posDifferentialY > 10 || posDifferentialY < -10) || (posDifferentialX > 10 || posDifferentialX < -10)) {
-			this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
-			this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
-			console.log(
-`x: ${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x - this.localBallState.pos.x}
-y: ${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y - this.localBallState.pos.y}`
-			);
-			this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
-			this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+		if (this.oldServerPosVector.x !== (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) {
+			this.oldServerPosVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
+			this.oldServerPosVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+			let posDifferentialY : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y - this.localBallState.pos.y;
+			let posDifferentialX : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x - this.localBallState.pos.x;
+			if ((posDifferentialY > 15 || posDifferentialY < -15) || (posDifferentialX > 15 || posDifferentialX < -15)) {
+				console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAPAPAPAPAP');
+				this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
+				this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
+				this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
+				this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+			}
 		}
 	}
 
