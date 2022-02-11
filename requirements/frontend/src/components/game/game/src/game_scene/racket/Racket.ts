@@ -18,7 +18,6 @@ const rSS : {
 // client
 const filterAreaFactor = 150;
 const angleFactor = 2;
-const borderDistFactor = 20;
 
 // server
 const defaultScreenHeightPercentagePerSec = 50;
@@ -108,10 +107,10 @@ class Racket extends Container {
 	) {
 		if (options.positionX) {
 			if (!this.flags.falsePosAnimation) {
-				this.x = this.unit === RacketUnit.LEFT ? borderDistFactor : this.appRef.screen.width - borderDistFactor;
+				this.x = this.unit === RacketUnit.LEFT ? this.appRef.screen.width / 100 * 3 : this.appRef.screen.width - this.appRef.screen.width / 100 * 3;
 				this.absolutePosition = { x: this.x, y: this.y };
 			} else {
-				this.absolutePosition.x = this.unit === RacketUnit.LEFT ? borderDistFactor : this.appRef.screen.width - borderDistFactor;
+				this.absolutePosition.x = this.unit === RacketUnit.LEFT ? this.appRef.screen.width / 100 * 3 : this.appRef.screen.width - this.appRef.screen.width / 100 * 3;
 			}
 		}
 		if (options.pivot)
@@ -154,17 +153,17 @@ class Racket extends Container {
 		this.shape.beginFill(this.racketColor);
 		this.shape.drawRect(0, 0, rSS.thickness, 
 			this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize);
-		this.shape.drawRect(rSS.width, 0, rSS.thickness, 
+		this.shape.drawRect(this.appRef.screen.width / 100 * 1, 0, rSS.thickness, 
 			this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize);
-		this.shape.drawRect(0, 0, rSS.width, rSS.thickness);
+		this.shape.drawRect(0, 0, this.appRef.screen.width / 100 * 1, rSS.thickness);
 		this.shape.drawRect(0, this.appRef.screen.height /
-			(this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize - rSS.thickness, rSS.width, rSS.thickness);
+			(this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize - rSS.thickness, this.appRef.screen.width / 100 * 1, rSS.thickness);
 
 		if (this.capacityLoader)
 			this.shape.drawRect(
 				0,
 				this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize,
-				rSS.width,
+				this.appRef.screen.width / 100 * 1,
 				-(this.capacityLoader * (this.appRef.screen.height / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize) / 100)
 			);
 
@@ -195,6 +194,15 @@ class Racket extends Container {
 			(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwoLastActionProcessed :
 			(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo
 		);
+	}
+
+	public getCollisionShape() : Rectangle {
+		return (new Rectangle(
+			this.absolutePosition.x - (this.width / 2),
+			this.absolutePosition.y - (this.height / 2),
+			this.width,
+			this.height
+		));
 	}
 }
 

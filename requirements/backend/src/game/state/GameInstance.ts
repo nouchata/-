@@ -23,9 +23,7 @@ const samplePlayer : PlayerState = {
 
 const sampleBall : BallState = {
 	pos: { x: 50, y: 50 },
-	directionVector: { x: 1, y: 0.5 },
-	headingRight: true,
-	headingTop: true,
+	directionVector: { x: 1, y: 0 },
 	speedPPS: 50,
 	flags: {
 		rainbow: false,
@@ -123,7 +121,7 @@ class GameInstance {
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
-			this.mSecElapsed += 100;
+			this.mSecElapsed += this.lastDeltaTime;
 		}
 		this.associatedPlayers[this.playerOne.id] = 0;
 		this.associatedPlayers[this.playerTwo.id] = 0;
@@ -232,8 +230,9 @@ class GameInstance {
 	private ballCollisionPlayerChecker(gameAction: GameAction, isPlayerOne: boolean) {
 		let differencePlayerY : number = 0;
 		let differenceBall : number[] = [];
-		if (isPlayerOne && gameAction.data.ballPos.x <= 25) {
-			differencePlayerY = this.playerOne.pos.y - gameAction.data.y;
+		let currentPlayer : PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
+		if (isPlayerOne ? gameAction.data.ballPos.x <= 15 : gameAction.data.ballPos.x >= 75) {
+			differencePlayerY = currentPlayer.pos.y - gameAction.data.y;
 			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
 			differenceBall[1] = this.ballState.pos.y - gameAction.data.ballPos.y;
 			// console.log(`p:${differencePlayerY} dy:${gameAction.data.y}`);
@@ -241,21 +240,19 @@ class GameInstance {
 			(differenceBall[0] < -10 || differenceBall[0] > 10) ||
 			(differenceBall[1] < -10 || differenceBall[1] > 10))
 				return ;
-			this.ballState.directionVector.x = 1;
-			this.ballState.directionVector.y = (Math.floor(Math.random() * (8 - 2 + 1)) + 2) / 10;
-			this.ballState.directionVector.y *= (Math.floor(Math.random() * (2 - 1 + 1)) + 1) === 1 ? 1 : -1;
-			// this.ballState.directionVector.y = 8 / 10;
-			this.lastMsPlayerBallCollision = this.mSecElapsed;
-		} else if (!isPlayerOne && gameAction.data.ballPos.x >= 75) {
-			differencePlayerY = this.playerOne.pos.y - gameAction.data.y;
-			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
-			differenceBall[1] = this.ballState.pos.y - gameAction.data.ballPos.y;
-			if ((differencePlayerY < -10 || differencePlayerY > 10) ||
-			(differenceBall[0] < -10 || differenceBall[0] > 10) ||
-			(differenceBall[1] < -10 || differenceBall[1] > 10))
-				return ;
-			this.ballState.directionVector.x = -1;
-			this.ballState.directionVector.y = (Math.floor(Math.random() * (8 - 2 + 1)) + 2) / 10;
+			this.ballState.directionVector.x = isPlayerOne ? 1 : -1;
+			// angle computation
+			let topOfRacket: number = gameAction.data.y - (100 / this.gameOptions.racketSize / 2);
+			let ballPercentageRacket: number = Math.floor((gameAction.data.ballPos.y - topOfRacket) / ((100 / this.gameOptions.racketSize) / 100));
+			if (ballPercentageRacket < 10)
+				ballPercentageRacket = 10;
+			if (ballPercentageRacket > 90)
+				ballPercentageRacket = 90;
+			let newAngle: number = -10;
+			for (let step = 10; !(ballPercentageRacket >= step && ballPercentageRacket <= step + 9) && newAngle < 6; step += 10)
+				newAngle += 2;
+			newAngle += 2;
+			this.ballState.directionVector.y = newAngle / 10;
 			this.lastMsPlayerBallCollision = this.mSecElapsed;
 		}
 	}
@@ -264,53 +261,37 @@ class GameInstance {
 	private movementChecker() {
 		let hundredMsMovementAllowed: number = this.gameOptions.yDistPPS / 100 * 15; // 5% ease range
 		let percentageHalfRacketSize: number = 100 / this.gameOptions.racketSize / 2;
-			
-		if (this.playerOne.pos.y > this.responseState.playerOne.pos.y) { // goes bottom
-			if ((this.playerOne.pos.y - this.responseState.playerOne.pos.y) > hundredMsMovementAllowed)
-				this.playerOne.pos.y = this.responseState.playerOne.pos.y + hundredMsMovementAllowed;
-			if (this.playerOne.pos.y > 100 - percentageHalfRacketSize)
-				this.playerOne.pos.y = 100 - percentageHalfRacketSize;
-		} else if (this.playerOne.pos.y < this.responseState.playerOne.pos.y) {
-			if ((this.responseState.playerOne.pos.y - this.playerOne.pos.y) > hundredMsMovementAllowed)
-				this.playerOne.pos.y = this.responseState.playerOne.pos.y - hundredMsMovementAllowed;
-			if (this.playerOne.pos.y < percentageHalfRacketSize)
-				this.playerOne.pos.y = percentageHalfRacketSize;
-		}
-		if (this.playerTwo.pos.y > this.responseState.playerTwo.pos.y) { // goes bottom
-			if ((this.playerTwo.pos.y - this.responseState.playerTwo.pos.y) > hundredMsMovementAllowed)
-				this.playerTwo.pos.y = this.responseState.playerTwo.pos.y + hundredMsMovementAllowed;
-			if (this.playerTwo.pos.y > 100 - percentageHalfRacketSize)
-				this.playerTwo.pos.y = 100 - percentageHalfRacketSize;
-		} else if (this.playerTwo.pos.y < this.responseState.playerTwo.pos.y) {
-			if ((this.responseState.playerTwo.pos.y - this.playerTwo.pos.y) > hundredMsMovementAllowed)
-				this.playerTwo.pos.y = this.responseState.playerTwo.pos.y - hundredMsMovementAllowed;
-			if (this.playerTwo.pos.y < percentageHalfRacketSize)
-				this.playerTwo.pos.y = percentageHalfRacketSize;
+		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+		for (let player of players) {
+			if (player.pos.y > this.responseState.playerOne.pos.y) { // goes bottom
+				if ((player.pos.y - this.responseState.playerOne.pos.y) > hundredMsMovementAllowed)
+					player.pos.y = this.responseState.playerOne.pos.y + hundredMsMovementAllowed;
+				if (player.pos.y > 100 - percentageHalfRacketSize)
+					player.pos.y = 100 - percentageHalfRacketSize;
+			} else if (player.pos.y < this.responseState.playerOne.pos.y) {
+				if ((this.responseState.playerOne.pos.y - player.pos.y) > hundredMsMovementAllowed)
+					player.pos.y = this.responseState.playerOne.pos.y - hundredMsMovementAllowed;
+				if (player.pos.y < percentageHalfRacketSize)
+					player.pos.y = percentageHalfRacketSize;
+			}
 		}
 	}
 
 	// charging state update
 	private chargingChecker(delta: number) {
 		if (this.gameOptions.gameType === "extended") {
-			if (this.playerOne.flags.capacityCharging) {
-				if (this.playerOne.capacityLoaderPercentage < 100) {
-					this.playerOne.capacityLoaderPercentage += (delta * (this.gameOptions.capChargingPPS / 10) / 100);
-					if (this.playerOne.capacityLoaderPercentage > 100)
-						this.playerOne.capacityLoaderPercentage = 100;
+			let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+			for (let player of players) {
+				if (player.flags.capacityCharging) {
+					if (player.capacityLoaderPercentage < 100) {
+						player.capacityLoaderPercentage += (delta * (this.gameOptions.capChargingPPS / 10) / 100);
+						if (player.capacityLoaderPercentage > 100)
+							player.capacityLoaderPercentage = 100;
+					}
+				} else {
+					if (player.capacityLoaderPercentage)
+						player.capacityLoaderPercentage = 0;
 				}
-			} else {
-				if (this.playerOne.capacityLoaderPercentage)
-					this.playerOne.capacityLoaderPercentage = 0;
-			}
-			if (this.playerTwo.flags.capacityCharging) {
-				if (this.playerTwo.capacityLoaderPercentage < 100) {
-					this.playerTwo.capacityLoaderPercentage += (delta * (this.gameOptions.capChargingPPS / 10) / 100);
-					if (this.playerTwo.capacityLoaderPercentage > 100)
-						this.playerTwo.capacityLoaderPercentage = 100;
-				}
-			} else {
-				if (this.playerTwo.capacityLoaderPercentage)
-					this.playerTwo.capacityLoaderPercentage = 0;
 			}
 		}
 	}

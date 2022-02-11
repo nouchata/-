@@ -1,4 +1,4 @@
-import { Container, DisplayObject, Graphics, Point } from "pixi.js";
+import { Container, DisplayObject, Graphics, Point, Rectangle } from "pixi.js";
 import { BallState } from "../../../types/BallState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
@@ -31,8 +31,6 @@ class Ball extends Container {
 		/* in percentage */
 		pos: { x: 50, y: 50 },
 		directionVector: { x: 1, y: 0.5 },
-		headingRight: true,
-		headingTop: true,
 		speedPPS: 50,
 		flags: {
 			rainbow: false,
@@ -88,14 +86,16 @@ class Ball extends Container {
 		this.deltaTotal += delta;
 		this.collisionHandler();
 		this.serverCorrection();
-		this.sweetCorrectionMovement(delta);
-		if (!this.sweetCorrectionType)
+		if (this.sweetCorrectionType)
+			this.sweetCorrectionMovement(delta);
+		else
 			this.manageMovement(delta);
-		// this.hitBorders();
-		// console.log(this.localBallState);
 
+		/* regarding the responsiveness it would be nice if the field of the ball wasn't the whole canvas
+		 * but rather the space between the two rackets */
 		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
 		this.y = toPx(this.localBallState.pos.y, this.appRef.screen.height);
+
 		this.angle = this.deltaTotal * 15 * this.localBallState.directionVector.x;
 		if(this.rainbowingBall(delta))
 			this.draw();
@@ -152,7 +152,7 @@ class Ball extends Container {
 			this.sweetCorrectionType = true;
 			return ;
 		}
-		// position correction (10% ease range)
+		// position correction (5% ease range)
 		if (this.oldServerPosVector.x !== (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) {
 			this.oldServerPosVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
 			this.oldServerPosVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
@@ -166,53 +166,63 @@ class Ball extends Container {
 	}
 
 	protected sweetCorrectionMovement(delta: number) {
-		// let serverForwards : boolean = 
-		// 	this.localBallState.directionVector.x < 0 ?
-		// 	(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x < this.localBallState.pos.x :
-		// 	(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x > this.localBallState.pos.x;
-		// sweet angle correction
-		if (this.sweetCorrectionType) {
-			let correctionDirectionVector : Point = new Point(
-				(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x -
-				this.localBallState.pos.x,
-				(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y -
-				this.localBallState.pos.y
-			).normalize();
+		let correctionDirectionVector : Point = new Point(
+			(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x -
+			this.localBallState.pos.x,
+			(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y -
+			this.localBallState.pos.y
+		).normalize();
 
-			if (isNaN(correctionDirectionVector.x))
-				correctionDirectionVector.x = 0;
-			if (isNaN(correctionDirectionVector.y))
-				correctionDirectionVector.y = 0;
-			this.localBallState.pos.x += correctionDirectionVector.x * (this.localBallState.speedPPS * 1.5 / this.appRef.ticker.FPS) * delta;
-			this.localBallState.pos.y += correctionDirectionVector.y * (this.localBallState.speedPPS * 1.5 / this.appRef.ticker.FPS) * delta;
-	
-			// console.log(`angle sweetener ${correctionDirectionVector.x} ${this.localBallState.pos.x} ${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x}`);
-			if ((this.localBallState.directionVector.x > 0 && this.localBallState.pos.x >= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) ||
-			(this.localBallState.directionVector.x < 0 && this.localBallState.pos.x <= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x)) {
-				this.sweetCorrectionType = false;
-				this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
-				this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
-			}
+		if (isNaN(correctionDirectionVector.x))
+			correctionDirectionVector.x = 0;
+		if (isNaN(correctionDirectionVector.y))
+			correctionDirectionVector.y = 0;
+		this.localBallState.pos.x += correctionDirectionVector.x * (this.localBallState.speedPPS * 1.5 / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.y += correctionDirectionVector.y * (this.localBallState.speedPPS * 1.5 / this.appRef.ticker.FPS) * delta;
+
+		if ((this.localBallState.directionVector.x > 0 && this.localBallState.pos.x >= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) ||
+		(this.localBallState.directionVector.x < 0 && this.localBallState.pos.x <= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x)) {
+			this.sweetCorrectionType = false;
+			this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
+			this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
 		}
 	}
 
 	protected collisionHandler() {
-		if (this.lastCollision && this.deltaTotal - this.lastCollision > 30)
+		let currentRacket : Racket | undefined = undefined;
+		if (this.lastCollision && this.deltaTotal - this.lastCollision > 10)
 			this.lastCollision = 0;
-		if (!this.lastCollision && this.localBallState.pos.x < 15) {
-			if (checkCollision(this.rackets[0], this)) {
+		if (this.localBallState.pos.x < 25)
+			currentRacket = this.rackets[0];
+		if (this.localBallState.pos.x > 75)
+			currentRacket = this.rackets[1];
+		if (!this.lastCollision && currentRacket) {
+			if (this.checkCollision(currentRacket, this)) {
 				this.oldServerDirectionVector.x = this.localBallState.directionVector.x;
 				this.oldServerDirectionVector.y = this.localBallState.directionVector.y;
 				this.localBallState.directionVector.x *= -1;
-				this.localBallState.directionVector.y = 0;
 				this.lastCollision = this.deltaTotal;
-				if (this.appRef.playerRacket === this.rackets[0].unit) {
+		
+				let racketPosPer: number = toPer(currentRacket.absolutePosition.y, this.appRef.screen.height);
+				let topOfRacket: number = racketPosPer - (100 / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize / 2);
+				let ballPercentageRacket: number = Math.floor((this.localBallState.pos.y - topOfRacket) / ((100 / (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.racketSize) / 100));
+				if (ballPercentageRacket < 10)
+					ballPercentageRacket = 10;
+				if (ballPercentageRacket > 90)
+					ballPercentageRacket = 90;
+				let newAngle: number = -10;
+				for (let step = 10; !(ballPercentageRacket >= step && ballPercentageRacket <= step + 9) && newAngle < 6; step += 10)
+					newAngle += 2;
+				newAngle += 2;
+				this.localBallState.directionVector.y = newAngle / 10;
+	
+				if (this.appRef.playerRacket === currentRacket.unit) {
 					this.appRef.gciMaster.lastLocalGameActionComputed++;
 					this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
 						id: this.appRef.gciMaster.lastLocalGameActionComputed,
 						keyPressed: GA_KEY.NONE,
 						data: {
-							y: toPer(this.rackets[0].absolutePosition.y, this.appRef.screen.height),
+							y: racketPosPer,
 							ballPos: {
 								x: this.localBallState.pos.x,
 								y: this.localBallState.pos.y
@@ -222,35 +232,12 @@ class Ball extends Container {
 				}
 			}
 		}
-		// else if (!this.lastCollision && this.localBallState.pos.x > 75) {
-		// 	if (checkCollision(this.rackets[1], this)) {
-		// 		this.oldServerDirectionVector.x = this.localBallState.directionVector.x;
-		// 		this.oldServerDirectionVector.y = this.localBallState.directionVector.y;
-		// 		this.localBallState.directionVector.x *= -1;
-		// 		this.localBallState.directionVector.y = 0;
-		// 		this.lastCollision = this.deltaTotal;
-		// 		if (this.appRef.playerRacket === this.rackets[1].unit) {
-		// 			this.appRef.gciMaster.lastLocalGameActionComputed++;
-		// 			this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
-		// 				id: this.appRef.gciMaster.lastLocalGameActionComputed,
-		// 				keyPressed: GA_KEY.NONE,
-		// 				data: {
-		// 					y: toPer(this.rackets[1].absolutePosition.y, this.appRef.screen.height),
-		// 					ballPos: {
-		// 						x: this.localBallState.pos.x,
-		// 						y: this.localBallState.pos.y
-		// 					}
-		// 				}
-		// 			};
-		// 		}
-		// 	}
-		// }
 	}
 
 	protected rainbowingBall(delta: number) : boolean {
 		const colorFactor : number = 1000;
 
-		if (this.localBallState.flags.rainbow) { //(this.selectCorrectUnit() as PlayerState).flags.rainbowing) {
+		if (this.localBallState.flags.rainbow) {
 			this.ballColor -= this.ballColor - colorFactor * delta < 0 ? 0xFFFFFF : colorFactor * delta;
 			return (true);
 		}
@@ -260,23 +247,22 @@ class Ball extends Container {
 		}
 		return (false);
 	}
-}
 
-function checkCollision(objA: Racket, objB: DisplayObject): boolean {
-    const a = objA.getBounds();
-    const b = objB.getBounds();
+	protected checkCollision(objA: Racket, objB: DisplayObject): boolean {
+		const a: Rectangle = objA.getCollisionShape();
+		const b = objB.getBounds();
 
-
-    const rightmostLeft = a.left < b.left ? b.left : a.left;
-    const leftmostRight = a.right > b.right ? b.right : a.right;
-
-    if (leftmostRight <= rightmostLeft)
-        return (false);
-
-    const bottommostTop = a.top < b.top ? b.top : a.top;
-    const topmostBottom = a.bottom > b.bottom ? b.bottom : a.bottom;
-
-    return topmostBottom > bottommostTop;
+		const rightmostLeft = a.left < b.left ? b.left : a.left;
+		const leftmostRight = a.right > b.right ? b.right : a.right;
+	
+		if (leftmostRight <= rightmostLeft)
+			return (false);
+	
+		const bottommostTop = a.top < b.top ? b.top : a.top;
+		const topmostBottom = a.bottom > b.bottom ? b.bottom : a.bottom;
+	
+		return topmostBottom > bottommostTop;
+	}
 }
 
 export { Ball };
