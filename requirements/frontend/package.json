@@ -5,6 +5,7 @@
   "dependencies": {
     "@pixi/filter-advanced-bloom": "^4.1.5",
     "@pixi/filter-glitch": "^4.1.5",
+    "@pixi/math-extras": "^6.2.2",
     "@pixi/sound": "^4.2.0",
     "axios": "^0.24.0",
     "html-react-parser": "^1.4.6",

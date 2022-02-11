@@ -38,6 +38,7 @@ const sampleBall : BallState = {
 class GameInstance {
 	// class related
 	private runState : RUNSTATE = RUNSTATE.RUNNING;
+	private lastDeltaTime : number = 0;
 
 	private mSecElapsed : number = 0;
 	/* used to define a condition based on time elapsed */
@@ -65,10 +66,8 @@ class GameInstance {
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
-	// private playerOneReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
 	private playerOneLastActionProcessed: number = -1;
 	private playerTwo : PlayerState = cloneDeep(samplePlayer);
-	// private playerTwoReceivedGameAction: { [actionId: number]: GameAction | undefined } = {};
 	private playerTwoLastActionProcessed: number = -1;
 	private responseState : ResponseState;
 
@@ -105,15 +104,22 @@ class GameInstance {
 			playerTwoLastActionProcessed: this.playerTwoLastActionProcessed
 		};
 
+		this.lastDeltaTime = Date.now();
 		this.run();
 	}
 
 	private async run() {
+		let actualDeltaTime : number = 0;
+		let delta : number = 0;
 		while (this.runState !== RUNSTATE.ENDED) {
+			// delta handling
+			actualDeltaTime = Date.now();
+			delta = actualDeltaTime - this.lastDeltaTime;
+			this.lastDeltaTime = actualDeltaTime;
 			this.runStateHandler();
 			this.movementChecker();
-			this.chargingChecker();
-			this.ballHandler();
+			this.chargingChecker(delta);
+			this.ballHandler(delta);
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
@@ -171,7 +177,7 @@ class GameInstance {
 		this.responseState.runState = this.runState;
 		this.responseState.playerOne = cloneDeep(this.playerOne);
 		this.responseState.playerTwo = cloneDeep(this.playerTwo);
-		this.responseState.ballState = cloneDeep(this.ballState);
+		this.responseState.ballState = this.ballState;
 		this.responseState.playerOneLastActionProcessed = this.playerOneLastActionProcessed;
 		this.responseState.playerTwoLastActionProcessed = this.playerTwoLastActionProcessed;
 	}
@@ -202,10 +208,9 @@ class GameInstance {
 		}
 	}
 
-	private ballHandler() {
-		this.ballState.pos.x += this.ballState.directionVector.x * (this.ballState.speedPPS / 10);
-		this.ballState.pos.y += this.ballState.directionVector.y * (this.ballState.speedPPS / 10);
-		// could be better computed
+	private ballHandler(delta: number) {
+		this.ballState.pos.x += this.ballState.directionVector.x * (delta * (this.ballState.speedPPS / 10) / 100);
+		this.ballState.pos.y += this.ballState.directionVector.y * (delta * (this.ballState.speedPPS / 10) / 100);
 		if (this.ballState.pos.y < 0) {
 			this.ballState.pos.y *= -1;
 			this.ballState.directionVector.y *= -1;
@@ -227,24 +232,24 @@ class GameInstance {
 	private ballCollisionPlayerChecker(gameAction: GameAction, isPlayerOne: boolean) {
 		let differencePlayerY : number = 0;
 		let differenceBall : number[] = [];
-		console.log("collision init");
 		if (isPlayerOne && gameAction.data.ballPos.x <= 25) {
 			differencePlayerY = this.playerOne.pos.y - gameAction.data.y;
 			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
-			differenceBall[0] = this.ballState.pos.y - gameAction.data.ballPos.y;
-			console.log("collision check start");
-			// if ((differencePlayerY < -10 || differencePlayerY > 10) ||
-			// (differenceBall[0] < -10 || differenceBall[0] > 10) ||
-			// (differenceBall[1] < -10 || differenceBall[1] > 10))
-			// 	return ;
+			differenceBall[1] = this.ballState.pos.y - gameAction.data.ballPos.y;
+			// console.log(`p:${differencePlayerY} dy:${gameAction.data.y}`);
+			if ((differencePlayerY < -10 || differencePlayerY > 10) ||
+			(differenceBall[0] < -10 || differenceBall[0] > 10) ||
+			(differenceBall[1] < -10 || differenceBall[1] > 10))
+				return ;
 			this.ballState.directionVector.x = 1;
 			this.ballState.directionVector.y = (Math.floor(Math.random() * (8 - 2 + 1)) + 2) / 10;
+			this.ballState.directionVector.y *= (Math.floor(Math.random() * (2 - 1 + 1)) + 1) === 1 ? 1 : -1;
+			// this.ballState.directionVector.y = 8 / 10;
 			this.lastMsPlayerBallCollision = this.mSecElapsed;
-			console.log("collision check done");
 		} else if (!isPlayerOne && gameAction.data.ballPos.x >= 75) {
 			differencePlayerY = this.playerOne.pos.y - gameAction.data.y;
 			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
-			differenceBall[0] = this.ballState.pos.y - gameAction.data.ballPos.y;
+			differenceBall[1] = this.ballState.pos.y - gameAction.data.ballPos.y;
 			if ((differencePlayerY < -10 || differencePlayerY > 10) ||
 			(differenceBall[0] < -10 || differenceBall[0] > 10) ||
 			(differenceBall[1] < -10 || differenceBall[1] > 10))
@@ -285,11 +290,11 @@ class GameInstance {
 	}
 
 	// charging state update
-	private chargingChecker() {
+	private chargingChecker(delta: number) {
 		if (this.gameOptions.gameType === "extended") {
 			if (this.playerOne.flags.capacityCharging) {
 				if (this.playerOne.capacityLoaderPercentage < 100) {
-					this.playerOne.capacityLoaderPercentage += this.gameOptions.capChargingPPS / 10;
+					this.playerOne.capacityLoaderPercentage += (delta * (this.gameOptions.capChargingPPS / 10) / 100);
 					if (this.playerOne.capacityLoaderPercentage > 100)
 						this.playerOne.capacityLoaderPercentage = 100;
 				}
@@ -299,7 +304,7 @@ class GameInstance {
 			}
 			if (this.playerTwo.flags.capacityCharging) {
 				if (this.playerTwo.capacityLoaderPercentage < 100) {
-					this.playerTwo.capacityLoaderPercentage += this.gameOptions.capChargingPPS / 10;
+					this.playerTwo.capacityLoaderPercentage += (delta * (this.gameOptions.capChargingPPS / 10) / 100);
 					if (this.playerTwo.capacityLoaderPercentage > 100)
 						this.playerTwo.capacityLoaderPercentage = 100;
 				}
