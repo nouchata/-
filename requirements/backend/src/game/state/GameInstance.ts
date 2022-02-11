@@ -262,18 +262,21 @@ class GameInstance {
 		let hundredMsMovementAllowed: number = this.gameOptions.yDistPPS / 100 * 15; // 5% ease range
 		let percentageHalfRacketSize: number = 100 / this.gameOptions.racketSize / 2;
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+		let i: number = 0;
 		for (let player of players) {
-			if (player.pos.y > this.responseState.playerOne.pos.y) { // goes bottom
-				if ((player.pos.y - this.responseState.playerOne.pos.y) > hundredMsMovementAllowed)
-					player.pos.y = this.responseState.playerOne.pos.y + hundredMsMovementAllowed;
+			let responsePlayer: PlayerState = !i ? this.responseState.playerOne : this.responseState.playerTwo;
+			if (player.pos.y > responsePlayer.pos.y) { // goes bottom
+				if ((player.pos.y - responsePlayer.pos.y) > hundredMsMovementAllowed)
+					player.pos.y = responsePlayer.pos.y + hundredMsMovementAllowed;
 				if (player.pos.y > 100 - percentageHalfRacketSize)
 					player.pos.y = 100 - percentageHalfRacketSize;
-			} else if (player.pos.y < this.responseState.playerOne.pos.y) {
-				if ((this.responseState.playerOne.pos.y - player.pos.y) > hundredMsMovementAllowed)
-					player.pos.y = this.responseState.playerOne.pos.y - hundredMsMovementAllowed;
+			} else if (player.pos.y < responsePlayer.pos.y) {
+				if ((responsePlayer.pos.y - player.pos.y) > hundredMsMovementAllowed)
+					player.pos.y = responsePlayer.pos.y - hundredMsMovementAllowed;
 				if (player.pos.y < percentageHalfRacketSize)
 					player.pos.y = percentageHalfRacketSize;
 			}
+			i++;
 		}
 	}
 
