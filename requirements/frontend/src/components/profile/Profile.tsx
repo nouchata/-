@@ -3,8 +3,8 @@ import { RouteComponentProps, withRouter } from "react-router";
 import { FetchUserData } from "../../types/FetchUserData";
 import UserDetails from "./UserDetails";
 import UserEdition from "./UserEdition";
-// import '../../styles/profile.css';
 import { RequestWrapper } from "../../utils/RequestWrapper";
+import '../../styles/profile.scss';
 
 interface ProfileRouterProps {
     id: string;

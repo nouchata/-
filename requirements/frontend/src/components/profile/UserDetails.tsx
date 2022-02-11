@@ -2,6 +2,7 @@ import { FetchUserData } from "../../types/FetchUserData";
 import HistoryTable from "./HistoryTable";
 import ProgressBar from "../utils/ProgressBar";
 import editAsset from "../../assets/profile/edit-solid.svg";
+import { Link } from "react-router-dom";
 
 interface IProps {
     data: FetchUserData,
@@ -23,10 +24,20 @@ export const formatDate = (date: Date) => {
     return `${format2Digit(date.getUTCDate())}/${format2Digit(date.getMonth() + 1)}/${date.getFullYear()}`;
 }
 
+export const getVictoryRatio = (victories: number, loses: number) => {
+    const ratio = victories * 100 / (victories + loses);
+
+    if (!Number.isNaN(ratio)) {
+        return Math.floor(ratio);
+    } else {
+        return 100; // avoid NaN value
+    }
+}
+
 const UserDetails = (props: IProps) => {
 
     // get the winrate of the user in percentage
-    let ratio = props.data.ranking.vdRatio[0] * 100 / (props.data.ranking.vdRatio[0] + props.data.ranking.vdRatio[1]);
+    let ratio = getVictoryRatio(props.data.ranking.vdRatio[0], props.data.ranking.vdRatio[1]);
 
     // choose the right color for the user status
     const statusStyle = { color: 'red' };
@@ -39,10 +50,15 @@ const UserDetails = (props: IProps) => {
     return (
         
         <div className='profile'>
+
+                <Link to='/homepage' className='return-button'>
+                    Return to homepage
+                </Link>
+
             <div className='general-info'>
                 <img
-                        src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`}
-                        alt='avatar of the user'
+                    src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.general.picture}`}
+                    alt='avatar of the user'
                 />
 
                 <h1>
@@ -68,10 +84,8 @@ const UserDetails = (props: IProps) => {
             
             <h2 className='separator'>Ranking</h2>
     
-            <div className='label-ratio'>
-                <span className='label1'>victories</span>
-                <span className='label2'>loses</span>
-            </div>
+            <span className='label1'>victories</span>
+            <span className='label2'>loses</span>
             <div className='ratio'>
                 <div className='victory-count'>
                     {props.data.ranking.vdRatio[0]}
@@ -97,7 +111,6 @@ const UserDetails = (props: IProps) => {
             <div className='history'>
                 <HistoryTable data={props.data} />
             </div>
-
         </div>
 
     );

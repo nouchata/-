@@ -1,6 +1,7 @@
 
 import { FetchStatusData } from '../../types/FetchStatusData';
 import { BrowserRouter as Router, Link } from 'react-router-dom'; // eslint-disable-line
+import { getVictoryRatio } from '../profile/UserDetails';
 
 import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
@@ -36,7 +37,14 @@ const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
 					</div>
 					<div className='profile-overview-progress'>
 						<p>VS ratio:</p>
-						<progress value='50' max='100'></progress>
+						<progress
+							value={
+								fetchStatus.user
+								? getVictoryRatio(fetchStatus.user?.victories, fetchStatus.user?.losses)
+								: 50
+							}
+							max='100'>
+						</progress>
 					</div>
 				</div>
 				<div className='profile-overview-actions'>
