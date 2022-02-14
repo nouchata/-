@@ -16,7 +16,6 @@ const rSS : {
 } // racketShapeSize
 
 // client
-const filterAreaFactor = 150;
 const angleFactor = 2;
 
 // server
@@ -115,13 +114,14 @@ class Racket extends Container {
 		}
 		if (options.pivot)
 			this.pivot.set(this.width / 2, this.height / 2);
-		if (options.filterArea)
+		if (options.filterArea) {
 			this.filterArea = new Rectangle(
-				this.x - filterAreaFactor,
-				0 - filterAreaFactor,
-				this.x + filterAreaFactor,
-				this.appRef.screen.height + filterAreaFactor
+				0,
+				0,
+				this.appRef.screen.width,
+				this.appRef.screen.height
 			);
+		}
 	}
 
 	protected manageAngle(delta: number, key: GA_KEY) {

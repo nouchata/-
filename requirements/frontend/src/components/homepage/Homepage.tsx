@@ -5,8 +5,8 @@ import LoginContext from '../../contexts/LoginContext';
 import { FetchStatusData } from '../../types/FetchStatusData';
 import RankingTable from '../../components/homepage/RankingTable';
 
-import './styles/homepage.scss';
-import './styles/profile_overview.scss';
+import '../../styles/homepage.scss';
+import '../../styles/profile_overview.scss';
 
 const Homepage = () : JSX.Element => {
 	const userCtx : { fetchStatus: FetchStatusData } = useContext(LoginContext);

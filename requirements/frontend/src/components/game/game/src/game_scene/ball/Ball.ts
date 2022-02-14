@@ -3,9 +3,10 @@ import { BallState } from "../../../types/BallState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
 import { Racket, RacketUnit, toPer, toPx } from "../racket/Racket";
-import { Sound } from "@pixi/sound";
+import { sound } from "@pixi/sound";
 import "@pixi/math-extras";
 import { GA_KEY } from "../../../types/GameAction";
+import { GameComponents } from "../GameComponents";
 
 const ballShapeStuff : {
 	width: number,
@@ -17,6 +18,7 @@ const ballShapeStuff : {
 
 class Ball extends Container {
 	protected appRef : TranscendanceApp;
+	protected parentContainer : Container;
 	protected ballShape : Graphics;
 	protected ballColor : number = 0xFFFFFF;
 	protected ballSize : number = ballShapeStuff.width;
@@ -52,7 +54,7 @@ class Ball extends Container {
 	};
 
 
-	constructor(appRef : TranscendanceApp) {
+	constructor(appRef : TranscendanceApp, parentContainer : Container) {
 		super();
 		this.appRef = appRef;
 
@@ -74,7 +76,8 @@ class Ball extends Container {
 		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
 		this.y = toPx(this.localBallState.pos.y, this.appRef.screen.height);
 
-		let x : DisplayObject[] = this.appRef.stage.children.filter((elem) => elem instanceof Racket);
+		this.parentContainer = parentContainer;
+		let x : DisplayObject[] = this.parentContainer.children.filter((elem) => elem instanceof Racket);
 		this.rackets[0] = (x[0] as Racket).unit === RacketUnit.LEFT ? x[0] as Racket : x[1] as Racket;
 		this.rackets[1] = (x[0] as Racket).unit === RacketUnit.LEFT ? x[1] as Racket : x[0] as Racket;
 
@@ -138,9 +141,11 @@ class Ball extends Container {
 		if (this.localBallState.pos.x < 0) {
 			this.localBallState.pos.x *= -1;
 			this.localBallState.directionVector.x *= -1;
+			(this.parentContainer as GameComponents).shakeState = "left";
 		} else if (this.localBallState.pos.x > 100) {
 			this.localBallState.pos.x = 100 - (this.localBallState.pos.x - 100);
 			this.localBallState.directionVector.x *= -1;
+			// (this.parentContainer as GameComponents).shakeState = "right";
 		}
 	}
 
@@ -215,6 +220,7 @@ class Ball extends Container {
 					newAngle += 2;
 				newAngle += 2;
 				this.localBallState.directionVector.y = newAngle / 10;
+				sound.play("normalHit", { volume: 0.2 });
 	
 				if (this.appRef.playerRacket === currentRacket.unit) {
 					this.appRef.gciMaster.lastLocalGameActionComputed++;
