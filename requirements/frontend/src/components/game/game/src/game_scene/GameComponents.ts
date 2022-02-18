@@ -1,12 +1,14 @@
 import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import { Container, Ticker } from "pixi.js";
+import { IContainerElement, IParticleContainerElement, IScene } from "../../types/IScene";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { Ball } from "./ball/Ball";
+import { BallParticles } from "./ball/BallParticles";
 import { PlayerRacket } from "./racket/PlayerRacket";
 import { RacketUnit } from "./racket/Racket";
 import { SpectatorRacket } from "./racket/SpectatorRacket";
 
-class GameComponents extends Container {
+class GameComponents extends Container implements IScene {
 	private appRef : TranscendanceApp;
 	private deltaTotal : number = 0;
 	private shakeRightAnimation : Tween<{x: number}>;
@@ -22,10 +24,10 @@ class GameComponents extends Container {
 		this.addChild(r_racket);
 		const ball : Ball = new Ball(this.appRef, this);
 		this.addChild(ball);
+		const ballParticles : BallParticles = new BallParticles(this.appRef, this);
+		this.addChild(ballParticles);
 
-		this.x = this.appRef.screen.width / 2;
-		this.y = this.appRef.screen.height / 2;
-		this.pivot.set(this.appRef.screen.width / 2, this.appRef.screen.height / 2);
+		this.resize();
 		this.shakeRightAnimation = new Tween({ x: 0 }).stop()
 			.to({ x: 4 }, 2)
 			.easing(Easing.Back.InOut)
@@ -56,6 +58,12 @@ class GameComponents extends Container {
 		if (this.shakeState && !this.shakeRightAnimation.isPlaying())
 			this.shakeRightAnimation.start(this.deltaTotal);
 		tweenUpdate(this.deltaTotal);
+	}
+
+	destroyScene() {
+		for (let item of this.children)
+			(item as IContainerElement | IParticleContainerElement).destroyContainerElem();
+		this.destroy();
 	}
 }
 

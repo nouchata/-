@@ -8,8 +8,10 @@ import { gameAssets } from "../_assets";
 
 import { sound } from "@pixi/sound";
 import { GCI_STATE } from "../../GameClientInstance";
+import { RacketUnit } from "../game_scene/racket/Racket";
+import { IScene } from "../../types/IScene";
 
-class LoaderScene extends Container {
+class LoaderScene extends Container implements IScene {
 	private appRef : TranscendanceApp;
 	private logo : Sprite;
 	private text : Text;
@@ -32,7 +34,8 @@ class LoaderScene extends Container {
 		this.text = new Text("Loading the assets ...", {
 			fontFamily: "Helvetica",
 			fontSize: 20,
-			fill: 0xFFFFFF
+			fill: 0xFFFFFF,
+			align: "center"
 		});
 		this.text.resolution = window.devicePixelRatio;
 		this.text.anchor.set(.5, .5);
@@ -56,7 +59,7 @@ class LoaderScene extends Container {
 
 		this.addChild(this.logo);
 		this.addChild(this.text);
-		window.addEventListener("resizeGame", this.resize.bind(this));
+		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
 
 		Loader.shared.add(gameAssets);
@@ -65,7 +68,7 @@ class LoaderScene extends Container {
 		Loader.shared.load();
 	}
 
-	resize() {
+	resize : Function = (function(this: LoaderScene) {
 		this.logo.filterArea = new Rectangle(0, 0, this.appRef.screen.width, this.appRef.screen.height);
 
 		this.logo.scale.set(this.appRef.screen.width < 800 || this.appRef.screen.height < 400 ? .5 : 1);
@@ -76,22 +79,23 @@ class LoaderScene extends Container {
 
 		this.text.x = this.appRef.screen.width / 2;
 		this.text.y = this.appRef.screen.height / 100 * 60;
-	}
+	}).bind(this);
 
 	update(delta: number) {
 		this.deltaTotal += delta;
 		tweenUpdate(this.deltaTotal);
 	}
 
-	doneLoadingAssets() {
+	async doneLoadingAssets() {
 		this.text.text = "Trying to reach the server ...";
 		while (true) {
 			if (this.appRef.gciMaster.gciState === GCI_STATE.WS_ERROR)
 				return this.errorLoading();
 			if (this.appRef.gciMaster.currentResponseState)
 				break ;
+			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 		}
-		
+
 		this.text.text = "Click on the screen to continue";
 		this.flickeringTween.start(0);
 		this.isLoaded = true;
@@ -108,8 +112,12 @@ class LoaderScene extends Container {
 	}
 
 	quitLoadingScreen() {
-		console.log('x');
-		this.appRef.gciMaster.gciState = GCI_STATE.LOADED;
+		if (this.appRef.gciMaster.currentResponseState?.playerOne.id === this.appRef.userId)
+			this.appRef.playerRacket = RacketUnit.LEFT;
+		else if (this.appRef.gciMaster.currentResponseState?.playerTwo.id === this.appRef.userId)
+			this.appRef.playerRacket = RacketUnit.RIGHT;
+		this.appRef.gciMaster.gciState = GCI_STATE.RUNNING;
+		this.appRef.manager.masterManagerLoop();
 	}
 
 	destroyScene() {
@@ -117,6 +125,7 @@ class LoaderScene extends Container {
 		this.text.destroy();
 		this.flickeringTween.stop();
 		this.destroy();
+		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 	}
 }
 

@@ -8444,7 +8444,12 @@
   dependencies:
     "node-modules-regexp" "^1.0.0"
 
-"pixi.js@^6.2.2":
+"pixi-particles@^4.3.1":
+  "integrity" "sha512-XSqDFgYwm/7FRCgP5I2Fc57d98qvb1ql/x4uTjdP4uXDUGgjdO8OW/2A0HVWS1CkOht/1x6dQzsM1oCJAUlaow=="
+  "resolved" "https://registry.npmjs.org/pixi-particles/-/pixi-particles-4.3.1.tgz"
+  "version" "4.3.1"
+
+"pixi.js@^6.2.2", "pixi.js@>=4.0.0":
   "integrity" "sha512-/xCnJUsWTZuacR6JYTnRbUb+5grzlqpp2O1Ub7bCZCE3FApTCs7nMNYeLfdeP+np/MlGaM+SsPh2cXcafR3OZw=="
   "resolved" "https://registry.npmjs.org/pixi.js/-/pixi.js-6.2.2.tgz"
   "version" "6.2.2"

@@ -27,6 +27,7 @@ enum GCI_STATE {
 class GameClientInstance {
 	gciState: GCI_STATE = GCI_STATE.SETUP;
 	app: TranscendanceApp;
+
 	wsClient: GameWS;
 	wsError: string | undefined;
 	/* for the player of this instance if there is one */
@@ -76,26 +77,14 @@ class GameClientInstance {
 
 		window.addEventListener("keydown", this.onKeyDown.bind(this));
 		window.addEventListener("keyup", this.onKeyUp.bind(this));
+
+		this.app.ticker.add(this.actionSender, this);
 	}
 
 	destroy() {
 		this.gciState = GCI_STATE.ENDED;
 		this.app.destroy();
 		this.wsClient.destroy();
-	}
-
-	run() {
-		this.gciState = GCI_STATE.RUNNING;
-
-		if (this.currentResponseState?.playerOne.id === this.app.userId)
-			this.app.playerRacket = RacketUnit.LEFT;
-		else if (this.currentResponseState?.playerTwo.id === this.app.userId)
-			this.app.playerRacket = RacketUnit.RIGHT;
-
-		// const gamecomp : GameComponents = new GameComponents(this.app);
-		const loader : LoaderScene = new LoaderScene(this.app);
-		this.app.stage.addChild(loader);
-		this.app.ticker.add(this.actionSender, this);
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
@@ -107,8 +96,6 @@ class GameClientInstance {
 				this.currentResponseState.playerOneLastActionProcessed :
 				this.currentResponseState.playerTwoLastActionProcessed
 			);
-		if (this.gciState === GCI_STATE.SETUP)
-			this.run();
 	}
 
 	onSocketError(e: any) {

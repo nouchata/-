@@ -7,6 +7,7 @@ import { sound } from "@pixi/sound";
 import "@pixi/math-extras";
 import { GA_KEY } from "../../../types/GameAction";
 import { GameComponents } from "../GameComponents";
+import { IContainerElement } from "../../../types/IScene";
 
 const ballShapeStuff : {
 	width: number,
@@ -16,7 +17,7 @@ const ballShapeStuff : {
 	thickness: 3
 }
 
-class Ball extends Container {
+class Ball extends Container implements IContainerElement {
 	protected appRef : TranscendanceApp;
 	protected parentContainer : Container;
 	protected ballShape : Graphics;
@@ -29,7 +30,7 @@ class Ball extends Container {
 	protected oldServerPosVector : { x: number, y: number } = { x: 0, y: 0 };
 	protected rackets : Racket[] = [];
 	protected sweetCorrectionType : boolean = false;
-	protected localBallState : BallState = {
+	public localBallState : BallState = {
 		/* in percentage */
 		pos: { x: 50, y: 50 },
 		directionVector: { x: 1, y: 0.5 },
@@ -81,37 +82,42 @@ class Ball extends Container {
 		this.rackets[0] = (x[0] as Racket).unit === RacketUnit.LEFT ? x[0] as Racket : x[1] as Racket;
 		this.rackets[1] = (x[0] as Racket).unit === RacketUnit.LEFT ? x[1] as Racket : x[0] as Racket;
 
-		window.addEventListener("resizeGame", this.resize.bind(this));
+		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
 	}
 
 	update(delta: number) {
 		this.deltaTotal += delta;
-		this.collisionHandler();
-		this.serverCorrection();
-		if (this.sweetCorrectionType)
-			this.sweetCorrectionMovement(delta);
-		else
-			this.manageMovement(delta);
+		if (this.localBallState.flags.freezed) {
+			this.angle = 0;
+			// this.sweetCorrectionMovement(delta);
+		} else {
+			this.collisionHandler();
+			this.serverCorrection();
+			if (this.sweetCorrectionType)
+				this.sweetCorrectionMovement(delta);
+			else
+				this.manageMovement(delta);
+			this.angle = this.deltaTotal * 15 * this.localBallState.directionVector.x;
+		}
 
 		/* regarding the responsiveness it would be nice if the field of the ball wasn't the whole canvas
 		 * but rather the space between the two rackets */
 		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
 		this.y = toPx(this.localBallState.pos.y, this.appRef.screen.height);
 
-		this.angle = this.deltaTotal * 15 * this.localBallState.directionVector.x;
 		if(this.rainbowingBall(delta))
 			this.draw();
 	}
 
-	resize() {
+	resize : Function = (function(this: Ball) {
 		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
 		this.y = toPx(this.localBallState.pos.y, this.appRef.screen.height);
 		this.ballSize = this.appRef.screen.height / 50;
 		if (this.ballSize > ballShapeStuff.width)
 			this.ballSize = ballShapeStuff.width;
 		this.draw();
-	}
+	}).bind(this);
 
 	draw() {
 		this.ballShape.clear();
@@ -268,6 +274,12 @@ class Ball extends Container {
 		const topmostBottom = a.bottom > b.bottom ? b.bottom : a.bottom;
 	
 		return topmostBottom > bottommostTop;
+	}
+
+	public destroyContainerElem() {
+		this.ballShape.destroy();
+		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		this.destroy();
 	}
 }
 

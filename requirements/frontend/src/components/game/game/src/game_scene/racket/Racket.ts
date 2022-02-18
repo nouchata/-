@@ -6,6 +6,7 @@ import { RacketFlags } from "../../../types/RacketFlags";
 import { PlayerState } from "../../../types/PlayerState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
+import { IContainerElement } from "../../../types/IScene";
 
 const rSS : {
 	width: number,
@@ -36,7 +37,7 @@ function toPx(value: number, screenValue: number) : number {
 	return (value * (screenValue / 100));
 } // to screen scale
 
-class Racket extends Container {
+class Racket extends Container implements IContainerElement {
 	unit : RacketUnit;
 	protected appRef : TranscendanceApp;
 	protected shape : Graphics = new Graphics();
@@ -86,10 +87,10 @@ class Racket extends Container {
 		this.filterState.array = [new AdvancedBloomFilter({ blur: 5 })];
 
 		// triggers
-		window.addEventListener("resizeGame", this.resize.bind(this));
+		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 	}
 
-	resize() {
+	resize : Function = (function(this: Racket) {
 		// racket redrawing
 		this.draw();
 
@@ -99,7 +100,7 @@ class Racket extends Container {
 		if (!this.flags.falsePosAnimation)
 			this.y = this.absolutePosition.y;
 		this.currScreenSize = this.appRef.screen.height;
-	}
+	}).bind(this);
 
 	protected updateSpatials(
 		options : { pivot? : boolean, filterArea? : boolean, positionX?: boolean }
@@ -114,14 +115,13 @@ class Racket extends Container {
 		}
 		if (options.pivot)
 			this.pivot.set(this.width / 2, this.height / 2);
-		if (options.filterArea) {
+		if (options.filterArea)
 			this.filterArea = new Rectangle(
 				0,
 				0,
 				this.appRef.screen.width,
 				this.appRef.screen.height
 			);
-		}
 	}
 
 	protected manageAngle(delta: number, key: GA_KEY) {
@@ -203,6 +203,12 @@ class Racket extends Container {
 			this.width,
 			this.height
 		));
+	}
+
+	public destroyContainerElem () {
+		this.shape.destroy();
+		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		this.destroy();
 	}
 }
 
