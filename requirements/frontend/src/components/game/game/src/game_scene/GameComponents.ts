@@ -21,7 +21,7 @@ class GameComponents extends Container implements IScene {
 		const l_racket : PlayerRacket | SpectatorRacket = this.appRef.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.appRef, RacketUnit.LEFT) : new SpectatorRacket(this.appRef, RacketUnit.LEFT);
 		this.addChild(l_racket);
 		const r_racket : PlayerRacket | SpectatorRacket = this.appRef.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.appRef, RacketUnit.RIGHT) : new SpectatorRacket(this.appRef, RacketUnit.RIGHT);
-		this.addChild(r_racket);
+		// this.addChild(r_racket);
 		const ball : Ball = new Ball(this.appRef, this);
 		this.addChild(ball);
 		const ballParticles : BallParticles = new BallParticles(this.appRef, this);

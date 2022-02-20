@@ -1,5 +1,5 @@
 import { GameOptions } from "../types/GameOptions";
-import { PlayerState } from "../types/PlayerState";
+import { PlayerState, PLAYER_CAPACITY } from "../types/PlayerState";
 import { InstanceSettings } from "../types/InstanceSettings";
 import { Server } from 'socket.io';
 import { ResponseState, RUNSTATE } from "../types/ResponseState";
@@ -61,6 +61,7 @@ class GameInstance {
 	// ball related
 	private ballState : BallState = cloneDeep(sampleBall);
 	private lastMsPlayerBallCollision : number = 0;
+	private smashDelay : number = 0;
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
@@ -86,6 +87,10 @@ class GameInstance {
 		// player object creation
 		this.playerOne.id = instanceSettings.playersId.one;
 		this.playerTwo.id = instanceSettings.playersId.two;
+		
+		/* DEV PURPOSE */
+		this.playerOne.stockedCapacity = PLAYER_CAPACITY.SMASH;
+		/* DEV PURPOSE */
 
 		// ball stuff
 		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
@@ -117,11 +122,15 @@ class GameInstance {
 			this.runStateHandler();
 			this.movementChecker();
 			this.chargingChecker(delta);
-			this.ballHandler(delta);
+			if (!this.ballState.flags.freezed)
+				this.ballHandler(delta);
+
+			this.smashHandler();
+
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
-			this.mSecElapsed += this.lastDeltaTime;
+			this.mSecElapsed += delta;
 		}
 		this.associatedPlayers[this.playerOne.id] = 0;
 		this.associatedPlayers[this.playerTwo.id] = 0;
@@ -182,13 +191,13 @@ class GameInstance {
 
 	// incoming position changes
 	private movementHandler(gameAction: GameAction, isPlayerOne: boolean) {
-		if (isPlayerOne) {
-			this.playerOne.pos.y = gameAction.data.y as number;
-			this.playerOneLastActionProcessed = gameAction.id;
-		}
-		else {
-			this.playerTwo.pos.y = gameAction.data.y as number;
-			this.playerTwoLastActionProcessed = gameAction.id;
+		let playerState: PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
+		if (!playerState.flags.stuned) {
+			playerState.pos.y = gameAction.data.y as number;
+			if (isPlayerOne)
+				this.playerOneLastActionProcessed = gameAction.id;
+			else
+				this.playerTwoLastActionProcessed = gameAction.id;
 		}
 	}
 
@@ -207,8 +216,9 @@ class GameInstance {
 	}
 
 	private ballHandler(delta: number) {
-		this.ballState.pos.x += this.ballState.directionVector.x * (delta * (this.ballState.speedPPS / 10) / 100);
-		this.ballState.pos.y += this.ballState.directionVector.y * (delta * (this.ballState.speedPPS / 10) / 100);
+		let ballSpeed : number = this.ballState.speedPPS * (this.ballState.flags.smash ? 2 : 1);
+		this.ballState.pos.x += this.ballState.directionVector.x * (delta * (ballSpeed / 10) / 100);
+		this.ballState.pos.y += this.ballState.directionVector.y * (delta * (ballSpeed / 10) / 100);
 		if (this.ballState.pos.y < 0) {
 			this.ballState.pos.y *= -1;
 			this.ballState.directionVector.y *= -1;
@@ -230,15 +240,17 @@ class GameInstance {
 	private ballCollisionPlayerChecker(gameAction: GameAction, isPlayerOne: boolean) {
 		let differencePlayerY : number = 0;
 		let differenceBall : number[] = [];
+		let differenceBallEaseRange : number = this.ballState.flags.smash ? 10 : 10;
 		let currentPlayer : PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
-		if (isPlayerOne ? gameAction.data.ballPos.x <= 15 : gameAction.data.ballPos.x >= 75) {
+		if (isPlayerOne ? gameAction.data.ballPos.x <= 25 : gameAction.data.ballPos.x >= 75) {
 			differencePlayerY = currentPlayer.pos.y - gameAction.data.y;
 			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
 			differenceBall[1] = this.ballState.pos.y - gameAction.data.ballPos.y;
+			// console.log(`pre if: ${differenceBall} ${gameAction.data.ballPos.x} ${this.ballState.pos.x}`);
 			// console.log(`p:${differencePlayerY} dy:${gameAction.data.y}`);
-			if ((differencePlayerY < -10 || differencePlayerY > 10) ||
-			(differenceBall[0] < -10 || differenceBall[0] > 10) ||
-			(differenceBall[1] < -10 || differenceBall[1] > 10))
+			if ((differencePlayerY < -(differenceBallEaseRange) || differencePlayerY > differenceBallEaseRange) ||
+			(differenceBall[0] < -(differenceBallEaseRange) || differenceBall[0] > differenceBallEaseRange) ||
+			(differenceBall[1] < -(differenceBallEaseRange) || differenceBall[1] > differenceBallEaseRange))
 				return ;
 			this.ballState.directionVector.x = isPlayerOne ? 1 : -1;
 			// angle computation
@@ -254,6 +266,23 @@ class GameInstance {
 			newAngle += 2;
 			this.ballState.directionVector.y = newAngle / 10;
 			this.lastMsPlayerBallCollision = this.mSecElapsed;
+			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);
+			if (this.ballState.flags.smash) {
+				this.ballState.flags.smash = false;
+				this.ballState.flags.rainbow = false;
+				// console.log('smash end');
+			}
+			// smash signal
+			if (currentPlayer.capacityLoaderPercentage >= 98 && currentPlayer.stockedCapacity === PLAYER_CAPACITY.SMASH) {
+				this.ballState.flags.freezed = true;
+				this.ballState.flags.rainbow = true;
+				this.ballState.flags.smash = true;
+				currentPlayer.flags.stuned = true;
+				this.ballState.pos.x = gameAction.data.ballPos.x;
+				this.ballState.pos.y = gameAction.data.ballPos.y;
+				// console.log(`smash loading ${this.ballState.pos.x}`);
+				this.smashDelay = this.mSecElapsed;
+			}
 		}
 	}
 
@@ -291,10 +320,29 @@ class GameInstance {
 						if (player.capacityLoaderPercentage > 100)
 							player.capacityLoaderPercentage = 100;
 					}
+				} else if (this.ballState.flags.smash && this.ballState.flags.freezed && player.capacityLoaderPercentage >= 98) {
+					player.capacityLoaderPercentage = 100;
 				} else {
 					if (player.capacityLoaderPercentage)
 						player.capacityLoaderPercentage = 0;
 				}
+			}
+		}
+	}
+
+	private smashHandler() {
+		if (this.ballState.flags.smash && this.ballState.flags.freezed) {
+			let msDifference : number = this.mSecElapsed - this.smashDelay - 500;
+			// console.log(`smash handler ${this.mSecElapsed} ${this.smashDelay} ${this.mSecElapsed - this.smashDelay}`);
+			if (msDifference < 50 && msDifference > -50) {
+				let playerState: PlayerState = this.ballState.pos.x < 50 ? this.playerOne : this.playerTwo;
+				// console.log(`smash loading ${this.ballState.pos.x}`);
+				this.ballState.flags.freezed = false;
+				playerState.flags.capacityCharging = false;
+				playerState.flags.rainbowing = false;
+				playerState.capacityLoaderPercentage = 0;
+				playerState.stockedCapacity = PLAYER_CAPACITY.NONE;
+				playerState.flags.stuned = false;
 			}
 		}
 	}

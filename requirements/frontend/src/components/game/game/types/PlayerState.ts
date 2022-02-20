@@ -1,6 +1,7 @@
 import { RacketFlags } from "./RacketFlags";
 
 enum PLAYER_CAPACITY {
+	NONE,
 	SMASH,
 	BLIND,
 	STUNNING

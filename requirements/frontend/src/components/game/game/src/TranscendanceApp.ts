@@ -8,6 +8,7 @@ class TranscendanceApp extends Application {
 	playerRacket: RacketUnit = RacketUnit.NONE;
 	gciMaster: GameClientInstance;
 	manager: ScenesManager;
+	forceSpectator: boolean = false;
 	actualKeysPressed : { // controls
 		up: boolean, down: boolean, space: boolean
 	} = { up: false, down: false, space: false };
@@ -15,12 +16,15 @@ class TranscendanceApp extends Application {
 	constructor(
 		gciMaster: GameClientInstance,
 		userId: number,
-		options?: IApplicationOptions | undefined
+		options?: IApplicationOptions | undefined,
+		forceSpectator?: boolean
 	) {
 		super(options);
 		this.gciMaster = gciMaster;
 		this.userId = userId;
 		this.manager = new ScenesManager(this);
+		if (forceSpectator)
+			this.forceSpectator = forceSpectator;
 	}
 }
 

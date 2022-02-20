@@ -27,7 +27,6 @@ enum GCI_STATE {
 class GameClientInstance {
 	gciState: GCI_STATE = GCI_STATE.SETUP;
 	app: TranscendanceApp;
-
 	wsClient: GameWS;
 	wsError: string | undefined;
 	/* for the player of this instance if there is one */
@@ -45,7 +44,7 @@ class GameClientInstance {
 
 	private runState: RUNSTATE = RUNSTATE.WAITING;
 
-	constructor(userId: number, instanceId: number) {
+	constructor(userId: number, instanceId: number, forceSpectator: boolean) {
 		this.wsClient = new GameWS(instanceId, this.onSocketStateUpdate.bind(this), this.onSocketError.bind(this));
 
 		this.app = new TranscendanceApp(
@@ -60,7 +59,8 @@ class GameClientInstance {
 				backgroundColor: 0x000000,
 				width: 500,
 				height: 500
-			}
+			},
+			forceSpectator
 		);
 
 		// custom event to save calcul processing by debouncing the resizing event

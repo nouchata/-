@@ -15,11 +15,12 @@ const Game = () : JSX.Element => {
 		setFetchStatus: React.Dispatch<React.SetStateAction<FetchStatusData | undefined>>;
 	};
 	const queryCode = useQuery().get('play');
+	const querySpectator = useQuery().get('forceSpectator');
 	let gci : GameClientInstance;
 
 	useEffect(() => {
 		setHideDisplay({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true } as HideDisplayData);
-		setTimeout(() => gci = new GameClientInstance(fetchStatus?.user?.id as number, Number(queryCode)), 0);
+		setTimeout(() => gci = new GameClientInstance(fetchStatus?.user?.id as number, Number(queryCode), querySpectator ? true : false), 0);
 		
 
 		return function cleanup() {

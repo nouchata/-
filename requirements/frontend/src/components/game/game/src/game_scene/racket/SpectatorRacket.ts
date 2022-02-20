@@ -29,6 +29,8 @@ class SpectatorRacket extends Racket {
 				this.absolutePosition.y = toPx(playerData.pos.y, this.appRef.screen.height);
 			else
 				this.manageAngle(delta, this.manageMovement(delta, toPx(playerData.pos.y, this.appRef.screen.height)));
+		} else {
+			this.manageAngle(delta, GA_KEY.NONE);
 		}
 
 		redraw = this.capacityCharging(delta) || redraw;
@@ -68,6 +70,10 @@ class SpectatorRacket extends Racket {
 	protected capacityCharging(delta: number) : boolean {
 		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
 			let playerState: PlayerState = this.selectCorrectUnit() as PlayerState;
+			if (this.cancelCharging) {
+				this.localCapacityChargingState = false;
+				this.cancelCharging = false;
+			}
 			if (playerState.flags.capacityCharging) {
 				if (!this.localCapacityChargingState) {
 					this.localCapacityChargingState = true;

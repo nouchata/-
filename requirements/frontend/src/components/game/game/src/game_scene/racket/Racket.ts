@@ -43,10 +43,12 @@ class Racket extends Container implements IContainerElement {
 	protected shape : Graphics = new Graphics();
 	protected deltaTotal : number = 0;
 	protected movSpeed : number = defaultScreenHeightPercentagePerSec;
-	protected capacityLoader : number = 0;
+	public capacityLoader : number = 0;
 	protected localCapacityChargingState: boolean = false;
 	protected racketColor : number = 0xFFFFFF;
 	protected currScreenSize : number = 0;
+	public canCollide : boolean = true;
+	public cancelCharging : boolean = false;
 
 	absolutePosition : { x: number, y: number };
 
@@ -54,7 +56,7 @@ class Racket extends Container implements IContainerElement {
 		update: boolean, array: Array<Filter>
 	} = { update: false, array: [] };
 
-	protected flags : RacketFlags = {
+	public flags : RacketFlags = {
 		falsePosAnimation: false,
 		capacityCharging: false,
 		stuned: false,

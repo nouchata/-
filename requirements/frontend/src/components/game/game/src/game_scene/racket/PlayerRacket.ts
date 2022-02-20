@@ -16,10 +16,16 @@ class PlayerRacket extends Racket {
 		let redraw: boolean = false;
 
 		this.deltaTotal += delta;
-		this.absolutePosition.y = toPx(this.manageMovementReconciliation(), this.appRef.screen.height);
+		if ((this.selectCorrectUnit() as PlayerState).flags.stuned)
+			this.absolutePosition.y = toPx((this.selectCorrectUnit() as PlayerState).pos.y, this.appRef.screen.height);
+		else
+			this.absolutePosition.y = toPx(this.manageMovementReconciliation(), this.appRef.screen.height);
 
 		// various updates
-		this.manageAngle(delta, this.manageMovement(delta));
+		if ((this.selectCorrectUnit() as PlayerState).flags.stuned)
+			this.angle = 0;
+		else
+			this.manageAngle(delta, this.manageMovement(delta));
 		redraw = this.capacityCharging(delta) || redraw;
 		redraw = this.rainbowingRacket(delta) || redraw;
 		if (redraw)
@@ -72,8 +78,12 @@ class PlayerRacket extends Racket {
 	}
 
 	protected capacityCharging(delta: number) : boolean {
-		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended" ) {
 			let playerState: PlayerState = this.selectCorrectUnit() as PlayerState;
+			if (this.cancelCharging) {
+				this.localCapacityChargingState = false;
+				this.cancelCharging = false;
+			}
 			if (this.localCapacityChargingState) {
 				this.x = this.absolutePosition.x + (Math.cos(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
 				this.y = this.absolutePosition.y + (Math.sin(Math.random() * this.deltaTotal * 0.1) * (0.1 * this.capacityLoader));
@@ -114,7 +124,7 @@ class PlayerRacket extends Racket {
 	}
 
 	protected handleCapacityCharging(): void {
-		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended" && (this.selectCorrectUnit() as PlayerState).stockedCapacity) {
 			if (!this.localCapacityChargingState && this.appRef.actualKeysPressed.space && !(this.selectCorrectUnit() as PlayerState).flags.capacityCharging) {
 				this.appRef.gciMaster.lastLocalGameActionComputed++;
 				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {

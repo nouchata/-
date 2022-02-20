@@ -1,5 +1,5 @@
 import { Container, DisplayObject, Graphics, Point, Rectangle } from "pixi.js";
-import { BallState } from "../../../types/BallState";
+import { BallFlags, BallState } from "../../../types/BallState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
 import { Racket, RacketUnit, toPer, toPx } from "../racket/Racket";
@@ -8,6 +8,8 @@ import "@pixi/math-extras";
 import { GA_KEY } from "../../../types/GameAction";
 import { GameComponents } from "../GameComponents";
 import { IContainerElement } from "../../../types/IScene";
+import { cloneDeep } from "lodash";
+import { PLAYER_CAPACITY } from "../../../types/PlayerState";
 
 const ballShapeStuff : {
 	width: number,
@@ -20,16 +22,23 @@ const ballShapeStuff : {
 class Ball extends Container implements IContainerElement {
 	protected appRef : TranscendanceApp;
 	protected parentContainer : Container;
+
 	protected ballShape : Graphics;
 	protected ballColor : number = 0xFFFFFF;
 	protected ballSize : number = ballShapeStuff.width;
+
 	protected deltaTotal : number = 0;
 	protected lastCollision : number = 0;
+
 	protected scaleFactor : number = 1;
+
 	protected oldServerDirectionVector : { x: number, y: number } = { x: 0, y: 0 };
 	protected oldServerPosVector : { x: number, y: number } = { x: 0, y: 0 };
+
 	protected rackets : Racket[] = [];
+
 	protected sweetCorrectionType : boolean = false;
+
 	public localBallState : BallState = {
 		/* in percentage */
 		pos: { x: 50, y: 50 },
@@ -38,21 +47,17 @@ class Ball extends Container implements IContainerElement {
 		flags: {
 			rainbow: false,
 			smash: false,
-			freezed: false,
+			freezed: true,
 			showed: false
 		}
 	};
-	protected serverLastBallFlags : {
-		rainbow: boolean;
-		smash: boolean;
-		freezed: boolean;
-		showed: boolean;
-	} = {
+	protected serverLastBallFlags : BallFlags = {
 		rainbow: false,
 		smash: false,
 		freezed: false,
 		showed: false
 	};
+	protected falseBallFlags : BallFlags | undefined = undefined;
 
 
 	constructor(appRef : TranscendanceApp, parentContainer : Container) {
@@ -88,9 +93,10 @@ class Ball extends Container implements IContainerElement {
 
 	update(delta: number) {
 		this.deltaTotal += delta;
+		this.getServerFlags();
 		if (this.localBallState.flags.freezed) {
 			this.angle = 0;
-			// this.sweetCorrectionMovement(delta);
+			this.sweetCorrectionMovement(delta);
 		} else {
 			this.collisionHandler();
 			this.serverCorrection();
@@ -135,8 +141,9 @@ class Ball extends Container implements IContainerElement {
 	}
 
 	protected manageMovement(delta: number) {
-		this.localBallState.pos.x += this.localBallState.directionVector.x * (this.localBallState.speedPPS / this.appRef.ticker.FPS) * delta;
-		this.localBallState.pos.y += this.localBallState.directionVector.y * (this.localBallState.speedPPS / this.appRef.ticker.FPS) * delta;
+		let ballSpeed : number = this.localBallState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
+		this.localBallState.pos.x += this.localBallState.directionVector.x * (ballSpeed / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.y += this.localBallState.directionVector.y * (ballSpeed / this.appRef.ticker.FPS) * delta;
 		if (this.localBallState.pos.y < 0) {
 			this.localBallState.pos.y *= -1;
 			this.localBallState.directionVector.y *= -1;
@@ -177,6 +184,7 @@ class Ball extends Container implements IContainerElement {
 	}
 
 	protected sweetCorrectionMovement(delta: number) {
+		this.getServerFlags();
 		let correctionDirectionVector : Point = new Point(
 			(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x -
 			this.localBallState.pos.x,
@@ -188,8 +196,8 @@ class Ball extends Container implements IContainerElement {
 			correctionDirectionVector.x = 0;
 		if (isNaN(correctionDirectionVector.y))
 			correctionDirectionVector.y = 0;
-		this.localBallState.pos.x += correctionDirectionVector.x * (this.localBallState.speedPPS * 1.5 / this.appRef.ticker.FPS) * delta;
-		this.localBallState.pos.y += correctionDirectionVector.y * (this.localBallState.speedPPS * 1.5 / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.x += correctionDirectionVector.x * (this.localBallState.speedPPS * 2 / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.y += correctionDirectionVector.y * (this.localBallState.speedPPS * 2 / this.appRef.ticker.FPS) * delta;
 
 		if ((this.localBallState.directionVector.x > 0 && this.localBallState.pos.x >= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) ||
 		(this.localBallState.directionVector.x < 0 && this.localBallState.pos.x <= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x)) {
@@ -207,7 +215,8 @@ class Ball extends Container implements IContainerElement {
 			currentRacket = this.rackets[0];
 		if (this.localBallState.pos.x > 75)
 			currentRacket = this.rackets[1];
-		if (!this.lastCollision && currentRacket) {
+		
+		if (!this.lastCollision && currentRacket && currentRacket.canCollide) {
 			if (this.checkCollision(currentRacket, this)) {
 				this.oldServerDirectionVector.x = this.localBallState.directionVector.x;
 				this.oldServerDirectionVector.y = this.localBallState.directionVector.y;
@@ -226,8 +235,19 @@ class Ball extends Container implements IContainerElement {
 					newAngle += 2;
 				newAngle += 2;
 				this.localBallState.directionVector.y = newAngle / 10;
-				sound.play("normalHit", { volume: 0.2 });
-	
+				// remove racket sound if smash
+				if (!(currentRacket.capacityLoader >= 98 &&
+					(currentRacket.unit === RacketUnit.LEFT ? 
+						(this.appRef.gciMaster.currentResponseState as ResponseState).playerOne.stockedCapacity === PLAYER_CAPACITY.SMASH :
+						(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo.stockedCapacity === PLAYER_CAPACITY.SMASH
+					)
+				))
+					sound.play("normalHit", { volume: 0.2 });
+				// shaking after smash reception
+				if (this.localBallState.flags.smash) {
+					this.falseBallFlagsState({ showed: true, rainbow: false, smash: false, freezed: false });
+					(this.parentContainer as GameComponents).shakeState = this.localBallState.pos.x < 50 ? "right" : "left";
+				}
 				if (this.appRef.playerRacket === currentRacket.unit) {
 					this.appRef.gciMaster.lastLocalGameActionComputed++;
 					this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
@@ -274,6 +294,63 @@ class Ball extends Container implements IContainerElement {
 		const topmostBottom = a.bottom > b.bottom ? b.bottom : a.bottom;
 	
 		return topmostBottom > bottommostTop;
+	}
+
+	protected getServerFlags() {
+		this.serverLastBallFlags = cloneDeep((this.appRef.gciMaster.currentResponseState as ResponseState).ballState.flags);
+		this.falseBallFlagsState();
+		this.localSmashHandler();
+		if (!this.falseBallFlags)
+			this.localBallState.flags = cloneDeep(this.serverLastBallFlags);
+	}
+
+	protected localSmashHandler() {
+		if (!this.localBallState.flags.smash && this.serverLastBallFlags.smash &&
+			!this.localBallState.flags.freezed && this.serverLastBallFlags.freezed) {
+				sound.play("smashLoading");
+				if (this.localBallState.pos.x < 50)
+					this.rackets[0].canCollide = false;
+				else
+					this.rackets[1].canCollide = false;
+		}
+		if (this.localBallState.flags.smash && this.localBallState.flags.freezed &&
+			!this.serverLastBallFlags.freezed) {
+				sound.play("smashFire");
+				(this.parentContainer as GameComponents).shakeState = this.localBallState.pos.x < 50 ? "left" : "right";
+				this.rackets[this.localBallState.pos.x < 50 ? 0 : 1].cancelCharging = true;
+				setTimeout(() => {
+					if (this.localBallState.pos.x < 50)
+						this.rackets[0].canCollide = true;
+					else
+						this.rackets[1].canCollide = true;
+				}, 50);
+		}
+		if (this.serverLastBallFlags.smash && this.scaleFactor === 1) {
+			this.scaleFactor = 2;
+			this.draw();
+		}
+		if ((!this.serverLastBallFlags.smash || (this.falseBallFlags && !this.falseBallFlags.smash)) &&
+		this.scaleFactor === 2) {
+			this.scaleFactor = 1;
+			this.draw();
+		}
+
+	}
+
+	protected falseBallFlagsState(setupValues?: BallFlags) {
+		if (setupValues) {
+			this.falseBallFlags = cloneDeep(this.serverLastBallFlags);
+			this.localBallState.flags = cloneDeep(setupValues);
+			return ;
+		}
+		if (!this.falseBallFlags || (
+			this.falseBallFlags.freezed === this.serverLastBallFlags.freezed &&
+			this.falseBallFlags.rainbow === this.serverLastBallFlags.rainbow &&
+			this.falseBallFlags.showed === this.serverLastBallFlags.showed &&
+			this.falseBallFlags.smash === this.serverLastBallFlags.smash
+		))
+			return ;
+		this.falseBallFlags = undefined;
 	}
 
 	public destroyContainerElem() {

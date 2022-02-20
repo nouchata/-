@@ -62,10 +62,14 @@ class LoaderScene extends Container implements IScene {
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
 
-		Loader.shared.add(gameAssets);
-		Loader.shared.onError.once(this.errorLoading, this);
-		Loader.shared.onComplete.once(this.doneLoadingAssets, this);
-		Loader.shared.load();
+		try {
+			Loader.shared.add(gameAssets);
+			Loader.shared.onError.once(this.errorLoading, this);
+			Loader.shared.onComplete.once(this.doneLoadingAssets, this);
+			Loader.shared.load();
+		} catch (e: any) {
+			this.errorLoading(e);
+		}
 	}
 
 	resize : Function = (function(this: LoaderScene) {
@@ -112,9 +116,9 @@ class LoaderScene extends Container implements IScene {
 	}
 
 	quitLoadingScreen() {
-		if (this.appRef.gciMaster.currentResponseState?.playerOne.id === this.appRef.userId)
+		if (!this.appRef.forceSpectator && this.appRef.gciMaster.currentResponseState?.playerOne.id === this.appRef.userId)
 			this.appRef.playerRacket = RacketUnit.LEFT;
-		else if (this.appRef.gciMaster.currentResponseState?.playerTwo.id === this.appRef.userId)
+		else if (!this.appRef.forceSpectator && this.appRef.gciMaster.currentResponseState?.playerTwo.id === this.appRef.userId)
 			this.appRef.playerRacket = RacketUnit.RIGHT;
 		this.appRef.gciMaster.gciState = GCI_STATE.RUNNING;
 		this.appRef.manager.masterManagerLoop();
