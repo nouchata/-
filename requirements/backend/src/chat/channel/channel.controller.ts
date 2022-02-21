@@ -14,44 +14,60 @@ export class ChannelController {
 
 	@Post('create')
 	@UseGuards(GroupGuard)
-	async createChannel(@Req() req: {user: User}, @Body() channel: CreateChannelDto ): Promise<ChannelDto> {
-		return this.channelService.createChannel({...channel, owner: req.user});
+	async createChannel(
+		@Req() req: { user: User },
+		@Body() channel: CreateChannelDto
+	): Promise<ChannelDto> {
+		return this.channelService.createChannel({
+			...channel,
+			owner: req.user,
+		});
 	}
-	
+
 	@Post('join')
 	@UseGuards(GroupGuard)
-	async joinChannel(@Req() req: {user: User}, @Body() channel: JoinChannelDto ): Promise<ChannelDto> {
+	async joinChannel(
+		@Req() req: { user: User },
+		@Body() channel: JoinChannelDto
+	): Promise<ChannelDto> {
 		return this.channelService.joinChannel(channel, req.user);
 	}
 
 	@Post('leave')
 	@UseGuards(GroupGuard)
-	async leaveChannel(@Req() req: {user: User}, @Body() channel: LeaveChannelDto ) {
+	async leaveChannel(
+		@Req() req: { user: User },
+		@Body() channel: LeaveChannelDto
+	) {
 		this.channelService.leaveChannel(channel.id, req.user);
-		return {'status': 'ok'};
+		return { status: 'ok' };
 	}
 
 	@Get('public')
 	async getPublicChannels(): Promise<GetChannelDto[]> {
-		return (await this.channelService.getPublicChannels()).map((channel) => {
-			let getChannelDto: GetChannelDto = {
-				id: channel.id,
-				name: channel.name,
-				channelType: channel.channelType,
-			};
-			return getChannelDto;
-		});
+		return (await this.channelService.getPublicChannels()).map(
+			(channel) => {
+				const getChannelDto: GetChannelDto = {
+					id: channel.id,
+					name: channel.name,
+					channelType: channel.channelType,
+				};
+				return getChannelDto;
+			}
+		);
 	}
 
 	@Get('protected')
 	async getProtectedChannels(): Promise<GetChannelDto[]> {
-		return (await this.channelService.getProtectedChannels()).map((channel) => {
-			let getChannelDto: GetChannelDto = {
-				id: channel.id,
-				name: channel.name,
-				channelType: channel.channelType,
-			};
-			return getChannelDto;
-		});
+		return (await this.channelService.getProtectedChannels()).map(
+			(channel) => {
+				const getChannelDto: GetChannelDto = {
+					id: channel.id,
+					name: channel.name,
+					channelType: channel.channelType,
+				};
+				return getChannelDto;
+			}
+		);
 	}
 }

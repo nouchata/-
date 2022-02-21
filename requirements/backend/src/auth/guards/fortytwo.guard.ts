@@ -1,17 +1,17 @@
-import { ExecutionContext, Injectable } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
-import { Session } from "inspector";
-import { Session2FaDTO } from "../../tfa/dtos/session-2fa.dto";
+import { ExecutionContext, Injectable } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Session } from 'inspector';
+import { Session2FaDTO } from '../../tfa/dtos/session-2fa.dto';
 
 @Injectable()
 export class FortyTwoGuard extends AuthGuard('42') {
-	async canActivate(context: ExecutionContext) : Promise<any> {
+	async canActivate(context: ExecutionContext): Promise<any> {
 		const activate = (await super.canActivate(context)) as boolean;
 		const request = context.switchToHttp().getRequest();
 		await super.logIn(request);
-		(request.session as Session & Session2FaDTO).twofa = { 
+		(request.session as Session & Session2FaDTO).twofa = {
 			needed: request.user.twofa,
-			passed: false
+			passed: false,
 		};
 		return activate;
 	}

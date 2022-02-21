@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { Controller, Get, Redirect, Req, UseGuards } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Session } from 'express-session';
@@ -11,20 +12,18 @@ import { OnlineStateGuard } from './guards/online-state.guard';
 @UseGuards(OnlineStateGuard)
 @Controller('auth')
 export class AuthController {
-	constructor(private authService: AuthService ) {}
+	constructor(private authService: AuthService) {}
 
-   	@Get('login')
+	@Get('login')
 	@UseGuards(FortyTwoGuard)
 	@ApiTags('auth')
-	login() {
-	}
+	login() {}
 
 	@Get('redirect')
 	@UseGuards(FortyTwoGuard)
 	@Redirect('/auth/status/', 301)
 	@ApiTags('auth')
-	redirect() {
-	}
+	redirect() {}
 
 	@Get('status')
 	@ApiTags('auth')
@@ -33,14 +32,14 @@ export class AuthController {
 		description: 'User status',
 		type: StatusDTO,
 	})
-	status(@Req() req: {user: User}): StatusDTO {
-		return (this.authService.status(req))
+	status(@Req() req: { user: User }): StatusDTO {
+		return this.authService.status(req);
 	}
 
 	@Get('logout')
 	@UseGuards(GroupGuard)
 	@ApiTags('auth')
-	logout(@Req() req: {session: Session}) {
+	logout(@Req() req: { session: Session }) {
 		req.session.destroy(() => {});
 		return 'logged out';
 	}

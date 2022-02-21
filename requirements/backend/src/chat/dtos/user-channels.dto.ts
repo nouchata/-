@@ -1,43 +1,43 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { User } from "src/user/entities/user.entity";
-import { MessageType } from "../entities/message.entity";
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { User } from 'src/user/entities/user.entity';
+import { MessageType } from '../entities/message.entity';
 
-export class MessageDto
-{
-	@ApiProperty({description: 'id of the message', example: 45})
+export class MessageDto {
+	@ApiProperty({ description: 'id of the message', example: 45 })
 	id: number;
 
-	@ApiProperty({description: 'type of the message', example: 'user'})
+	@ApiProperty({ description: 'type of the message', example: 'user' })
 	messageType: MessageType;
 
-	@ApiProperty({description: 'text of the message', example: 'hello'})
+	@ApiProperty({ description: 'text of the message', example: 'hello' })
 	text: string;
 
-	@ApiPropertyOptional({description: 'id of the user who wrote the message', example: 45})
+	@ApiPropertyOptional({
+		description: 'id of the user who wrote the message',
+		example: 45,
+	})
 	userId?: number;
 }
 
 export class ChannelDto {
-
-	@ApiProperty({description: 'id of the channel', example: 45})
+	@ApiProperty({ description: 'id of the channel', example: 45 })
 	id: number;
 
-	@ApiProperty({description: 'name of the channel', example: 'yolo'})
+	@ApiProperty({ description: 'name of the channel', example: 'yolo' })
 	name: string;
 
-	@ApiProperty({description: 'type of the channel', example: 'private'})
+	@ApiProperty({ description: 'type of the channel', example: 'private' })
 	channelType: string;
 
-
-	@ApiProperty({description: 'Owner of the channel', type: User})
+	@ApiProperty({ description: 'Owner of the channel', type: User })
 	owner: User;
 
-	@ApiProperty({description: 'Admins of the channel', type: [User]})
+	@ApiProperty({ description: 'Admins of the channel', type: [User] })
 	admins: User[];
 
-	@ApiProperty({description: 'Users of the channel', type: [User]})
+	@ApiProperty({ description: 'Users of the channel', type: [User] })
 	users: User[];
 
-	@ApiProperty({description: 'Messages of the channel', type: [MessageDto]})
+	@ApiProperty({ description: 'Messages of the channel', type: [MessageDto] })
 	messages: MessageDto[];
 }

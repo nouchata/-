@@ -6,55 +6,50 @@ import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
-import { Channel } from 'src/chat/entities/channel.entity';
 import download from './utils/download';
-import { ChannelDto, MessageDto } from 'src/chat/dtos/user-channels.dto';
+import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
 import { LadderDTO } from './dto/ladder.dto';
 
 @Injectable()
 export class UserService {
 	constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
-	
-	async createUser(details: UserInterface) : Promise<User>
-	{
+
+	async createUser(details: UserInterface): Promise<User> {
 		// download picture from 42 servers
 		if (details.picture) {
 			const path = `public/${details.login}.jpg`;
 			const res = await download(details.picture, path);
 
-			if (res) { // download successful
+			if (res) {
+				// download successful
 				details.picture = `${details.login}.jpg`;
-			} else { // download failed, use default picture instead
+			} else {
+				// download failed, use default picture instead
 				details.picture = undefined;
 			}
 		}
 
 		const user = this.userRepo.create(details);
-    	return this.userRepo.save(user);
+		return this.userRepo.save(user);
 	}
 
-	async findUserByLogin(login: string)
-	{
-		return this.userRepo.findOne({login});
+	async findUserByLogin(login: string) {
+		return this.userRepo.findOne({ login });
 	}
 
-	async findUsersByLogin(loginFragment: string)
-	{
+	async findUsersByLogin(loginFragment: string) {
 		return await this.userRepo.find({
-			login: Like(`%${loginFragment}%`)
+			login: Like(`%${loginFragment}%`),
 		});
 	}
 
-	async findUserById(id: number)
-	{
+	async findUserById(id: number) {
 		const userDB = await this.userRepo.findOne({ id });
-		if (!userDB)
-			throw new NotFoundException(`User ${id} does not exist.`);
+		if (!userDB) throw new NotFoundException(`User ${id} does not exist.`);
 		return userDB;
 	}
 
-	async editUser(dto: EditUserDTO)
-	{
+	async editUser(dto: EditUserDTO) {
 		const user = await this.findUserById(dto.id);
 
 		if (!dto.picture) {
@@ -65,100 +60,107 @@ export class UserService {
 
 	async getLadder() {
 		const ladder: User[] = await this.userRepo.find({
-			order: { elo: "DESC" }
+			order: { elo: 'DESC' },
 		});
 		return ladder;
 	}
 
-	async getRank(user: User) : Promise<number> {
+	async getRank(user: User): Promise<number> {
 		const ladder: User[] = await this.getLadder();
-		return ladder.findIndex( (curr) => {
-			return (curr.id === user.id);
-		}) + 1;
+		return (
+			ladder.findIndex((curr) => {
+				return curr.id === user.id;
+			}) + 1
+		);
 	}
 
-	async createUserDTO(entity: User) : Promise<FindUserDTO>
-	{
+	async createUserDTO(entity: User): Promise<FindUserDTO> {
 		const dto = new FindUserDTO();
-        
-        dto.general.name = entity.displayName;
-        dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
-        dto.general.role = entity.role;
-        dto.general.creation = entity.createdAt;
-        dto.general.status = entity.status;
 
-        dto.ranking.vdRatio = [entity.victories, entity.losses];
-        dto.ranking.elo = entity.elo;
-        dto.ranking.rank = await this.getRank(entity);
+		dto.general.name = entity.displayName;
+		dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
+		dto.general.role = entity.role;
+		dto.general.creation = entity.createdAt;
+		dto.general.status = entity.status;
 
-		dto.history = await Promise.all(entity.history.map( async (match) => {
-			const matchInfo = new MatchHistoryDTO();
+		dto.ranking.vdRatio = [entity.victories, entity.losses];
+		dto.ranking.elo = entity.elo;
+		dto.ranking.rank = await this.getRank(entity);
 
-			const players: User[] = await this.userRepo.findByIds([match.winnerId, match.loserId]);
-			
-			if (players[0].id == match.winnerId) {
-				matchInfo.winner = players[0].displayName;
-				matchInfo.loser = players[1].displayName;
-			} else {
-				matchInfo.winner = players[1].displayName;
-				matchInfo.loser = players[0].displayName;			
-			}
+		dto.history = await Promise.all(
+			entity.history.map(async (match) => {
+				const matchInfo = new MatchHistoryDTO();
 
-			matchInfo.id = match.id;
-			matchInfo.score[0] = match.winScore;
-			matchInfo.score[1] = match.loseScore;
-            matchInfo.duration = match.duration;
-			matchInfo.date = match.date;
+				const players: User[] = await this.userRepo.findByIds([
+					match.winnerId,
+					match.loserId,
+				]);
 
-			return (matchInfo);
-		}));
+				if (players[0].id == match.winnerId) {
+					matchInfo.winner = players[0].displayName;
+					matchInfo.loser = players[1].displayName;
+				} else {
+					matchInfo.winner = players[1].displayName;
+					matchInfo.loser = players[0].displayName;
+				}
+
+				matchInfo.id = match.id;
+				matchInfo.score[0] = match.winScore;
+				matchInfo.score[1] = match.loseScore;
+				matchInfo.duration = match.duration;
+				matchInfo.date = match.date;
+
+				return matchInfo;
+			})
+		);
 
 		// sort matches by date
 		dto.history.sort((a, b) => {
 			if (a.date < b.date) {
 				return -1;
 			} else {
-				return (1);
+				return 1;
 			}
-		})
+		});
 
-        return dto;
+		return dto;
 	}
 
-	async createLadderDTO() : Promise<LadderDTO[]> {
+	async createLadderDTO(): Promise<LadderDTO[]> {
 		const ladder = await this.getLadder();
 		return ladder.map((user) => {
-			const {id, displayName, elo} = user;
-			const dto: LadderDTO = {id, displayName, elo};
+			const { id, displayName, elo } = user;
+			const dto: LadderDTO = { id, displayName, elo };
 			return dto;
 		});
 	}
 
-	async getUserChannels(user: {id: number})
-	{
-		let channelDtos: ChannelDto[] = [];
+	async getUserChannels(user: { id: number }) {
+		const channelDtos: ChannelDto[] = [];
 
-		const channels = (await this.userRepo.findOne({
-			where: { id: user.id },
-			relations: ['channels',
-			'channels.owner',
-			'channels.users',
-			'channels.admins',
-			'channels.messages',
-			'channels.messages.user'
-		]}))?.channels;
+		const channels = (
+			await this.userRepo.findOne({
+				where: { id: user.id },
+				relations: [
+					'channels',
+					'channels.owner',
+					'channels.users',
+					'channels.admins',
+					'channels.messages',
+					'channels.messages.user',
+				],
+			})
+		)?.channels;
 
-		if (!channels)
-			return channelDtos;
+		if (!channels) return channelDtos;
 		// sort messages by date
-		channels.forEach( (channel) => {
-			channel.messages.sort( (a, b) => {
-				return (a.createdAt > b.createdAt) ? 1 : -1;
+		channels.forEach((channel) => {
+			channel.messages.sort((a, b) => {
+				return a.createdAt > b.createdAt ? 1 : -1;
 			});
 		});
-		
 
-		for (let channel of channels) {
+		for (const channel of channels) {
 			channelDtos.push(channel.toDto());
 		}
 		return channelDtos;

@@ -1,11 +1,18 @@
-import { User } from "src/user/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { MessageDto } from "../dtos/user-channels.dto";
-import { Channel } from "./channel.entity";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { User } from 'src/user/entities/user.entity';
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
+import { MessageDto } from '../dtos/user-channels.dto';
+import { Channel } from './channel.entity';
 
-export type MessageType = "user" | "system";
+export type MessageType = 'user' | 'system';
 
-@Entity({ name: "messages" })
+@Entity({ name: 'messages' })
 export class Message {
 	@PrimaryGeneratedColumn()
 	id: number;
@@ -13,13 +20,15 @@ export class Message {
 	@Column()
 	messageType: MessageType;
 
-	@Column({ type: "text" })
+	@Column({ type: 'text' })
 	text: string;
 
-	@ManyToOne(type => User, user => user.messages, {nullable: true})
+	@ManyToOne((type) => User, (user) => user.messages, { nullable: true })
 	user?: User;
 
-	@ManyToOne(type => Channel, channel => channel.messages, { onDelete: 'CASCADE' })
+	@ManyToOne((type) => Channel, (channel) => channel.messages, {
+		onDelete: 'CASCADE',
+	})
 	channel: Channel;
 
 	@CreateDateColumn()
@@ -33,5 +42,4 @@ export class Message {
 			userId: this.user?.id,
 		};
 	}
-
 }
