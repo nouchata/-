@@ -1,10 +1,8 @@
-import { ISession } from "connect-typeorm/out";
-import { type } from "os";
-import { Column, Entity, Index, PrimaryColumn } from "typeorm";
+import { ISession } from 'connect-typeorm/out';
+import { Column, Entity, Index, PrimaryColumn } from 'typeorm';
 
-@Entity({name: "session"})
-export class SessionEntity implements ISession
-{
+@Entity({ name: 'session' })
+export class SessionEntity implements ISession {
 	@Index()
 	@Column('bigint')
 	expiredAt: number;
@@ -14,5 +12,4 @@ export class SessionEntity implements ISession
 
 	@Column('text')
 	json: string;
-
 }

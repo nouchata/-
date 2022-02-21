@@ -1,5 +1,5 @@
-import { MatchHistory } from "../entities/match-history.entity";
-import { User } from "../entities/user.entity";
+import { MatchHistory } from '../entities/match-history.entity';
+import { User } from '../entities/user.entity';
 
 export type UserRole = 'user' | 'moderator' | 'admin';
 

@@ -1,8 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsIn, IsNotEmpty, IsOptional } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsIn, IsNotEmpty, IsOptional } from 'class-validator';
 
 export type ChannelType = 'private' | 'protected' | 'public';
-
 
 export class CreateChannelDto {
 	@IsNotEmpty()
@@ -28,5 +27,4 @@ export class CreateChannelDto {
 	@IsOptional()
 	@IsNotEmpty()
 	password?: string;
-
 }

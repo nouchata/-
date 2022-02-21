@@ -9,33 +9,31 @@ import { UserDetails } from './utils/UserDetails';
 
 @Injectable()
 export class AuthService {
-	constructor (private userService: UserService) {}
+	constructor(private userService: UserService) {}
 	async validateUser(details: UserDetails): Promise<User> {
-		let user: User = await this.userService.findUserByLogin(details.login);
+		const user = await this.userService.findUserByLogin(details.login);
 
-		if (user)
-			return (user);
-		else
-		{
-			let createUser: UserInterface = {...details, role: 'user'};
-			return (this.userService.createUser(createUser));
+		if (user) return user;
+		else {
+			const createUser: UserInterface = { ...details, role: 'user' };
+			return this.userService.createUser(createUser);
 		}
 	}
 
-	status(req: any): StatusDTO
-	{
-		let isAuth : boolean = req.isAuthenticated();
-		let status: StatusDTO = {
-			loggedIn: LoginState.NOT_LOGGED
+	status(req: any): StatusDTO {
+		const isAuth: boolean = req.isAuthenticated();
+		const status: StatusDTO = {
+			loggedIn: LoginState.NOT_LOGGED,
 		};
 		if (isAuth) {
-			status.loggedIn = LoginState.LOGGED
-			if ((req.session as Session & Session2FaDTO).twofa.needed
-			&& !(req.session as Session & Session2FaDTO).twofa.passed)
+			status.loggedIn = LoginState.LOGGED;
+			if (
+				(req.session as Session & Session2FaDTO).twofa.needed &&
+				!(req.session as Session & Session2FaDTO).twofa.passed
+			)
 				status.loggedIn = LoginState.PARTIAL;
 		}
-		if (status.loggedIn === LoginState.LOGGED)
-			status.user = req.user;
-		return (status);
+		if (status.loggedIn === LoginState.LOGGED) status.user = req.user;
+		return status;
 	}
 }
