@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import * as session from 'express-session';
-import * as passport from 'passport';
+import session from 'express-session';
+import passport from 'passport';
 import { getRepository } from 'typeorm';
 import { ISession, TypeormStore } from 'connect-typeorm/out';
 import { SessionEntity } from './auth/session.entity';
@@ -14,8 +14,10 @@ async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
 	const configService = app.get<ConfigService>(ConfigService);
-	const port: number = Number(configService.get('BACKEND_PORT'));
-	const front_address: string = configService.get('FRONTEND_ADDRESS');
+	const port = Number(configService.get('BACKEND_PORT'));
+	const front_address: string = configService.get(
+		'FRONTEND_ADDRESS'
+	) as string;
 
 	app.enableCors({
 		origin: front_address,
@@ -23,34 +25,41 @@ async function bootstrap() {
 	});
 
 	// verify user content
-	app.useGlobalPipes(new ValidationPipe({
-		whitelist: true,
-		transform: true,
-	}))
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true,
+			transform: true,
+		})
+	);
 
 	const sessionRepo = getRepository<ISession>(SessionEntity);
 
-	let sessionMiddleware = session({
+	const sessionMiddleware = session({
 		cookie: {
 			maxAge: 86400000 * 4,
 		},
-		secret: process.env.COOKIE_SECRET,
+		secret: process.env.COOKIE_SECRET as string,
 		resave: false,
 		saveUninitialized: false,
 		store: new TypeormStore().connect(sessionRepo),
-	})
+	});
 
-	let passportMiddleware = passport.initialize();
-	let passportSessionMiddleware = passport.session();
+	const passportMiddleware = passport.initialize();
+	const passportSessionMiddleware = passport.session();
 
 	app.use(sessionMiddleware);
 	app.use(passportMiddleware);
 	app.use(passportSessionMiddleware);
 
-	app.useWebSocketAdapter(new SessionIoAdapter(app, front_address, [sessionMiddleware, passportMiddleware, passportSessionMiddleware]));
+	app.useWebSocketAdapter(
+		new SessionIoAdapter(app, front_address, [
+			sessionMiddleware,
+			passportMiddleware,
+			passportSessionMiddleware,
+		])
+	);
 
 	if (configService.get('RUN_ENV') !== 'PROD') {
-
 		const config = new DocumentBuilder()
 			.setTitle('ft_trancendence')
 			.setDescription('ft_trancendence API description')
@@ -59,6 +68,8 @@ async function bootstrap() {
 		const document = SwaggerModule.createDocument(app, config);
 		SwaggerModule.setup('', app, document);
 	}
-	await app.listen(port, () => { Logger.log("Listening on port " + port, "ListenCallback") });
+	await app.listen(port, () => {
+		Logger.log('Listening on port ' + port, 'ListenCallback');
+	});
 }
 bootstrap();

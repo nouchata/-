@@ -15,52 +15,58 @@ import { join } from 'path/posix';
 import { TfaModule } from './tfa/tfa.module';
 import { GameModule } from './game/game.module';
 
-let dyn_import: DynamicModule[] = []
+const dyn_import: DynamicModule[] = [];
 
-if (process.env.RUN_ENV === "PROD") {
+if (process.env.RUN_ENV === 'PROD') {
 	Logger.log('Running in PROD mode', 'Config');
-	dyn_import.push(ConfigModule.forRoot({
-		isGlobal: true
-	}));
-}
-else if (process.env.RUN_ENV === "TEST") {
+	dyn_import.push(
+		ConfigModule.forRoot({
+			isGlobal: true,
+		})
+	);
+} else if (process.env.RUN_ENV === 'TEST') {
 	Logger.log('Running in TEST mode', 'Config');
-	dyn_import.push(ConfigModule.forRoot({
-		isGlobal: true
-	}));
-}
-else {
+	dyn_import.push(
+		ConfigModule.forRoot({
+			isGlobal: true,
+		})
+	);
+} else {
 	Logger.log('Running in DEV mode', 'Config');
-	dyn_import.push(ConfigModule.forRoot({
-		envFilePath: 'dev.env',
-		isGlobal: true
-	}));
+	dyn_import.push(
+		ConfigModule.forRoot({
+			envFilePath: 'dev.env',
+			isGlobal: true,
+		})
+	);
 }
 
 @Module({
-	imports: [...dyn_import, TypeOrmModule.forRoot({
-		type: 'postgres',
-		host: process.env.DB_HOSTNAME,
-		port: Number(process.env.DB_PORT),
-		username: process.env.DB_USER,
-		password: process.env.DB_PASS,
-		database: process.env.DB_NAME,
-		entities: [User, SessionEntity, MatchHistory, Channel, Message],
-		synchronize: true,
-		retryAttempts: 5,
-		retryDelay: 5000
-	}), UserModule,
+	imports: [
+		...dyn_import,
+		TypeOrmModule.forRoot({
+			type: 'postgres',
+			host: process.env.DB_HOSTNAME,
+			port: Number(process.env.DB_PORT),
+			username: process.env.DB_USER,
+			password: process.env.DB_PASS,
+			database: process.env.DB_NAME,
+			entities: [User, SessionEntity, MatchHistory, Channel, Message],
+			synchronize: true,
+			retryAttempts: 5,
+			retryDelay: 5000,
+		}),
+		UserModule,
 		AuthModule,
 		ChatModule,
 		TfaModule,
 		GameModule,
 		PassportModule.register({ session: true }),
 		ServeStaticModule.forRoot({
-			rootPath: join(__dirname, '..', 'public')
-		})
+			rootPath: join(__dirname, '..', 'public'),
+		}),
 	],
 	controllers: [],
 	providers: [],
 })
-
-export class AppModule { }
+export class AppModule {}

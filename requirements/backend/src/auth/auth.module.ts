@@ -11,8 +11,18 @@ import { SessionSerializer } from './serializer';
 import { SessionEntity } from './session.entity';
 
 @Module({
-	imports: [UserModule, TypeOrmModule.forFeature([SessionEntity]), TypeOrmModule.forFeature([User])],
+	imports: [
+		UserModule,
+		TypeOrmModule.forFeature([SessionEntity]),
+		TypeOrmModule.forFeature([User]),
+	],
 	controllers: [AuthController],
-	providers: [AuthService, FortyTwoStrategy, SessionSerializer, GroupGuard, OnlineStateGuard]
+	providers: [
+		AuthService,
+		FortyTwoStrategy,
+		SessionSerializer,
+		GroupGuard,
+		OnlineStateGuard,
+	],
 })
 export class AuthModule {}
