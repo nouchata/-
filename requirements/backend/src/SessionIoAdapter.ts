@@ -9,7 +9,7 @@ export class SessionIoAdapter extends IoAdapter {
 
 	create(port: number, options?: ServerOptions & {
 		namespace?: string;
-		server?: any;
+		serv?: any;
 	}): Server {
 		const server = super.create(port,
 			{
@@ -20,7 +20,7 @@ export class SessionIoAdapter extends IoAdapter {
 					methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 					credentials: true,
 				}
-			});
+			} as ServerOptions);
 
 		this.middlewares.forEach(middleware => {
 			server.use((socket: any, next: any) => {

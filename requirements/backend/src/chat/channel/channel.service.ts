@@ -49,6 +49,9 @@ export class ChannelService {
 		let channelCreated: Channel = new Channel();
 
 		if (channel.channelType === 'protected') {
+			if (!channel.password) {
+				throw new HttpException('Request malformed', 400);
+			}
 			// generate salt
 			const salt = crypto.randomBytes(16).toString('hex');
 			// generate hash
@@ -74,7 +77,7 @@ export class ChannelService {
 		return newChannel.toDto();
 	}
 
-	async getChannel(channelId: number): Promise<Channel> {
+	async getChannel(channelId: number) {
 		return this.channelRepository.findOne(channelId, { relations: ['users', 'owner', 'admins', 'messages'] });
 	}
 
@@ -88,7 +91,7 @@ export class ChannelService {
 
 	async joinChannel(channel: JoinChannelDto, user: User): Promise<ChannelDto> {
 		
-		let channelToJoin: Channel = await this.channelRepository.findOne(channel.id, { relations: ['users', 'owner', 'admins', 'messages'] });
+		let channelToJoin = await this.channelRepository.findOne(channel.id, { relations: ['users', 'owner', 'admins', 'messages'] });
 		
 		if (!channelToJoin) {
 			throw new HttpException('Channel not found', 404);
@@ -99,6 +102,9 @@ export class ChannelService {
 		}
 		
 		if (channelToJoin.channelType === 'protected') {
+			if (!channel.password) {
+				throw new HttpException('Request malformed', 400);
+			}
 			const hash = crypto.pbkdf2Sync(channel.password, channelToJoin.password_salt, 1000, 64, 'sha512').toString('hex');
 			if (hash !== channelToJoin.password_hash) {
 				throw new HttpException('Wrong password', 401);
@@ -119,7 +125,7 @@ export class ChannelService {
 	}
 
 	async leaveChannel(channelId: number, user: User) {
-		let channelToLeave: Channel = await this.channelRepository.findOne(channelId, { relations: ['users', 'admins', 'messages'] });
+		let channelToLeave = await this.channelRepository.findOne(channelId, { relations: ['users', 'admins', 'messages'] });
 		if (!channelToLeave) {
 			throw new HttpException('Channel not found', 404);
 		}

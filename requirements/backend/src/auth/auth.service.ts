@@ -11,7 +11,7 @@ import { UserDetails } from './utils/UserDetails';
 export class AuthService {
 	constructor (private userService: UserService) {}
 	async validateUser(details: UserDetails): Promise<User> {
-		let user: User = await this.userService.findUserByLogin(details.login);
+		let user = await this.userService.findUserByLogin(details.login);
 
 		if (user)
 			return (user);

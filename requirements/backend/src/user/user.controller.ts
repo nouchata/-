@@ -112,7 +112,7 @@ export class UserController {
 		}
 	}))
 	async uploadFile(
-		@Req() req,
+		@Req() req: {user: User},
 		@Body() body: { username: string, twofa: string },
 		@UploadedFile() file?: Express.Multer.File,
 	) : Promise<User>
@@ -147,7 +147,7 @@ export class UserController {
 		status: 200,
 		description: 'The channels were the is member user'
 	})
-	async getUserChannels(@Req() req): Promise<ChannelDto[]> {
+	async getUserChannels(@Req() req: {user: User}): Promise<ChannelDto[]> {
 		return this.userService.getUserChannels({ id: req.user.id });
 	}
 

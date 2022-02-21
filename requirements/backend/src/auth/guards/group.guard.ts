@@ -11,7 +11,7 @@ export class GroupGuard implements CanActivate
 {
 	constructor(private reflector: Reflector) {}
 
-	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+	canActivate(context: ExecutionContext) : boolean {
 		const request = context.switchToHttp().getRequest();
 		const roles = this.reflector.get<string[]>('roles', context.getHandler());
 
@@ -31,6 +31,8 @@ export class GroupGuard implements CanActivate
 			else
 				return (request.user.hasRole(<UserRole>roles[0]));
 		}
+		else
+			return (false);
 	}
 }
 

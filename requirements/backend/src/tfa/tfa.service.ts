@@ -13,6 +13,12 @@ export class TfaService {
     constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
 
     async generateTfaSecret(request: {user: User, session: Session & Session2FaDTO}) : Promise<string> {
+        if (!request.user.email) {
+            throw new HttpException({
+                status: HttpStatus.BAD_REQUEST,
+                error: "You can't generate a TFA secret if you have an email."
+            }, HttpStatus.BAD_REQUEST);
+        }
         request.user.twofa_secret = authenticator.generateSecret();
         await this.userRepo.save(request.user);
         return authenticator.keyuri(
@@ -22,19 +28,22 @@ export class TfaService {
         );
     }
 
-    generateTfaQrCode(otpauthUrl: string) {
+    async generateTfaQrCode(otpauthUrl: string) {
         let svgQrCode: string;
-        qrcode.toString(otpauthUrl, { 
-            type: 'svg',
-            color: { light: '#0000' },
-            margin: 0
-        }, (err, val) => {
-            if (err)
-                throw new HttpException({
-                    status: HttpStatus.INTERNAL_SERVER_ERROR,
-                    error: err.message
-                }, HttpStatus.INTERNAL_SERVER_ERROR);
-            svgQrCode = val;
+
+        svgQrCode = await new Promise((resolve) => {
+            qrcode.toString(otpauthUrl, { 
+                type: 'svg',
+                color: { light: '#0000' },
+                margin: 0
+            }, (err, val) => {
+                if (err)
+                    throw new HttpException({
+                        status: HttpStatus.INTERNAL_SERVER_ERROR,
+                        error: err.message
+                    }, HttpStatus.INTERNAL_SERVER_ERROR);
+                resolve(val);
+            });
         });
         return (svgQrCode);
     }

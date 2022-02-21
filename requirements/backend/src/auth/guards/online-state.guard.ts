@@ -49,7 +49,7 @@ export class OnlineStateGuard implements CanActivate {
 				})(this.userRepo, (contextUser.user as User).id);
 			}
 			// debounce
-			(contextUser.session as Session & SessionOnlineStateDTO).keepUpOnlineState();
+			(contextUser.session as Session & SessionOnlineStateDTO)?.keepUpOnlineState?.();
 		}
 		return (true);
 	}

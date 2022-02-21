@@ -7,5 +7,6 @@ export class IdentityGuard implements CanActivate {
         if (req.isAuthenticated()) {
 			return (req.params.id == req.user.id);
 		}
+		return (false);
 	}
 }

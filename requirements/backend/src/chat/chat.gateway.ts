@@ -49,7 +49,7 @@ export class ChatGateway {
 	@UseGuards(WsGroupGuard)
 	@SubscribeMessage('connectChannel')
 	async handleJoinChannel(client: Socket & { request: { user: User } }, { channelId }: { channelId: number }) {
-		let channelFound: Channel = await this.channelService.getChannel(channelId);
+		let channelFound = await this.channelService.getChannel(channelId);
 
 		if (channelFound) {
 			if (channelFound.canUserAccess(client.request.user)) {
@@ -66,7 +66,7 @@ export class ChatGateway {
 	@UseGuards(WsGroupGuard)
 	@SubscribeMessage('sendMessage')
 	async handleSendMessage(client: Socket & { request: { user: User } }, { channelId, text }: { channelId: number, text: string }) {
-		let channelFound: Channel = await this.channelService.getChannel(channelId);
+		let channelFound = await this.channelService.getChannel(channelId);
 
 		if (channelFound) {
 			if (channelFound.canUserAccess(client.request.user)) {

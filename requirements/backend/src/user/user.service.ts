@@ -25,7 +25,7 @@ export class UserService {
 			if (res) { // download successful
 				details.picture = `${details.login}.jpg`;
 			} else { // download failed, use default picture instead
-				details.picture = null;
+				details.picture = undefined;
 			}
 		}
 
@@ -33,19 +33,19 @@ export class UserService {
     	return this.userRepo.save(user);
 	}
 
-	async findUserByLogin(login: string) : Promise<User>
+	async findUserByLogin(login: string)
 	{
 		return this.userRepo.findOne({login});
 	}
 
-	async findUsersByLogin(loginFragment: string) : Promise<User[]>
+	async findUsersByLogin(loginFragment: string)
 	{
 		return await this.userRepo.find({
 			login: Like(`%${loginFragment}%`)
 		});
 	}
 
-	async findUserById(id: number) : Promise<User>
+	async findUserById(id: number)
 	{
 		const userDB = await this.userRepo.findOne({ id });
 		if (!userDB)
@@ -53,7 +53,7 @@ export class UserService {
 		return userDB;
 	}
 
-	async editUser(dto: EditUserDTO) : Promise<User>
+	async editUser(dto: EditUserDTO)
 	{
 		const user = await this.findUserById(dto.id);
 
@@ -63,7 +63,7 @@ export class UserService {
 		return await this.userRepo.save(dto.toEntity());
 	}
 
-	async getLadder() : Promise<User[]> {
+	async getLadder() {
 		const ladder: User[] = await this.userRepo.find({
 			order: { elo: "DESC" }
 		});
@@ -134,11 +134,11 @@ export class UserService {
 		});
 	}
 
-	async getUserChannels(user: {id: number}) : Promise<ChannelDto[]>
+	async getUserChannels(user: {id: number})
 	{
 		let channelDtos: ChannelDto[] = [];
 
-		const channels: Channel[] = (await this.userRepo.findOne({
+		const channels = (await this.userRepo.findOne({
 			where: { id: user.id },
 			relations: ['channels',
 			'channels.owner',
@@ -146,8 +146,10 @@ export class UserService {
 			'channels.admins',
 			'channels.messages',
 			'channels.messages.user'
-		]})).channels;
+		]}))?.channels;
 
+		if (!channels)
+			return channelDtos;
 		// sort messages by date
 		channels.forEach( (channel) => {
 			channel.messages.sort( (a, b) => {
