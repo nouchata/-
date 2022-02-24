@@ -7,6 +7,7 @@ import { PlayerState } from "../../../types/PlayerState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
 import { IContainerElement } from "../../../types/IScene";
+import { cloneDeep } from "lodash";
 
 const rSS : {
 	width: number,
@@ -21,7 +22,6 @@ const angleFactor = 2;
 
 // server
 const defaultScreenHeightPercentagePerSec = 50;
-const capChargingPercentagePerSec = 100 / 3;
 
 enum RacketUnit {
 	NONE,
@@ -42,19 +42,16 @@ class Racket extends Container implements IContainerElement {
 	protected appRef : TranscendanceApp;
 	protected shape : Graphics = new Graphics();
 	protected deltaTotal : number = 0;
-	protected movSpeed : number = defaultScreenHeightPercentagePerSec;
+	protected movSpeed : number = 0;
 	public capacityLoader : number = 0;
 	protected localCapacityChargingState: boolean = false;
 	protected racketColor : number = 0xFFFFFF;
 	protected currScreenSize : number = 0;
 	public canCollide : boolean = true;
 	public cancelCharging : boolean = false;
+	protected serverLastFlags : RacketFlags;
 
 	absolutePosition : { x: number, y: number };
-
-	protected filterState : {
-		update: boolean, array: Array<Filter>
-	} = { update: false, array: [] };
 
 	public flags : RacketFlags = {
 		falsePosAnimation: false,
@@ -71,6 +68,7 @@ class Racket extends Container implements IContainerElement {
 
 		// racket settings
 		this.currScreenSize = this.appRef.screen.height;
+		this.movSpeed = (this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.yDistPPS;
 
 		// racket drawing
 		this.draw();
@@ -81,12 +79,13 @@ class Racket extends Container implements IContainerElement {
 		// server copying
 		this.localCapacityChargingState = (this.selectCorrectUnit() as PlayerState).flags.capacityCharging;
 		this.y = toPx((this.selectCorrectUnit() as PlayerState).pos.y, this.appRef.screen.height);
+		this.serverLastFlags = cloneDeep((this.selectCorrectUnit() as PlayerState).flags);
 
 		this.updateSpatials({ pivot: true, filterArea: true, positionX: true });
 		this.absolutePosition = { x: this.x, y: this.y };
 
-		this.filterState.update = true;
-		this.filterState.array = [new AdvancedBloomFilter({ blur: 5 })];
+		this.filters = [new AdvancedBloomFilter({ blur: 5 }), new GlitchFilter({ offset: 5 })];
+		(this.filters[1] as GlitchFilter).enabled = false;
 
 		// triggers
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
@@ -186,6 +185,13 @@ class Racket extends Container implements IContainerElement {
 		return (false);
 	}
 
+	protected glitchedRacket() : void {
+		if ((this.selectCorrectUnit() as PlayerState).flags.stuned && this.filters && !(this.filters[1] as GlitchFilter).enabled)
+			(this.filters[1] as GlitchFilter).enabled = true;
+		if (!(this.selectCorrectUnit() as PlayerState).flags.stuned && this.filters && (this.filters[1] as GlitchFilter).enabled)
+			(this.filters[1] as GlitchFilter).enabled = false;
+	}
+
 	protected selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {
 		if (this.unit === RacketUnit.LEFT)
 			return (getLastActionProcessed ? 
@@ -205,6 +211,11 @@ class Racket extends Container implements IContainerElement {
 			this.width,
 			this.height
 		));
+	}
+	
+	protected getServerFlags() {
+		this.glitchedRacket();
+		this.serverLastFlags = cloneDeep((this.selectCorrectUnit() as PlayerState).flags);
 	}
 
 	public destroyContainerElem () {

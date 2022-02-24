@@ -1,3 +1,4 @@
+import { GlitchFilter } from "@pixi/filter-glitch";
 import { GA_KEY } from "../../../types/GameAction";
 import { PlayerState } from "../../../types/PlayerState";
 import { ResponseState } from "../../../types/ResponseState";
@@ -13,6 +14,7 @@ class SpectatorRacket extends Racket {
 	update(delta: number) {
 		const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
 		let redraw: boolean = false;
+		this.getServerFlags();
 
 		this.deltaTotal += delta;
 
@@ -38,10 +40,8 @@ class SpectatorRacket extends Racket {
 		if (redraw)
 			this.draw();
 
-		if (this.filterState.update) {
-			this.filterState.update = false;
-			this.filters = this.filterState.array;
-		}
+		if (this.filters && (this.filters[1] as GlitchFilter).enabled)
+			(this.filters[1] as GlitchFilter).refresh();
 	}
 
 	protected manageMovement(delta: number, spectatorValue: number) : GA_KEY {

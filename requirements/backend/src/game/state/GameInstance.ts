@@ -89,7 +89,7 @@ class GameInstance {
 		this.playerTwo.id = instanceSettings.playersId.two;
 		
 		/* DEV PURPOSE */
-		this.playerOne.stockedCapacity = PLAYER_CAPACITY.SMASH;
+		this.playerOne.stockedCapacity = PLAYER_CAPACITY.STUNNING;
 		/* DEV PURPOSE */
 
 		// ball stuff
@@ -119,6 +119,9 @@ class GameInstance {
 			actualDeltaTime = Date.now();
 			delta = actualDeltaTime - this.lastDeltaTime;
 			this.lastDeltaTime = actualDeltaTime;
+
+			this.stunHandler();
+
 			this.runStateHandler();
 			this.movementChecker();
 			this.chargingChecker(delta);
@@ -242,10 +245,10 @@ class GameInstance {
 		let differenceBall : number[] = [];
 		let differenceBallEaseRange : number = this.ballState.flags.smash ? 10 : 10;
 		let currentPlayer : PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
-		if (isPlayerOne ? gameAction.data.ballPos.x <= 25 : gameAction.data.ballPos.x >= 75) {
-			differencePlayerY = currentPlayer.pos.y - gameAction.data.y;
-			differenceBall[0] = this.ballState.pos.x - gameAction.data.ballPos.x;
-			differenceBall[1] = this.ballState.pos.y - gameAction.data.ballPos.y;
+		if (isPlayerOne ? gameAction.data.ballPos?.x as number <= 25 : gameAction.data.ballPos?.x as number >= 75) {
+			differencePlayerY = currentPlayer.pos.y - (gameAction.data.y as number);
+			differenceBall[0] = this.ballState.pos.x - (gameAction.data.ballPos?.x as number);
+			differenceBall[1] = this.ballState.pos.y - (gameAction.data.ballPos?.y as number);
 			// console.log(`pre if: ${differenceBall} ${gameAction.data.ballPos.x} ${this.ballState.pos.x}`);
 			// console.log(`p:${differencePlayerY} dy:${gameAction.data.y}`);
 			if ((differencePlayerY < -(differenceBallEaseRange) || differencePlayerY > differenceBallEaseRange) ||
@@ -254,8 +257,8 @@ class GameInstance {
 				return ;
 			this.ballState.directionVector.x = isPlayerOne ? 1 : -1;
 			// angle computation
-			let topOfRacket: number = gameAction.data.y - (100 / this.gameOptions.racketSize / 2);
-			let ballPercentageRacket: number = Math.floor((gameAction.data.ballPos.y - topOfRacket) / ((100 / this.gameOptions.racketSize) / 100));
+			let topOfRacket: number = (gameAction.data.y as number) - (100 / this.gameOptions.racketSize / 2);
+			let ballPercentageRacket: number = Math.floor(((gameAction.data.ballPos?.y as number) - topOfRacket) / ((100 / this.gameOptions.racketSize) / 100));
 			if (ballPercentageRacket < 10)
 				ballPercentageRacket = 10;
 			if (ballPercentageRacket > 90)
@@ -278,8 +281,8 @@ class GameInstance {
 				this.ballState.flags.rainbow = true;
 				this.ballState.flags.smash = true;
 				currentPlayer.flags.stuned = true;
-				this.ballState.pos.x = gameAction.data.ballPos.x;
-				this.ballState.pos.y = gameAction.data.ballPos.y;
+				this.ballState.pos.x = gameAction.data.ballPos?.x || 0;
+				this.ballState.pos.y = gameAction.data.ballPos?.y || 0;
 				// console.log(`smash loading ${this.ballState.pos.x}`);
 				this.smashDelay = this.mSecElapsed;
 			}
@@ -330,6 +333,8 @@ class GameInstance {
 		}
 	}
 
+	// effects handlers
+
 	private smashHandler() {
 		if (this.ballState.flags.smash && this.ballState.flags.freezed) {
 			let msDifference : number = this.mSecElapsed - this.smashDelay - 500;
@@ -343,6 +348,22 @@ class GameInstance {
 				playerState.capacityLoaderPercentage = 0;
 				playerState.stockedCapacity = PLAYER_CAPACITY.NONE;
 				playerState.flags.stuned = false;
+			}
+		}
+	}
+
+	private stunHandler() {
+		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+		for (let player of players) {
+			if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING && player.capacityLoaderPercentage >= 98 && !player.flags.stuned) {
+				player.flags.stuned = true;
+				player.capacityLoaderPercentage = 0;
+				player.stockedCapacity = PLAYER_CAPACITY.NONE;
+				setTimeout(() => {
+					player.flags.stuned = false;
+					console.log(player.flags.stuned = false);
+				}, 700);
+				return ;
 			}
 		}
 	}

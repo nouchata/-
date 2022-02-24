@@ -16,7 +16,7 @@ export class GameGateway {
 		// debug test fake p2
 		setTimeout(() => {
 			this.createInstance(1, 2, { gameType: "extended" }, 123456);
-			this.gameInstances[123456].updatePlayerNetState(2, true);
+			this.gameInstances[123456]?.updatePlayerNetState(2, true);
 			let id: number = 0;
 			// (async() => {
 			// 	let percentage: number = 50;
@@ -41,7 +41,8 @@ export class GameGateway {
 			(async() => {
 				for (let i = 0 ; i < 7 ; i++) {
 					await new Promise((resolve) => setTimeout(() => {
-						this.gameInstances[123456].injectGameAction({ 
+
+						this.gameInstances[123456]?.injectGameAction({ 
 							id: ++id,
 							keyPressed: GA_KEY.SPACE,
 							data: { chargingOn: true }
@@ -49,7 +50,7 @@ export class GameGateway {
 						resolve(1);
 					}, 1000));
 					await new Promise((resolve) => setTimeout(() => {
-						this.gameInstances[123456].injectGameAction({ 
+						this.gameInstances[123456]?.injectGameAction({ 
 							id: ++id,
 							keyPressed: GA_KEY.SPACE,
 							data: { chargingOn: false }
@@ -74,7 +75,7 @@ export class GameGateway {
 
 	handleDisconnect(client: Socket & { request: { user: User } }) {
 		if (this.associatedPlayers[client.request.user.id])
-			this.gameInstances[this.associatedPlayers[client.request.user.id]].updatePlayerNetState(client.request.user.id, false);
+			this.gameInstances[this.associatedPlayers[client.request.user.id] as number]?.updatePlayerNetState(client.request.user.id, false);
 	}
 
 	@SubscribeMessage('joinGame')
@@ -90,7 +91,7 @@ export class GameGateway {
 		client.join("game#" + instanceId);
 
 		if (this.associatedPlayers[client.request.user.id] === instanceId)
-			this.gameInstances[instanceId].updatePlayerNetState(client.request.user.id, true);	
+			this.gameInstances[instanceId]?.updatePlayerNetState(client.request.user.id, true);	
 	}
 
 	@SubscribeMessage('gameActionDispatcher')
@@ -100,7 +101,7 @@ export class GameGateway {
 	) {
 		if (this.associatedPlayers[client.request.user.id] !== instanceId)
 			throw new WsException("You don't belong to the given instance ID");
-		this.gameInstances[instanceId].injectGameAction(gameAction, client.request.user.id);
+		this.gameInstances[instanceId]?.injectGameAction(gameAction, client.request.user.id);
 	}
 
 	createInstance(

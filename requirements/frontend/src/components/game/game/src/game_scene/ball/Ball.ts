@@ -107,6 +107,7 @@ class Ball extends Container implements IContainerElement {
 			this.angle = this.deltaTotal * 15 * this.localBallState.directionVector.x;
 		}
 
+		console.log(`${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y - this.localBallState.pos.y} ${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x - this.localBallState.pos.x}`);
 		/* regarding the responsiveness it would be nice if the field of the ball wasn't the whole canvas
 		 * but rather the space between the two rackets */
 		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
@@ -184,7 +185,6 @@ class Ball extends Container implements IContainerElement {
 	}
 
 	protected sweetCorrectionMovement(delta: number) {
-		this.getServerFlags();
 		let correctionDirectionVector : Point = new Point(
 			(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x -
 			this.localBallState.pos.x,
@@ -196,6 +196,7 @@ class Ball extends Container implements IContainerElement {
 			correctionDirectionVector.x = 0;
 		if (isNaN(correctionDirectionVector.y))
 			correctionDirectionVector.y = 0;
+		/* le facteur de vitesse doit être proportionnel à la distance qu'il reste à parcourir */
 		this.localBallState.pos.x += correctionDirectionVector.x * (this.localBallState.speedPPS * 2 / this.appRef.ticker.FPS) * delta;
 		this.localBallState.pos.y += correctionDirectionVector.y * (this.localBallState.speedPPS * 2 / this.appRef.ticker.FPS) * delta;
 
