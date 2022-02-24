@@ -111,6 +111,12 @@ export class ChannelService {
 		});
 	}
 
+	async getPublicAndProtectedChannels(): Promise<Channel[]> {
+		const publicChannels: Channel[] = await this.getPublicChannels();
+		const protectedChannels: Channel[] = await this.getProtectedChannels();
+		return [...publicChannels, ...protectedChannels];
+	}
+
 	async joinChannel(
 		channel: JoinChannelDto,
 		user: User
