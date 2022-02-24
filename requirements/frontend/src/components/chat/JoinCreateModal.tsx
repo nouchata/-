@@ -88,7 +88,10 @@ const ModalJoin = ({
 								}
 							}}
 						/>
-						<div className="button-validate" onClick={() => joinChannel(socket)}>
+						<div
+							className="button-validate"
+							onClick={() => joinChannel(socket)}
+						>
 							<FontAwesomeIcon icon={faCheck} />
 						</div>
 					</div>
@@ -109,9 +112,11 @@ const ModalJoin = ({
 const Join = ({
 	channels,
 	socket,
+	existingChannels,
 }: {
 	channels: GetChannelDto[];
 	socket: ChatSocket;
+	existingChannels: number[];
 }) => {
 	const [filter, setFilter] = useState('');
 	const [modalJoin, setModalJoin] = useState<GetChannelDto | undefined>(
@@ -129,6 +134,9 @@ const Join = ({
 			<div className="channels-cards-container">
 				<div className="channels-cards">
 					{channels
+						.filter((channel) =>
+							!existingChannels.includes(channel.id)
+						)
 						.filter((channel) =>
 							channel.name.toLocaleLowerCase().includes(filter)
 						)
@@ -159,13 +167,23 @@ const Join = ({
 				</div>
 			</div>
 			{modalJoin && (
-				<ModalJoin channel={modalJoin} setModalJoin={setModalJoin} socket={socket} />
+				<ModalJoin
+					channel={modalJoin}
+					setModalJoin={setModalJoin}
+					socket={socket}
+				/>
 			)}
 		</div>
 	);
 };
 
-const JoinCreateModal = ({ socket }: { socket: ChatSocket }) => {
+const JoinCreateModal = ({
+	socket,
+	existingChannels,
+}: {
+	socket: ChatSocket;
+	existingChannels: number[];
+}) => {
 	const [selectedTab, setSelectedTab] = useState<'join' | 'create'>('join');
 	const [channels, setChannels] = useState<GetChannelDto[]>([]);
 
@@ -201,7 +219,7 @@ const JoinCreateModal = ({ socket }: { socket: ChatSocket }) => {
 				</div>
 			</div>
 			{selectedTab === 'join' && (
-				<Join channels={channels} socket={socket} />
+				<Join channels={channels} socket={socket} existingChannels={existingChannels} />
 			)}
 		</div>
 	);

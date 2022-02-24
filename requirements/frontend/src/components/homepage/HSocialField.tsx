@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useCallback } from 'react';
+import { useState, useContext, useEffect, useCallback, useMemo } from 'react';
 import LoadingContent from '../../LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
@@ -69,6 +69,11 @@ const HSocialField = () => {
 		},
 		[notificationHandler]
 	);
+
+	const existingChannels = useMemo(() => {
+		if (!chatSocket) return [];
+		return chatSocket?.channels.map((channel) => channel.id);
+	}, [chatSocket]);
 
 	useEffect(() => {
 		const fetchChannels = async () => {
@@ -213,8 +218,7 @@ const HSocialField = () => {
 			<div className="hsf-btn-new">
 				<button
 					onClick={() => {
-						if (!chatSocket)
-							return;
+						if (!chatSocket) return;
 						setModalProps(
 							isFriendTabSelected
 								? friendModalSettings
@@ -223,6 +227,9 @@ const HSocialField = () => {
 										content: (
 											<JoinCreateModal
 												socket={chatSocket}
+												existingChannels={
+													existingChannels
+												}
 											/>
 										),
 										height: '80%',
