@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -10,6 +10,7 @@ import { Channel } from 'src/chat/entities/channel.entity';
 import download from './utils/download';
 import { ChannelDto, MessageDto } from 'src/chat/dtos/user-channels.dto';
 import { LadderDTO } from './dto/ladder.dto';
+import { FriendDTO } from './dto/friend.dto';
 
 @Injectable()
 export class UserService {
@@ -43,6 +44,14 @@ export class UserService {
 		return await this.userRepo.find({
 			login: Like(`%${loginFragment}%`)
 		});
+	}
+
+	async findUserByDisplayName(name: string) : Promise<User> {
+		const userDB = await this.userRepo.findOne({ displayName: name });
+		if (!userDB) {
+			throw new NotFoundException(`User ${name} does not exist.`);
+		}
+		return userDB;
 	}
 
 	async findUserById(id: number) : Promise<User>
@@ -160,5 +169,29 @@ export class UserService {
 			channelDtos.push(channel.toDto());
 		}
 		return channelDtos;
+	}
+
+	async getFriendslist(id: number) : Promise<User[]> {
+		return (await this.userRepo.findOne({
+			where: { id },
+			relations: ['friends']
+		})).friends;
+	}
+
+	async editFriendship(user: User, displayName: string, cb: any) : Promise<User> {
+		
+		const friend: User = await this.findUserByDisplayName(displayName); // find friend's entity
+
+		user.friends = await this.getFriendslist(user.id); // retrieve user's friend list
+		
+		// check the existing friendship relation between the two users
+		const friendIndex = user.friends.findIndex((current) => {
+			return (current.id === friend.id);
+		});
+
+		// callback
+		user = cb(user, friend, friendIndex);
+
+		return this.userRepo.save(user); // save new relation
 	}
 }

@@ -1,6 +1,6 @@
 import { GroupGuard } from 'src/auth/guards/group.guard';
 import { EditUserDTO } from './dto/edit-user.dto';
-import { Body, Controller, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, ConflictException, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, ParseIntPipe, Post, Req, UnsupportedMediaTypeException, UploadedFile, UseFilters, UseGuards, UseInterceptors } from '@nestjs/common'
 import { ApiResponse } from '@nestjs/swagger';
 import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User } from './entities/user.entity';
@@ -14,6 +14,7 @@ import fs = require('fs');
 import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
 import { QueryExceptionFilter } from './utils/QueryExceptionFilter';
 import { LadderDTO } from './dto/ladder.dto';
+import { FriendDTO } from './dto/friend.dto';
 
 @Controller('user')
 export class UserController {
@@ -151,4 +152,73 @@ export class UserController {
 		return this.userService.getUserChannels({ id: req.user.id });
 	}
 
+	@Get('friends/list')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [FriendDTO],
+		status: 200,
+		description: "The list of all the user's friends"
+	})
+	async getFriendslistDTO(@Req() req): Promise<FriendDTO[]> {
+		const list = await this.userService.getFriendslist(req.user.id);
+		return list.map((friend) => {
+			return (FriendDTO.fromEntity(friend));
+		});
+	}
+
+	@Post('friends/add')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: "Add the specified user as friend"
+	})
+	@ApiResponse({
+		status: 404,
+		description: "User does not exist"
+	})
+	@ApiResponse({
+		status: 409,
+		description: "Already friend with this user"
+	})
+	async addFriend(@Req() req, @Body() body: { username: string }) : Promise<User> {
+		return this.userService.editFriendship(
+			req.user,
+			body.username,
+			(user: User, friend: User, index: number) => {
+				if (index !== -1) {
+					throw new ConflictException(`${friend.displayName} and you are already friends.`);
+				}
+				user.friends.push(friend);
+				return user;
+			}
+		);
+	}
+
+	@Delete('friends/delete')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 200,
+		description: "Delete an user from your friends list"
+	})
+	@ApiResponse({
+		status: 404,
+		description: "User does not exist"
+	})
+	@ApiResponse({
+		status: 409,
+		description: "User is not your friend"
+	})
+	async deleteFriend(@Req() req, @Body() body: { username: string }) : Promise<User> {
+		return this.userService.editFriendship(
+			req.user,
+			body.username,
+			(user: User, friend: User, index: number) => {
+				if (index === -1) {
+					throw new ConflictException(`${friend.displayName} is not your friend.`);
+				}
+				user.friends.splice(index, 1);
+				return user;
+			}
+		);
+	}
 }
