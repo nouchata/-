@@ -3,6 +3,7 @@ import { Channel } from "src/chat/entities/channel.entity";
 import { Message } from "src/chat/entities/message.entity";
 import { Column, CreateDateColumn, Entity, JoinTable, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { UserInterface, UserRole, UserStatus } from "../interface/UserInterface";
+import { UserService } from "../user.service";
 import { MatchHistory } from "./match-history.entity";
 
 @Entity({ name: 'users' })

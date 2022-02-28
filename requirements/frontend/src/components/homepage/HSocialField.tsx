@@ -1,9 +1,7 @@
 import { useState, useContext, useEffect, useCallback } from 'react';
-import LoadingContent from '../../LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 
-import UserAsset from '../../assets/homepage/user.png';
 import CloseAsset from '../../assets/chat/close.png';
 import MaxAsset from '../../assets/chat/max.png';
 import MinusAsset from '../../assets/chat/minus.png';
@@ -23,6 +21,7 @@ import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
 import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
+import FriendsList from './FriendsList';
 
 type ChatState = {
 	state: "OPENED" | "MINIMIZED" | "CLOSED",
@@ -105,7 +104,7 @@ const HSocialField = () => {
 			</div>
 			<div className='hsf-content'>
 				{isFriendTabSelected ?
-					<LoadingContent widget={true} image={UserAsset} /> :
+					<FriendsList/> :
 					<ul>
 						{
 							chatSocket?.channels.map((channel, index) => {
