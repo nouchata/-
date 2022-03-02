@@ -19,6 +19,7 @@ export type PlayerState = {
 	capacityLoaderPercentage: number;
 	/* stocked capacity */
 	stockedCapacity: PLAYER_CAPACITY | undefined;
+	capacityTimeTrigger: number;
 }
 
 export { PLAYER_CAPACITY };

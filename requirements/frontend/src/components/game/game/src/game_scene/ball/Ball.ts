@@ -107,7 +107,6 @@ class Ball extends Container implements IContainerElement {
 			this.angle = this.deltaTotal * 15 * this.localBallState.directionVector.x;
 		}
 
-		console.log(`${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y - this.localBallState.pos.y} ${(this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x - this.localBallState.pos.x}`);
 		/* regarding the responsiveness it would be nice if the field of the ball wasn't the whole canvas
 		 * but rather the space between the two rackets */
 		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);

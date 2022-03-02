@@ -7,6 +7,8 @@ enum PLAYER_CAPACITY {
 	STUNNING
 };
 
+const playerCapacityDelay: Array<number> = [0, 500, 2000, 700];
+
 type PlayerState = {
 	/* player profile id */
 	id: number;
@@ -19,6 +21,7 @@ type PlayerState = {
 	capacityLoaderPercentage: number;
 	/* stocked capacity */
 	stockedCapacity: PLAYER_CAPACITY | undefined;
+	capacityTimeTrigger: number;
 }
 
-export { PlayerState, PLAYER_CAPACITY };
+export { PlayerState, PLAYER_CAPACITY, playerCapacityDelay };

@@ -7,6 +7,8 @@ import { Racket, RacketUnit, toPer, toPx } from "./Racket";
 
 class PlayerRacket extends Racket {
 
+	private currentlyCastingPower: boolean = false;
+
 	constructor(appRef : TranscendanceApp, unit : RacketUnit) {
 		super(appRef, unit);
 		this.appRef.ticker.add(this.update, this);
@@ -33,6 +35,14 @@ class PlayerRacket extends Racket {
 		if (redraw)
 			this.draw();
 		this.handleCapacityCharging();
+
+		// charging fix
+		if ((this.selectCorrectUnit() as PlayerState).capacityTimeTrigger && !this.currentlyCastingPower)
+			this.currentlyCastingPower = true;
+		if (!(this.selectCorrectUnit() as PlayerState).capacityTimeTrigger && this.currentlyCastingPower) {
+			this.cancelCharging = true;
+			this.currentlyCastingPower = false;
+		}
 
 		// filters update
 		if (this.filters && (this.filters[1] as GlitchFilter).enabled)
@@ -78,7 +88,7 @@ class PlayerRacket extends Racket {
 	}
 
 	protected capacityCharging(delta: number) : boolean {
-		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended" ) {
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
 			let playerState: PlayerState = this.selectCorrectUnit() as PlayerState;
 			if (this.cancelCharging) {
 				this.localCapacityChargingState = false;
@@ -125,7 +135,9 @@ class PlayerRacket extends Racket {
 
 	protected handleCapacityCharging(): void {
 		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended" && (this.selectCorrectUnit() as PlayerState).stockedCapacity) {
-			if (!this.localCapacityChargingState && this.appRef.actualKeysPressed.space && !(this.selectCorrectUnit() as PlayerState).flags.capacityCharging) {
+			if (!this.localCapacityChargingState && this.appRef.actualKeysPressed.space && !(this.selectCorrectUnit() as PlayerState).flags.capacityCharging &&
+				!(this.selectCorrectUnit() as PlayerState).capacityTimeTrigger)
+			{
 				this.appRef.gciMaster.lastLocalGameActionComputed++;
 				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
 					id: this.appRef.gciMaster.lastLocalGameActionComputed,
@@ -134,7 +146,9 @@ class PlayerRacket extends Racket {
 				};
 				this.localCapacityChargingState = true;
 				this.capacityLoader = 0;
-			} else if (this.localCapacityChargingState && !this.appRef.actualKeysPressed.space && (this.selectCorrectUnit() as PlayerState).flags.capacityCharging) {
+			}
+			else if (this.localCapacityChargingState && !this.appRef.actualKeysPressed.space && (this.selectCorrectUnit() as PlayerState).flags.capacityCharging)
+			{
 				this.appRef.gciMaster.lastLocalGameActionComputed++;
 				this.appRef.gciMaster.computedGameActions[this.appRef.gciMaster.lastLocalGameActionComputed] = {
 					id: this.appRef.gciMaster.lastLocalGameActionComputed,

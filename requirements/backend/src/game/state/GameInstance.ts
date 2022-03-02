@@ -1,5 +1,5 @@
 import { GameOptions } from "../types/GameOptions";
-import { PlayerState, PLAYER_CAPACITY } from "../types/PlayerState";
+import { playerCapacityDelay, PlayerState, PLAYER_CAPACITY } from "../types/PlayerState";
 import { InstanceSettings } from "../types/InstanceSettings";
 import { Server } from 'socket.io';
 import { ResponseState, RUNSTATE } from "../types/ResponseState";
@@ -18,7 +18,8 @@ const samplePlayer : PlayerState = {
 		rainbowing: false
 	},
 	capacityLoaderPercentage: 0,
-	stockedCapacity: undefined
+	stockedCapacity: undefined,
+	capacityTimeTrigger: 0
 };
 
 const sampleBall : BallState = {
@@ -65,10 +66,14 @@ class GameInstance {
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
-	private playerOneLastActionProcessed: number = -1;
+	private playerOneLastActionProcessed : number = -1;
+	private playerOnePowerTriggerTime : number = 0;
 	private playerTwo : PlayerState = cloneDeep(samplePlayer);
-	private playerTwoLastActionProcessed: number = -1;
+	private playerTwoLastActionProcessed : number = -1;
+	private playerTwoPowerTriggerTime : number = 0;
+
 	private responseState : ResponseState;
+
 
 	constructor(
 		instanceSettings : InstanceSettings,
@@ -120,15 +125,12 @@ class GameInstance {
 			delta = actualDeltaTime - this.lastDeltaTime;
 			this.lastDeltaTime = actualDeltaTime;
 
-			this.stunHandler();
-
 			this.runStateHandler();
 			this.movementChecker();
 			this.chargingChecker(delta);
+			this.powersHandler();
 			if (!this.ballState.flags.freezed)
 				this.ballHandler(delta);
-
-			this.smashHandler();
 
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
@@ -206,7 +208,7 @@ class GameInstance {
 
 	private chargingHandler(gameAction: GameAction, isPlayerOne: boolean) {
 		let playerState: PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
-		if (!playerState.flags.stuned && this.gameOptions.gameType === "extended") {
+		if (!playerState.flags.stuned && this.gameOptions.gameType === "extended" && !playerState.capacityTimeTrigger) {
 			if (gameAction.data.chargingOn) {
 				playerState.flags.capacityCharging = true;
 				playerState.flags.rainbowing = true;
@@ -284,7 +286,7 @@ class GameInstance {
 				this.ballState.pos.x = gameAction.data.ballPos?.x || 0;
 				this.ballState.pos.y = gameAction.data.ballPos?.y || 0;
 				// console.log(`smash loading ${this.ballState.pos.x}`);
-				this.smashDelay = this.mSecElapsed;
+				currentPlayer.capacityTimeTrigger = this.mSecElapsed;
 			}
 		}
 	}
@@ -335,35 +337,42 @@ class GameInstance {
 
 	// effects handlers
 
-	private smashHandler() {
-		if (this.ballState.flags.smash && this.ballState.flags.freezed) {
-			let msDifference : number = this.mSecElapsed - this.smashDelay - 500;
-			// console.log(`smash handler ${this.mSecElapsed} ${this.smashDelay} ${this.mSecElapsed - this.smashDelay}`);
-			if (msDifference < 50 && msDifference > -50) {
-				let playerState: PlayerState = this.ballState.pos.x < 50 ? this.playerOne : this.playerTwo;
-				// console.log(`smash loading ${this.ballState.pos.x}`);
-				this.ballState.flags.freezed = false;
-				playerState.flags.capacityCharging = false;
-				playerState.flags.rainbowing = false;
-				playerState.capacityLoaderPercentage = 0;
-				playerState.stockedCapacity = PLAYER_CAPACITY.NONE;
-				playerState.flags.stuned = false;
-			}
-		}
-	}
-
-	private stunHandler() {
+	private powersHandler() {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		for (let player of players) {
-			if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING && player.capacityLoaderPercentage >= 98 && !player.flags.stuned) {
-				player.flags.stuned = true;
-				player.capacityLoaderPercentage = 0;
-				player.stockedCapacity = PLAYER_CAPACITY.NONE;
-				setTimeout(() => {
-					player.flags.stuned = false;
-					console.log(player.flags.stuned = false);
-				}, 700);
-				return ;
+			if (player.capacityTimeTrigger)
+			{
+				const msDifference : number = this.mSecElapsed - 
+					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity as PLAYER_CAPACITY];
+				if (msDifference < 50 && msDifference > -50) {
+					if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING) {
+						if (player === this.playerOne)
+							this.playerTwo.flags.stuned = false;
+						else
+							this.playerOne.flags.stuned = false;
+					}
+					else if (player.stockedCapacity === PLAYER_CAPACITY.SMASH) {
+						player.flags.stuned = false;
+						this.ballState.flags.freezed = false;
+					}
+					player.stockedCapacity = PLAYER_CAPACITY.NONE;
+					player.capacityTimeTrigger = 0;
+					player.capacityLoaderPercentage = 0;
+					player.flags.capacityCharging = false;
+					player.flags.rainbowing = false;
+				}
+			}
+			else if (!player.capacityTimeTrigger && player.capacityLoaderPercentage >= 98
+				&& !player.flags.stuned && player.stockedCapacity && player.stockedCapacity !== PLAYER_CAPACITY.SMASH)
+			{
+				player.capacityLoaderPercentage = 100;
+				player.capacityTimeTrigger = this.mSecElapsed;
+				if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING) {
+					if (player === this.playerOne)
+						this.playerTwo.flags.stuned = true;
+					else
+						this.playerOne.flags.stuned = true;
+				}
 			}
 		}
 	}
