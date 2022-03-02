@@ -22,7 +22,7 @@ import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
 import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
-import JoinCreateModal from '../chat/JoinCreateModal';
+import JoinCreateModal from '../chat/modal/JoinCreateModal';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';

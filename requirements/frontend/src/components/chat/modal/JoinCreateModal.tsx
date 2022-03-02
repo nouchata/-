@@ -7,11 +7,11 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCallback, useEffect, useState } from 'react';
-import { RequestWrapper } from '../../utils/RequestWrapper';
+import { RequestWrapper } from '../../../utils/RequestWrapper';
+import { GetChannelDto } from '../types/get-channel.dto';
+import { ChannelDto } from '../types/user-channels.dto';
+import { ChatSocket } from '../utils/ChatSocket';
 import './JoinCreateModal.scss';
-import { GetChannelDto } from './types/get-channel.dto';
-import { ChannelDto } from './types/user-channels.dto';
-import { ChatSocket } from './utils/ChatSocket';
 
 const ModalJoin = ({
 	channel,
@@ -61,7 +61,7 @@ const ModalJoin = ({
 				{!loading && (
 					<FontAwesomeIcon
 						icon={faXmark}
-						className="close"
+						className="clos"
 						onClick={() => setModalJoin(undefined)}
 					/>
 				)}
