@@ -44,6 +44,7 @@ export class ChannelController {
 	}
 
 	@Get('public')
+	@UseGuards(GroupGuard)
 	async getPublicChannels(): Promise<GetChannelDto[]> {
 		return (await this.channelService.getPublicChannels()).map(
 			(channel) => {
@@ -58,8 +59,24 @@ export class ChannelController {
 	}
 
 	@Get('protected')
+	@UseGuards(GroupGuard)
 	async getProtectedChannels(): Promise<GetChannelDto[]> {
 		return (await this.channelService.getProtectedChannels()).map(
+			(channel) => {
+				const getChannelDto: GetChannelDto = {
+					id: channel.id,
+					name: channel.name,
+					channelType: channel.channelType,
+				};
+				return getChannelDto;
+			}
+		);
+	}
+
+	@Get('publicprotected')
+	@UseGuards(GroupGuard)
+	async getPublicAndProtectedChannels(): Promise<GetChannelDto[]> {
+		return (await this.channelService.getPublicAndProtectedChannels()).map(
 			(channel) => {
 				const getChannelDto: GetChannelDto = {
 					id: channel.id,
