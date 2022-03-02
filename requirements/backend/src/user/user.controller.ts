@@ -213,7 +213,7 @@ export class UserController {
 		);
 	}
 
-	@Delete('friends/delete')
+	@Delete('friends/delete/:name')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 200,
@@ -227,10 +227,10 @@ export class UserController {
 		status: 409,
 		description: "User is not your friend"
 	})
-	async deleteFriend(@Req() req: { user: User }, @Body() body: { username: string }) : Promise<User> {
+	async deleteFriend(@Req() req: { user: User }, @Param('name') username: string) : Promise<User> {
 		return this.userService.editFriendship(
 			req.user,
-			body.username,
+			username,
 			(user: User, friend: User, index: number) => {
 				if (index === -1) {
 					throw new ConflictException(`${friend.displayName} is not your friend.`);

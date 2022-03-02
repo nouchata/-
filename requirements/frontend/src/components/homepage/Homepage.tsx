@@ -7,6 +7,7 @@ import RankingTable from '../../components/homepage/RankingTable';
 
 import '../../styles/homepage.scss';
 import '../../styles/profile_overview.scss';
+import { Link } from 'react-router-dom';
 
 const Homepage = () : JSX.Element => {
 	const userCtx : { fetchStatus: FetchStatusData } = useContext(LoginContext);
@@ -14,7 +15,7 @@ const Homepage = () : JSX.Element => {
 	return (
 		<div>
 			<div className='homepage-header'>
-				<h1>Welcome back, <br /><span>{userCtx.fetchStatus.user?.displayName}</span> !</h1>
+				<h1><Link to="#">Welcome back</Link>, <br /><span>{userCtx.fetchStatus.user?.displayName}</span> !</h1>
 				<HProfileOverview {...userCtx.fetchStatus} />
 			</div>
 			<div className='homepage-widgets'>

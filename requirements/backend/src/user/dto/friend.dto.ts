@@ -29,7 +29,12 @@ export class FriendDTO {
     status: UserStatus;
 
     static fromEntity(entity: User) : FriendDTO {
-        const { id, displayName, picture, status } = entity;
+        let { id, displayName, picture, status } = entity;
+
+        if (!picture) {
+            picture = 'default.jpg';
+        }
+
         return ({ id, displayName, picture, status });
     }
 }
