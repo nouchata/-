@@ -2,3 +2,4 @@
 node_modules/
 *.jpg
 package-lock.json
+yarn.lock

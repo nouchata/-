@@ -47,6 +47,7 @@ button {
 }
 
 .App {
+	min-height: 100vh;
 	background-image: url('../assets/bg.png');
 	background-position: 99%;
 	animation-name: moving-bg;

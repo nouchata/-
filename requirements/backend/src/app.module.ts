@@ -13,6 +13,7 @@ import { ChatModule } from './chat/chat.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path/posix';
 import { TfaModule } from './tfa/tfa.module';
+import { GameModule } from './game/game.module';
 
 const dyn_import: DynamicModule[] = [];
 
@@ -59,6 +60,7 @@ if (process.env.RUN_ENV === 'PROD') {
 		AuthModule,
 		ChatModule,
 		TfaModule,
+		GameModule,
 		PassportModule.register({ session: true }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'public'),
