@@ -1,14 +1,15 @@
-//.friendslist-container {
-//    > :nth-child(even) {
-//        background-color: black;
-//    }
-//}
+@use "theme";
+
+.friendslist-container {
+    width: 100%;
+}
 
 .friend-row {
 
-    margin-top: 10px;
-    margin-left: 10px;
+    width: 100%;
+    padding: 10px;
     display: flex;
+    border-radius: 15px;
 
     > .friend-picture {
         > img {
@@ -25,13 +26,17 @@
 
     > .friend-remove-button {
         border: none;
-        justify-self: right;
+        margin-left: auto;
         font-size: 2.5em;
-        color: black;
+        color: theme.$darkest-color;
 
     }
 
     > .friend-remove-button:hover {
         color: red;
     }
+}
+
+.friend-row:hover {
+    background-color: theme.$primary-color;
 }

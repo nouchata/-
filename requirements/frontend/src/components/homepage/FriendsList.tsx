@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import LoadingContent from "../../LoadingContent";
 import { FetchFriendsList } from "../../types/FetchFriendsList";
 import { RequestWrapper } from "../../utils/RequestWrapper";
@@ -15,8 +15,14 @@ interface IState {
 }
 
 const FriendRow = (props: FetchFriendsList) => {
+
+    const [buttonVisible, setButtonVisible] = useState(false);
+
     return (
-        <tr key={props.id} className='friend-row'>
+        <div className='friend-row'
+            onMouseEnter={() => { setButtonVisible(true) }}
+            onMouseLeave={() => { setButtonVisible(false) }}
+        >
             <div className='friend-picture'>
                 <img
                     alt="friend's avatar"
@@ -27,10 +33,11 @@ const FriendRow = (props: FetchFriendsList) => {
                 <h3>{props.displayName}</h3>
                 <StatusDisplay status={props.status}/>
             </div>
-            <button className='friend-remove-button'>
-                ✘
-            </button>
-        </tr>
+            {
+                buttonVisible && 
+                <button className='friend-remove-button'>✘</button>
+            }
+        </div>
     );
 }
 
@@ -62,15 +69,13 @@ class FriendsList extends React.Component<IProps, IState> {
         }
 
         return (
-            <table>
-                <tbody className='friendslist-container'>
-                    {
-                        this.state.list?.map((friend) => {
-                            return (<FriendRow {...friend} />);
-                        })
-                    }
-                </tbody>
-            </table>
+            <div className='friendslist-container'>
+            {
+                this.state.list?.map((friend) => {
+                    return (<FriendRow {...friend} />);
+                })
+            }
+            </div>
         );
     }
 }
