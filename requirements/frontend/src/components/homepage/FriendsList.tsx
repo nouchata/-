@@ -4,6 +4,7 @@ import { FetchFriendsList } from "../../types/FetchFriendsList";
 import { RequestWrapper } from "../../utils/RequestWrapper";
 import UserAsset from '../../assets/homepage/user.png';
 import StatusDisplay from "../utils/StatusDisplay";
+import '../../styles/friends_list.scss';
 
 interface IProps {}
 
@@ -15,17 +16,20 @@ interface IState {
 
 const FriendRow = (props: FetchFriendsList) => {
     return (
-        <tr key={props.id} className='friends-row'>
-            <div>
+        <tr key={props.id} className='friend-row'>
+            <div className='friend-picture'>
                 <img
                     alt="friend's avatar"
                     src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.picture}`}
                 />
             </div>
-            <div>
+            <div className='friend-info'>
                 <h3>{props.displayName}</h3>
                 <StatusDisplay status={props.status}/>
             </div>
+            <button className='friend-remove-button'>
+                ✘
+            </button>
         </tr>
     );
 }
@@ -50,8 +54,6 @@ class FriendsList extends React.Component<IProps, IState> {
         this.setState({ list: data, isLoaded: true });
     }
 
-
-
     render() {
         if (!this.state.isLoaded) {
 			return <LoadingContent widget={true} image={UserAsset} />;
@@ -61,7 +63,7 @@ class FriendsList extends React.Component<IProps, IState> {
 
         return (
             <table>
-                <tbody>
+                <tbody className='friendslist-container'>
                     {
                         this.state.list?.map((friend) => {
                             return (<FriendRow {...friend} />);

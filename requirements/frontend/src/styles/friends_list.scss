@@ -1,0 +1,37 @@
+//.friendslist-container {
+//    > :nth-child(even) {
+//        background-color: black;
+//    }
+//}
+
+.friend-row {
+
+    margin-top: 10px;
+    margin-left: 10px;
+    display: flex;
+
+    > .friend-picture {
+        > img {
+            width: 50px;
+            height: 50px;
+
+            border-radius: 15px;
+        }
+    }
+
+    > .friend-info {
+        margin-left: 10px;
+    }
+
+    > .friend-remove-button {
+        border: none;
+        justify-self: right;
+        font-size: 2.5em;
+        color: black;
+
+    }
+
+    > .friend-remove-button:hover {
+        color: red;
+    }
+}
