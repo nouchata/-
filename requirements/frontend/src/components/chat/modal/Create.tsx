@@ -1,33 +1,65 @@
-import { useState } from 'react';
+import {
+	faCheck,
+	faCircleNotch,
+	faExclamationTriangle,
+} from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useCallback, useState } from 'react';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { CreateChannelDto } from '../types/create-channel.dto';
 import { ChannelDto, ChannelType } from '../types/user-channels.dto';
 import { ChatSocket } from '../utils/ChatSocket';
+
+type ButtonState = 'loading' | 'error' | 'success';
+
+const buttonSwitch = (state: ButtonState) => {
+	switch (state) {
+		case 'loading':
+			return <FontAwesomeIcon icon={faCircleNotch} spin />;
+		case 'error':
+			return <FontAwesomeIcon icon={faExclamationTriangle} />;
+		case 'success':
+			return <FontAwesomeIcon icon={faCheck} />;
+		default:
+			return <></>;
+	}
+};
 
 const Create = ({ socket }: { socket: ChatSocket }) => {
 	const [channelName, setChannelName] = useState('');
 	const [selectedChannelType, setSelectedChannelType] =
 		useState<ChannelType>('protected');
 	const [channelPassword, setChannelPassword] = useState('');
+	const [error, setError] = useState<string>();
+	const [buttonState, setButtonState] = useState<ButtonState>();
 
-	const createChannel = async ({
-		socket,
-		channel,
-	}: {
-		socket: ChatSocket;
-		channel: CreateChannelDto;
-	}) => {
-		const newChannel = await RequestWrapper.post<ChannelDto>(
-			'/channel/join',
-			channel
-		);
-		if (!newChannel) return;
-		socket.addChannel(newChannel);
-	};
+	const createChannel = useCallback(
+		async ({ channel }: { channel: CreateChannelDto }) => {
+			setButtonState('loading');
+			const newChannel = await RequestWrapper.post<ChannelDto>(
+				'/channel/create',
+				channel,
+				(error) => {
+					setError(error.response.data.message || 'Unknown error');
+					setButtonState('error');
+				}
+			);
+			if (!newChannel) return;
+			socket.addChannel(newChannel);
+			setButtonState('success');
+		},
+		[setError, socket]
+	);
 
 	return (
-		<div>
+		<div className="create">
 			<div className="form">
+				<div
+				className="error"
+				style={{
+					opacity: error ? 1 : 0,
+				}}
+				>{error}</div>
 				<div className="form-element">
 					<p>Channel name</p>
 					<input
@@ -62,20 +94,24 @@ const Create = ({ socket }: { socket: ChatSocket }) => {
 					</div>
 				)}
 				<div className="form-element">
-					<button
-						onClick={() =>
-							createChannel({
-								socket,
+					<div
+						className="button"
+						onClick={async () => {
+							setError(undefined);
+							await createChannel({
 								channel: {
 									name: channelName,
 									channelType: selectedChannelType,
-									password: channelPassword,
+									password: selectedChannelType === 'protected' ? channelPassword : undefined,
 								},
-							})
-						}
+							});
+							setChannelName('');
+							setChannelPassword('');
+							setTimeout(() => setButtonState(undefined), 3000);
+						}}
 					>
-						Create
-					</button>
+						{buttonState ? buttonSwitch(buttonState) : <>Create</>}
+					</div>
 				</div>
 			</div>
 		</div>

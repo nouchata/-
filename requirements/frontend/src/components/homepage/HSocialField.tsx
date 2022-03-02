@@ -232,8 +232,9 @@ const HSocialField = () => {
 												}
 											/>
 										),
-										height: '80%',
-										width: '80%',
+										height: '50%',
+										width: '85%',
+										maxWidth: '500px',
 								  }
 						);
 					}}
