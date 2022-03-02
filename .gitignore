@@ -3,3 +3,5 @@ node_modules/
 *.jpg
 package-lock.json
 yarn.lock
+requirements/backend/yarn.lock
+requirements/frontend/yarn.lock
