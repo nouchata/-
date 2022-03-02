@@ -60,7 +60,7 @@ class ScenesManager {
 	}
 
 	private updateScene() {
-		this.newScene = new GameComponents(this.appRef);
+		this.newScene = new GameScene(this.appRef);
 		this.transitionSceneAnimation.start(this.deltaTotal);
 		// this.appRef.stage.removeChildren();
 		// if (this.currentScene instanceof LoaderScene)

@@ -8,7 +8,7 @@ import { PlayerRacket } from "./racket/PlayerRacket";
 import { RacketUnit } from "./racket/Racket";
 import { SpectatorRacket } from "./racket/SpectatorRacket";
 
-class GameComponents extends Container implements IScene {
+class GameComponents extends Container implements IContainerElement {
 	private appRef : TranscendanceApp;
 	private deltaTotal : number = 0;
 	private shakeRightAnimation : Tween<{x: number}>;
@@ -60,7 +60,7 @@ class GameComponents extends Container implements IScene {
 		tweenUpdate(this.deltaTotal);
 	}
 
-	destroyScene() {
+	destroyContainerElem() {
 		for (let item of this.children)
 			(item as IContainerElement | IParticleContainerElement).destroyContainerElem();
 		this.destroy();
