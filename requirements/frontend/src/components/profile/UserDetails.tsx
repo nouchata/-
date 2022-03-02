@@ -3,6 +3,7 @@ import HistoryTable from "./HistoryTable";
 import ProgressBar from "../utils/ProgressBar";
 import editAsset from "../../assets/profile/edit-solid.svg";
 import { Link } from "react-router-dom";
+import UserStatus from "../utils/StatusDisplay";
 
 interface IProps {
     data: FetchUserData,
@@ -79,7 +80,7 @@ const UserDetails = (props: IProps) => {
                 </h1>
                 
                 <p>created on {formatDate(props.data.general.creation)}</p>
-                <p style={statusStyle}>◉ {props.data.general.status}</p>
+                <UserStatus status={props.data.general.status} />
             </div>
             
             <h2 className='separator'>Ranking</h2>
