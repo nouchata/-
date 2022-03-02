@@ -61,7 +61,7 @@ const ModalJoin = ({
 				{!loading && (
 					<FontAwesomeIcon
 						icon={faXmark}
-						className="clos"
+						className="close"
 						onClick={() => setModalJoin(undefined)}
 					/>
 				)}
