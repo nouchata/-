@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { createContext } from 'react';
 
 type CallBacks = {
@@ -103,11 +102,12 @@ export class NotificationHandler {
 	*/
 	public addNotification(notificationOption: NotificationNHOptions): string {
 		const notification = new NotificationNH(notificationOption);
-		// generate unique uuid for notification (check if already exists)
-		let uuid = crypto.randomBytes(16).toString('hex');
+		// generate unique uuid 
+		let uuid = randomString(10);
 		// eslint-disable-next-line
 		while (this._notifications.find(notification => notification.uuid === uuid)) {
-			uuid = crypto.randomBytes(16).toString('hex');
+			uuid = randomString(10);
+			
 		}
 
 		notification.uuid = uuid;
@@ -197,3 +197,10 @@ export class NotificationHandler {
 const NotificationContext = createContext<NotificationHandler | undefined>(undefined);
 
 export default NotificationContext;
+function randomString(size: number) {
+	const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+	let result = '';
+	for (let i = size; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+	return result;
+}
+
