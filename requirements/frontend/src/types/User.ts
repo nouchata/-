@@ -19,4 +19,5 @@ export interface User extends IObjectKeys {
 	friends: User[];
 	history: string[];
 	twofa: boolean;
+	status: string;
 }

@@ -4,7 +4,7 @@ import {
 	faExclamationTriangle,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { CreateChannelDto } from '../types/create-channel.dto';
 import { ChannelDto, ChannelType } from '../types/user-channels.dto';
@@ -32,6 +32,7 @@ const Create = ({ socket }: { socket: ChatSocket }) => {
 	const [channelPassword, setChannelPassword] = useState('');
 	const [error, setError] = useState<string>();
 	const [buttonState, setButtonState] = useState<ButtonState>();
+	const [timeoutToClean, setTimeoutToClean] = useState<NodeJS.Timeout>();
 
 	const createChannel = useCallback(
 		async ({ channel }: { channel: CreateChannelDto }) => {
@@ -51,15 +52,23 @@ const Create = ({ socket }: { socket: ChatSocket }) => {
 		[setError, socket]
 	);
 
+	useEffect(() => {
+		return () => {
+			if (timeoutToClean) clearTimeout(timeoutToClean);
+		};
+	}, []);
+
 	return (
 		<div className="create">
 			<div className="form">
 				<div
-				className="error"
-				style={{
-					opacity: error ? 1 : 0,
-				}}
-				>{error}</div>
+					className="error"
+					style={{
+						opacity: error ? 1 : 0,
+					}}
+				>
+					{error}
+				</div>
 				<div className="form-element">
 					<p>Channel name</p>
 					<input
@@ -102,12 +111,20 @@ const Create = ({ socket }: { socket: ChatSocket }) => {
 								channel: {
 									name: channelName,
 									channelType: selectedChannelType,
-									password: selectedChannelType === 'protected' ? channelPassword : undefined,
+									password:
+										selectedChannelType === 'protected'
+											? channelPassword
+											: undefined,
 								},
 							});
 							setChannelName('');
 							setChannelPassword('');
-							setTimeout(() => setButtonState(undefined), 3000);
+							setTimeoutToClean(
+								setTimeout(
+									() => setButtonState(undefined),
+									1000
+								)
+							);
 						}}
 					>
 						{buttonState ? buttonSwitch(buttonState) : <>Create</>}

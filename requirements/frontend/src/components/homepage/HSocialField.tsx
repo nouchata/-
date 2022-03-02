@@ -5,7 +5,6 @@ import ModalContext from '../../contexts/ModalContext';
 
 import UserAsset from '../../assets/homepage/user.png';
 import CloseAsset from '../../assets/chat/close.png';
-import MaxAsset from '../../assets/chat/max.png';
 import MinusAsset from '../../assets/chat/minus.png';
 import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
@@ -23,6 +22,7 @@ import MessageArea from '../chat/MessageArea';
 import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
 import JoinCreateModal from '../chat/modal/JoinCreateModal';
+import ChatOption from '../chat/Options/ChatOption';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
@@ -170,10 +170,7 @@ const HSocialField = () => {
 				<div className={chatToggleCSS(chatStatus)}>
 					<div className="hsf-chat-controls">
 						<h2>{chatSocket?.channels[selectChannelIndex].name}</h2>
-						<button title="Maximize in another window">
-							<img src={MaxAsset} alt="maximize" />
-						</button>
-
+						<ChatOption channel={chatSocket.channels[selectChannelIndex]} />
 						{chatStatus.state === 'OPENED' ? (
 							<button
 								title="Minimize"
