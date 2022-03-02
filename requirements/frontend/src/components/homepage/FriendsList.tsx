@@ -3,6 +3,7 @@ import LoadingContent from "../../LoadingContent";
 import { FetchFriendsList } from "../../types/FetchFriendsList";
 import { RequestWrapper } from "../../utils/RequestWrapper";
 import UserAsset from '../../assets/homepage/user.png';
+import StatusDisplay from "../utils/StatusDisplay";
 
 interface IProps {}
 
@@ -10,6 +11,23 @@ interface IState {
     list: FetchFriendsList[] | undefined,
     isLoaded: boolean,
     error: boolean
+}
+
+const FriendRow = (props: FetchFriendsList) => {
+    return (
+        <tr key={props.id} className='friends-row'>
+            <div>
+                <img
+                    alt="friend's avatar"
+                    src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.picture}`}
+                />
+            </div>
+            <div>
+                <h3>{props.displayName}</h3>
+                <StatusDisplay status={props.status}/>
+            </div>
+        </tr>
+    );
 }
 
 class FriendsList extends React.Component<IProps, IState> {
@@ -32,20 +50,9 @@ class FriendsList extends React.Component<IProps, IState> {
         this.setState({ list: data, isLoaded: true });
     }
 
-    renderList() {
-        return this.state.list?.map((friend) => {
-            return (
-                <tr>
-                    <td>{friend.displayName}</td>
-                    <td><img src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${friend.picture}`} alt=",friend's avatar"></img></td>
-                    <td>{friend.status}</td>
-                </tr>
-            );
-        });
-    }
+
 
     render() {
-
         if (!this.state.isLoaded) {
 			return <LoadingContent widget={true} image={UserAsset} />;
         } else if (this.state.error) {
@@ -55,7 +62,11 @@ class FriendsList extends React.Component<IProps, IState> {
         return (
             <table>
                 <tbody>
-                    {this.renderList()}
+                    {
+                        this.state.list?.map((friend) => {
+                            return (<FriendRow {...friend} />);
+                        })
+                    }
                 </tbody>
             </table>
         );
