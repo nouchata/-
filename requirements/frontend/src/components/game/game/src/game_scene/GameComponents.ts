@@ -43,15 +43,15 @@ class GameComponents extends Container implements IScene {
 			})
 			.repeat(1).yoyo(true);
 
-		window.addEventListener("resizeGame", this.resize.bind(this));
+		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
 	}
 
-	resize() {
+	resize : Function = (function(this: GameComponents) {
 		this.x = this.appRef.screen.width / 2;
 		this.y = this.appRef.screen.height / 2;
 		this.pivot.set(this.x, this.y);
-	}
+	}).bind(this);
 
 	update(delta: number) {
 		this.deltaTotal += delta;

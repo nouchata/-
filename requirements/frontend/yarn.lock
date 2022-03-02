@@ -1474,6 +1474,11 @@
   "resolved" "https://registry.npmjs.org/@pixi/filter-color-matrix/-/filter-color-matrix-6.2.2.tgz"
   "version" "6.2.2"
 
+"@pixi/filter-crt@^4.1.6":
+  "integrity" "sha512-hV9wQh63Huud/fSwFwZ3MvKXDso4+gqe10/gOGwnA9bRtm5jMC2podjnZJiipEBs8nGtrPoCpUlkoaeWLVm+uA=="
+  "resolved" "https://registry.npmjs.org/@pixi/filter-crt/-/filter-crt-4.1.6.tgz"
+  "version" "4.1.6"
+
 "@pixi/filter-displacement@6.2.2":
   "integrity" "sha512-cd9um4kNNIeqKA/wVZw+iha+XVbBOYBC8En5hk3ZXAIXxCHxOCz3KS+aOVejXH5EB/gMDPvNNwygn0SCpSGdKA=="
   "resolved" "https://registry.npmjs.org/@pixi/filter-displacement/-/filter-displacement-6.2.2.tgz"
