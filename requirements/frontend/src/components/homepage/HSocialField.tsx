@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useCallback, useMemo } from 'react';
-import LoadingContent from '../../LoadingContent';
+import LoadingContent from '../../utils/LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 
@@ -232,8 +232,9 @@ const HSocialField = () => {
 												}
 											/>
 										),
-										height: '80%',
-										width: '80%',
+										height: '50%',
+										width: '85%',
+										maxWidth: '500px',
 								  }
 						);
 					}}

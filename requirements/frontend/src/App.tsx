@@ -1,19 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BrowserRouter as Router, Route, Link, Switch, Redirect } from 'react-router-dom';
 import { FetchStatusData, LoginState } from './types/FetchStatusData';
 import LoginContext from './contexts/LoginContext';
 import ModalContext from './contexts/ModalContext';
-import Homepage from './Homepage';
 import HSocialField from './components/homepage/HSocialField';
-import Login from './Login';
-import LoadingContent from './LoadingContent';
+import LoadingContent from './utils/LoadingContent';
 import { RequestWrapper } from './utils/RequestWrapper'; // eslint-disable-line
 
-import Profile from './components/profile/Profile';
 import Error from './components/utils/Error';
 import GenericModal from './components/utils/GenericModal';
 import { GenericModalProps } from './components/utils/GenericModal';
-import { User } from './types/User';
 
 import ChatAsset from './assets/homepage/chat.png';
 import JoyAsset from './assets/homepage/joystick.png';
@@ -23,11 +18,16 @@ import './styles/main_layout.scss';
 import './styles/profile_overview.scss';
 import NotificationContext, { NotificationHandler } from './contexts/NotificationContext';
 import Notifications from './components/notification/Notifications';
+import DisplayContext from './contexts/HideDisplayContext';
+import { fetchStatusCompare } from './utils/fetchStatusCompare';
+import LinkTree from './components/LinkTree';
+import { HideDisplayData } from './types/HideDisplayData';
 
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
 	const [modalProps, setModalProps] = useState<GenericModalProps>({ show: false, content: <div /> });
 	const [notificationHandler, setNotificationHandler] = useState<NotificationHandler>();
+	const [hideDisplay, setHideDisplay] = useState<HideDisplayData>({});
 
 	useEffect(() => {
 		if (!notificationHandler)
@@ -62,83 +62,45 @@ const App = (): JSX.Element => {
 	}, [fetchStatus]);
 
 	return (
-		<LoginContext.Provider value={fetchStatusValue}>
-			<NotificationContext.Provider value={notificationHandler}>
-				<ModalContext.Provider value={{ modalProps, setModalProps }}>
-					{fetchStatus?.loggedIn === LoginState.LOGGED && <>
-						<GenericModal {...modalProps} />
-						<Notifications />
-					</>}
-					{fetchStatus && <div className="App">
-						{fetchStatus.loggedIn === LoginState.LOGGED && /* PLAY AND CHAT BUTTONS */
-							<div className='material-like-fab'>
-								<button><img src={ChatAsset} alt='Chats' /></button>
-								<button><img src={JoyAsset} alt='Play' /></button>
-							</div>
+		<DisplayContext.Provider value={[hideDisplay, setHideDisplay]}>
+			<LoginContext.Provider value={fetchStatusValue}>
+				<NotificationContext.Provider value={notificationHandler}>
+					<ModalContext.Provider value={{ modalProps, setModalProps }}>
+						{fetchStatus?.loggedIn === LoginState.LOGGED &&
+							<>
+								<GenericModal {...modalProps} />
+								<Notifications />
+							</>
 						}
-						<div className='main-field'>
-							<div className='main-content'>
-								{fetchStatus.fetched ?
-									<Router>
-										{fetchStatus.loggedIn === LoginState.LOGGED &&
-										<Switch>
-												<Route path="/profile/:id"><Profile /></Route>
-												<Route path="/homepage"><Homepage /></Route>
-										</Switch>
-										}
-										<Switch>
-											<Route path="/login"><Login /></Route>
-											<Route path="/">
-												{fetchStatus.loggedIn === LoginState.LOGGED ?
-													<Redirect to='/homepage' />
-													:
-													<>
-														<h1> You are not logged in ! </h1>
-														<div>
-															<Link to="/login">Login</Link>
-														</div>
-													</>
-												}
-											</Route>
-										</Switch>
-									</Router>
-									: <Error errorCode='503' message='Server Unreachable' />
-								}
+						{fetchStatus && <div className="App">
+							{fetchStatus.loggedIn === LoginState.LOGGED &&
+							!hideDisplay.hideButtons && /* PLAY AND CHAT BUTTONS */
+								<div className='material-like-fab'>
+									<button><img src={ChatAsset} alt='Chats' /></button>
+									<button><img src={JoyAsset} alt='Play' /></button>
+								</div>
+							}
+							<div className='main-field'>
+								<div className='main-content' style={hideDisplay.hideMainContainerStyle ? {padding: 0} : {}}>
+									{fetchStatus.fetched ?
+										<LinkTree />
+										:
+										<Error errorCode='503' message='Server Unreachable' />
+									}
+								</div>
+								{fetchStatus.loggedIn === LoginState.LOGGED &&
+								!hideDisplay.hideSidebar &&
+									<HSocialField />
+								} {/* CHAT AND FRIEND THING */}
 							</div>
-							{fetchStatus.loggedIn === LoginState.LOGGED && <HSocialField />} {/* CHAT AND FRIEND THING */}
 						</div>
-					</div>
-					}
-					{!fetchStatus && <LoadingContent />}
-				</ModalContext.Provider>
-			</NotificationContext.Provider>
-		</LoginContext.Provider>
+						}
+						{!fetchStatus && <LoadingContent />}
+					</ModalContext.Provider>
+				</NotificationContext.Provider>
+			</LoginContext.Provider>
+		</DisplayContext.Provider>
 	);
-}
-
-function fetchStatusCompare(first: FetchStatusData, second: FetchStatusData): boolean {
-	if (first.loggedIn !== second.loggedIn ||
-		first.fetched !== second.fetched ||
-		typeof first.user !== typeof second.user)
-		return false;
-	if (typeof first.user !== 'undefined') {
-		let keys = Object.keys(first.user as User);
-		for (let key of keys) {
-			if (first.user && second.user && first.user[key] !== second.user[key]) {
-				if (typeof first.user[key] !== "object")
-					return false;
-				let fkeys = Object.keys(first.user[key]);
-				let skeys = Object.keys(second.user[key]);
-				if (fkeys.length !== skeys.length)
-					return false;
-				for (let index in first.user[key]) {
-					if (first.user[key][index] !== second.user[key][index])
-						return false;
-				}
-			}
-		}
-	}
-	return true;
 }
 
 export default App;

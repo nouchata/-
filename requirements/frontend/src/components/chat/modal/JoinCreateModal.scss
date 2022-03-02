@@ -203,3 +203,68 @@
         }
     }
 }
+
+.create {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .form {
+        position: relative;
+        top: 50%;
+        width: 80%;
+        max-width: 500px;
+        transform: translateY(-50%);
+        .error {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            color: #ff0000;
+        }
+        .form-element {
+            position: relative;
+            width: 100%;
+            p {
+                position: relative;
+                margin-bottom: 5px;
+                margin-top: 5px;
+            }
+            input {
+                position: relative;
+                width: 100%;
+                height: 30px;
+                border-radius: 3px;
+                border: 1px solid #757575;
+                padding-left: 10px;
+                font-size: 15px;
+                color: #757575;
+                &:focus {
+                    outline: none;
+                }
+            }
+            .button {
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                margin-top: 10px;
+                width: 50%;
+                height: 30px;
+                line-height: 30px;
+                border-radius: 5px;
+                background-color: #004edf;
+                color: #fff;
+                font-size: 15px;
+                font-weight: bold;
+                cursor: pointer;
+                text-align: center;
+                &:hover {
+                    background-color: #0033c9;
+                }
+            }
+        }
+    }
+}
