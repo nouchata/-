@@ -153,7 +153,7 @@ class Ball extends Container implements IContainerElement {
 		} else if (this.localBallState.pos.x > 100) {
 			this.localBallState.pos.x = 100 - (this.localBallState.pos.x - 100);
 			this.localBallState.directionVector.x *= -1;
-			// (this.parentContainer as GameComponents).shakeState = "right";
+			(this.parentContainer as GameComponents).shakeState = "right";
 		}
 	}
 
@@ -195,6 +195,10 @@ class Ball extends Container implements IContainerElement {
 		this.localBallState.pos.x += correctionDirectionVector.x * (ballSpeed * 2 / this.appRef.ticker.FPS) * delta;
 		this.localBallState.pos.y += correctionDirectionVector.y * (ballSpeed * 2 / this.appRef.ticker.FPS) * delta;
 
+		if (this.localBallState.pos.x < -10 || this.localBallState.pos.x > 110) {
+			this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
+			this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+		}
 		if ((this.localBallState.directionVector.x > 0 && this.localBallState.pos.x >= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) ||
 		(this.localBallState.directionVector.x < 0 && this.localBallState.pos.x <= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x)) {
 			this.sweetCorrectionType = false;
@@ -350,6 +354,14 @@ class Ball extends Container implements IContainerElement {
 		))
 			return ;
 		this.falseBallFlags = undefined;
+	}
+
+	public resetData() {
+		this.scaleFactor = 1;
+		this.falseBallFlags = undefined;
+		this.localBallState = cloneDeep((this.appRef.gciMaster.currentResponseState as ResponseState).ballState);
+		this.serverLastBallFlags = cloneDeep((this.appRef.gciMaster.currentResponseState as ResponseState).ballState.flags);
+		this.draw();
 	}
 
 	public destroyContainerElem() {

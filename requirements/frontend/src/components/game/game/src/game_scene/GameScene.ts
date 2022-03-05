@@ -1,30 +1,38 @@
-import { BitmapFont, Container } from "pixi.js";
+import { Container } from "pixi.js";
 import { IContainerElement, IParticleContainerElement, IScene } from "../../types/IScene";
-import { ResponseState } from "../../types/ResponseState";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { GameComponents } from "./GameComponents";
-import PlayerDataGUI from "./gui/PlayerDataGUI";
-import { RacketUnit } from "./racket/Racket";
+import PlayerScoreGUI from "./gui/PlayerScoreGUI";
 
 class GameScene extends Container implements IScene {
 	private appRef : TranscendanceApp;
 	private gameComps : GameComponents;
-	private playersGUI : Array<PlayerDataGUI> = [];
+	private scoreGUI : Array<PlayerScoreGUI> = [];
+	public newScore : boolean = false;
 
 	constructor(appRef : TranscendanceApp) {
 		super();
 		this.appRef = appRef;
 
 		this.gameComps = new GameComponents(this.appRef);
-		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
-			this.playersGUI = [
-				new PlayerDataGUI(this.appRef, this.gameComps, this.gameComps.rightRacket),
-				new PlayerDataGUI(this.appRef, this.gameComps, this.gameComps.leftRacket)
-			];
-			this.addChild(this.playersGUI[0]);
-			this.addChild(this.playersGUI[1]);
-		}
+		this.scoreGUI = [
+			new PlayerScoreGUI(this.appRef, this, this.gameComps.leftRacket),
+			new PlayerScoreGUI(this.appRef, this, this.gameComps.rightRacket)
+		];
+		this.addChild(this.scoreGUI[0]);
+		this.addChild(this.scoreGUI[1]);
 		this.addChild(this.gameComps);
+
+		this.appRef.ticker.add(this.update, this);
+	}
+
+	update(delta: number) {
+		if (this.newScore) {
+			this.gameComps.ball.resetData();
+			this.gameComps.leftRacket.resetData();
+			this.gameComps.rightRacket.resetData();
+			this.newScore = false;
+		}
 	}
 
 	destroyScene() {

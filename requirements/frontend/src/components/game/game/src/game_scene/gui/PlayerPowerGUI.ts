@@ -2,14 +2,12 @@ import { Container, Graphics } from "pixi.js";
 import { IContainerElement } from "../../../types/IScene";
 import { PlayerState, PLAYER_CAPACITY } from "../../../types/PlayerState";
 import { TranscendanceApp } from "../../TranscendanceApp";
-import { GameComponents } from "../GameComponents";
 import { Racket, RacketUnit } from "../racket/Racket";
 
 const playerCapacityColor: Array<number> = [0xFFFFFF, 0xFF0000, 0x00FF00, 0x0000FF];
 
-class PlayerDataGUI extends Container implements IContainerElement {
+class PlayerPowerGUI extends Container implements IContainerElement {
     private appRef : TranscendanceApp;
-    private gameComps : GameComponents;
     private associatedRacket : Racket;
 
     private powerLoaderShape : Graphics = new Graphics();
@@ -18,10 +16,9 @@ class PlayerDataGUI extends Container implements IContainerElement {
     private lastPower : PLAYER_CAPACITY = PLAYER_CAPACITY.NONE;
     private squareLength : number = 50;
 
-    constructor(appRef : TranscendanceApp, gameComps : GameComponents, associatedRacket : Racket) {
+    constructor(appRef : TranscendanceApp, associatedRacket : Racket) {
         super();
         this.appRef = appRef;
-        this.gameComps = gameComps;
         this.associatedRacket = associatedRacket;
 
         this.lastPowerLoaderState = (this.associatedRacket.selectCorrectUnit() as PlayerState).capacityUnlockerPercentage;
@@ -85,7 +82,7 @@ class PlayerDataGUI extends Container implements IContainerElement {
 
     }
 
-	resize : Function = (function(this: PlayerDataGUI) {
+	resize : Function = (function(this: PlayerPowerGUI) {
         this.squareLength = this.appRef.screen.width / 30;
         this.powerLoaderDraw(3);
         if (this.associatedRacket.unit === RacketUnit.LEFT) {
@@ -102,8 +99,9 @@ class PlayerDataGUI extends Container implements IContainerElement {
 
     public destroyContainerElem() {
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+        this.powerLoaderShape.destroy();
 		this.destroy();
 	}
 }
 
-export default PlayerDataGUI;
+export default PlayerPowerGUI;

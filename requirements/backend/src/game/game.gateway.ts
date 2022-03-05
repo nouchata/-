@@ -38,27 +38,27 @@ export class GameGateway {
 					await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 				}
 			})();
-			(async() => {
-				for (let i = 0 ; i < 7 ; i++) {
-					await new Promise((resolve) => setTimeout(() => {
+			// (async() => {
+			// 	for (let i = 0 ; i < 7 ; i++) {
+			// 		await new Promise((resolve) => setTimeout(() => {
 
-						this.gameInstances[123456]?.injectGameAction({ 
-							id: ++id,
-							keyPressed: GA_KEY.SPACE,
-							data: { chargingOn: true }
-						}, 2);
-						resolve(1);
-					}, 1000));
-					await new Promise((resolve) => setTimeout(() => {
-						this.gameInstances[123456]?.injectGameAction({ 
-							id: ++id,
-							keyPressed: GA_KEY.SPACE,
-							data: { chargingOn: false }
-						}, 2);
-						resolve(1);
-					}, 2000));
-				}
-			})();
+			// 			this.gameInstances[123456]?.injectGameAction({ 
+			// 				id: ++id,
+			// 				keyPressed: GA_KEY.SPACE,
+			// 				data: { chargingOn: true }
+			// 			}, 2);
+			// 			resolve(1);
+			// 		}, 1000));
+			// 		await new Promise((resolve) => setTimeout(() => {
+			// 			this.gameInstances[123456]?.injectGameAction({ 
+			// 				id: ++id,
+			// 				keyPressed: GA_KEY.SPACE,
+			// 				data: { chargingOn: false }
+			// 			}, 2);
+			// 			resolve(1);
+			// 		}, 2000));
+			// 	}
+			// })();
 		}, 1000);
 
 	}

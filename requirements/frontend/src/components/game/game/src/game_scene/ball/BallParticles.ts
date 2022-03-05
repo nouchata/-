@@ -1,19 +1,18 @@
-import { Container, Loader, ParticleContainer, Resource, Texture, TextureSource } from "pixi.js";
-import { Emitter, OldEmitterConfig } from "pixi-particles";
+import { ParticleContainer, Texture } from "pixi.js";
+import { Emitter } from "pixi-particles";
 import { IParticleContainerElement } from "../../../types/IScene";
 import { TranscendanceApp } from "../../TranscendanceApp";
 import { ballEmitterData, ballEmitterDataMinimized } from "./_emittersOptions";
-import { Ball } from "./Ball";
+import { GameComponents } from "../GameComponents";
 
 class BallParticles extends ParticleContainer implements IParticleContainerElement {
 	private appRef : TranscendanceApp;
-	private parentContainer : Container;
+	private parentContainer : GameComponents;
 	private currentEmitter : Emitter;
 	private emitters : Array<Emitter> = [];
 	private deltaTotal : number = 0;
-	private ballContainer : Ball | undefined;
 
-	constructor(appRef : TranscendanceApp, parentContainer : Container) {
+	constructor(appRef : TranscendanceApp, parentContainer : GameComponents) {
 		super();
 		this.appRef = appRef;
 		this.parentContainer = parentContainer;
@@ -21,8 +20,6 @@ class BallParticles extends ParticleContainer implements IParticleContainerEleme
 		this.emitters[0] = new Emitter(this, Texture.from("pixel25"), ballEmitterData);
 		this.emitters[1] = new Emitter(this, Texture.from("pixel25"), ballEmitterDataMinimized);
 		this.currentEmitter = this.appRef.screen.height < 470 ? this.emitters[1] : this.emitters[0];
-
-		this.ballContainer = (this.parentContainer.children.filter((elem) => elem instanceof Ball))[0] as Ball;
 
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
@@ -37,9 +34,9 @@ class BallParticles extends ParticleContainer implements IParticleContainerEleme
 
 	public update(delta: number) {
 		this.deltaTotal += delta;
-			this.currentEmitter.emit = !this.ballContainer?.localBallState.flags.freezed;
-		if (this.ballContainer)
-			this.currentEmitter.updateSpawnPos(this.ballContainer.x, this.ballContainer.y);
+			this.currentEmitter.emit = !this.parentContainer.ball?.localBallState.flags.freezed;
+		if (this.parentContainer.ball)
+			this.currentEmitter.updateSpawnPos(this.parentContainer.ball.x, this.parentContainer.ball.y);
 		this.currentEmitter.update(delta / this.appRef.ticker.FPS);
 	}
 

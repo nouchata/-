@@ -31,7 +31,7 @@ const Game = () : JSX.Element => {
 	return (
 		<div className="game-container">
 			<div className="game-display"><canvas id="game-canvas" /></div>
-			<div className="game-extras"></div>
+			{/* <div className="game-extras"></div> */}
 		</div>
 	);
 };

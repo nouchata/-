@@ -1,9 +1,11 @@
 import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import { Container, Graphics } from "pixi.js";
 import { IContainerElement, IParticleContainerElement, IScene } from "../../types/IScene";
+import { ResponseState } from "../../types/ResponseState";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { Ball } from "./ball/Ball";
 import { BallParticles } from "./ball/BallParticles";
+import PlayerPowerGUI from "./gui/PlayerPowerGUI";
 import { PlayerRacket } from "./racket/PlayerRacket";
 import { RacketUnit } from "./racket/Racket";
 import { SpectatorRacket } from "./racket/SpectatorRacket";
@@ -16,6 +18,7 @@ class GameComponents extends Container implements IContainerElement {
 	public rightRacket : PlayerRacket | SpectatorRacket;
 	public ball : Ball;
 	private fieldSeparator : Graphics = new Graphics();
+	private playersGUI : Array<PlayerPowerGUI> = [];
 	shakeState : "left" | "right" | undefined = undefined;
 
 	constructor(appRef : TranscendanceApp) {
@@ -23,14 +26,23 @@ class GameComponents extends Container implements IContainerElement {
 		this.appRef = appRef;
 	
 		this.leftRacket = this.appRef.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.appRef, RacketUnit.LEFT) : new SpectatorRacket(this.appRef, RacketUnit.LEFT);
-		this.addChild(this.leftRacket);
 		this.rightRacket = this.appRef.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.appRef, RacketUnit.RIGHT) : new SpectatorRacket(this.appRef, RacketUnit.RIGHT);
-		this.addChild(this.rightRacket);
 		this.ball = new Ball(this.appRef, this);
-		this.addChild(this.ball);
 		const ballParticles : BallParticles = new BallParticles(this.appRef, this);
-		this.addChild(ballParticles);
+		
+		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
+			this.playersGUI = [
+				new PlayerPowerGUI(this.appRef, this.rightRacket),
+				new PlayerPowerGUI(this.appRef, this.leftRacket)
+			];
+			this.addChild(this.playersGUI[0]);
+			this.addChild(this.playersGUI[1]);
+		}
 		this.addChild(this.fieldSeparator);
+		this.addChild(this.leftRacket);
+		this.addChild(this.rightRacket);
+		this.addChild(this.ball);
+		this.addChild(ballParticles);
 		this.fieldSeparator.alpha = 0.4;
 
 		this.resize();

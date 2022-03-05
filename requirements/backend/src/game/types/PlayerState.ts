@@ -17,6 +17,7 @@ type PlayerState = {
 	/* x is actually worthless in server-side though */
 	pos: { x: number | undefined, y: number };
 	flags: RacketFlags;
+	score: number;
 	/* actual percentage of the capacity loader */
 	capacityLoaderPercentage: number;
 	/* capacity related */

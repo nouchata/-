@@ -36,7 +36,7 @@ const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
 						<progress value='50' max='100'></progress>
 					</div>
 					<div className='profile-overview-progress'>
-						<p>VS ratio:</p>
+						<p>Elo:</p>
 						<progress
 							value={
 								fetchStatus.user
@@ -52,7 +52,7 @@ const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
 					<button title='Edit Profile' onClick={() => setModalProps(profileOptsModal)}>
 						<img src={GearAsset} alt='btn' />
 					</button>
-					<button title='HK'><img src={StarAsset} alt='btn' /></button>
+					{/* <button title='HK'><img src={StarAsset} alt='btn' /></button> */}
 				</div>
 			</div> 
 		</div>

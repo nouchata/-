@@ -17,8 +17,9 @@ const samplePlayer : PlayerState = {
 		stuned: false,
 		rainbowing: false
 	},
+	score: 0,
 	capacityLoaderPercentage: 0,
-	capacityUnlockerPercentage: 0,
+	capacityUnlockerPercentage: 99,
 	stockedCapacity: PLAYER_CAPACITY.NONE,
 	capacityTimeTrigger: 0
 };
@@ -59,19 +60,16 @@ class GameInstance {
 		racketSize: 6,
 		ballSpeedPPS: 50
 	};
+	private scoreDelay : number = 0;
 
 	// ball related
 	private ballState : BallState = cloneDeep(sampleBall);
-	private lastMsPlayerBallCollision : number = 0;
-	private smashDelay : number = 0;
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
 	private playerOneLastActionProcessed : number = -1;
-	private playerOnePowerTriggerTime : number = 0;
 	private playerTwo : PlayerState = cloneDeep(samplePlayer);
 	private playerTwoLastActionProcessed : number = -1;
-	private playerTwoPowerTriggerTime : number = 0;
 
 	private responseState : ResponseState;
 
@@ -128,6 +126,7 @@ class GameInstance {
 			this.powersHandler();
 			if (!this.ballState.flags.freezed)
 				this.ballHandler(delta);
+			this.scoreHandler();
 
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
@@ -203,12 +202,51 @@ class GameInstance {
 		}
 	}
 
+	private scoreRegister() {
+		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+		players[this.ballState.pos.x < 50 ? 0 : 1].score++;
+		for (let player of players) {
+			player.pos.y = 50;
+			player.flags.rainbowing = false;
+			player.flags.capacityCharging = false;
+			player.flags.stuned = true;
+			player.capacityLoaderPercentage = 0;
+			player.capacityTimeTrigger = -1;
+		}
+		this.ballState.flags.freezed = true;
+		this.ballState.flags.rainbow = false;
+		this.ballState.flags.smash = false;
+		this.ballState.pos.x = 50;
+		this.ballState.pos.y = 50;
+		this.ballState.directionVector.x = this.ballState.pos.x < 50 ? -1 : 1;
+		this.ballState.directionVector.y = 0;
+		this.scoreDelay = this.mSecElapsed;
+		/* needs a end game handler here */
+		console.log(this.playerOne.pos.y);
+	}
+
+	private scoreHandler() {
+		if (this.scoreDelay) {
+			const msDifference : number = this.mSecElapsed - this.scoreDelay - 3000;
+			if (msDifference < 50 && msDifference > -50) {
+				this.playerOne.flags.stuned = false;
+				this.playerTwo.flags.stuned = false;
+				this.playerOne.capacityTimeTrigger = 0;
+				this.playerTwo.capacityTimeTrigger = 0;
+				this.ballState.flags.freezed = false;
+				this.scoreDelay = 0;
+				console.log(this.playerOne.pos.y);
+			}
+		}
+	}
+
 	private chargingHandler(gameAction: GameAction, isPlayerOne: boolean) {
 		let playerState: PlayerState = isPlayerOne ? this.playerOne : this.playerTwo;
 		if (!playerState.flags.stuned && this.gameOptions.gameType === "extended" && !playerState.capacityTimeTrigger) {
 			if (gameAction.data.chargingOn) {
 				playerState.flags.capacityCharging = true;
 				playerState.flags.rainbowing = true;
+				this.scoreRegister();
 			}
 			else {
 				playerState.flags.capacityCharging = false;
@@ -267,7 +305,7 @@ class GameInstance {
 				newAngle += 2;
 			newAngle += 2;
 			this.ballState.directionVector.y = newAngle / 10;
-			this.lastMsPlayerBallCollision = this.mSecElapsed;
+			// this.lastMsPlayerBallCollision = this.mSecElapsed;
 			this.capacityUnlocker(currentPlayer);
 			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);
 			if (this.ballState.flags.smash) {
@@ -296,17 +334,19 @@ class GameInstance {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		let i: number = 0;
 		for (let player of players) {
-			let responsePlayer: PlayerState = !i ? this.responseState.playerOne : this.responseState.playerTwo;
-			if (player.pos.y > responsePlayer.pos.y) { // goes bottom
-				if ((player.pos.y - responsePlayer.pos.y) > hundredMsMovementAllowed)
-					player.pos.y = responsePlayer.pos.y + hundredMsMovementAllowed;
-				if (player.pos.y > 100 - percentageHalfRacketSize)
-					player.pos.y = 100 - percentageHalfRacketSize;
-			} else if (player.pos.y < responsePlayer.pos.y) {
-				if ((responsePlayer.pos.y - player.pos.y) > hundredMsMovementAllowed)
-					player.pos.y = responsePlayer.pos.y - hundredMsMovementAllowed;
-				if (player.pos.y < percentageHalfRacketSize)
-					player.pos.y = percentageHalfRacketSize;
+			if (!player.flags.stuned) {
+				let responsePlayer: PlayerState = !i ? this.responseState.playerOne : this.responseState.playerTwo;
+				if (player.pos.y > responsePlayer.pos.y) { // goes bottom
+					if ((player.pos.y - responsePlayer.pos.y) > hundredMsMovementAllowed)
+						player.pos.y = responsePlayer.pos.y + hundredMsMovementAllowed;
+					if (player.pos.y > 100 - percentageHalfRacketSize)
+						player.pos.y = 100 - percentageHalfRacketSize;
+				} else if (player.pos.y < responsePlayer.pos.y) {
+					if ((responsePlayer.pos.y - player.pos.y) > hundredMsMovementAllowed)
+						player.pos.y = responsePlayer.pos.y - hundredMsMovementAllowed;
+					if (player.pos.y < percentageHalfRacketSize)
+						player.pos.y = percentageHalfRacketSize;
+				}
 			}
 			i++;
 		}
@@ -338,7 +378,7 @@ class GameInstance {
 	private powersHandler() {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		for (let player of players) {
-			if (player.capacityTimeTrigger)
+			if (player.capacityTimeTrigger > 0)
 			{
 				const msDifference : number = this.mSecElapsed - 
 					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity];
@@ -393,7 +433,7 @@ class GameInstance {
 			if (currentPlayer.capacityUnlockerPercentage > 100)
 				currentPlayer.capacityUnlockerPercentage = 100;
 			if (currentPlayer.capacityUnlockerPercentage === 100)
-				currentPlayer.stockedCapacity = PLAYER_CAPACITY.SMASH; // Math.random() > 0.5 ? PLAYER_CAPACITY.STUNNING : PLAYER_CAPACITY.SMASH;
+				currentPlayer.stockedCapacity = Math.random() > 0.5 ? PLAYER_CAPACITY.STUNNING : PLAYER_CAPACITY.SMASH;
 		}
 	}
 
