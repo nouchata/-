@@ -1,4 +1,5 @@
 import { Container, Loader, Rectangle, Sprite, Text } from "pixi.js";
+import { WebfontLoaderPlugin } from "pixi-webfont-loader";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
 import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
@@ -62,6 +63,7 @@ class LoaderScene extends Container implements IScene {
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
 
+		Loader.registerPlugin(WebfontLoaderPlugin);
 		try {
 			Loader.shared.add(gameAssets);
 			Loader.shared.onError.once(this.errorLoading, this);

@@ -192,7 +192,7 @@ class Racket extends Container implements IContainerElement {
 			(this.filters[1] as GlitchFilter).enabled = false;
 	}
 
-	protected selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {
+	public selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {
 		if (this.unit === RacketUnit.LEFT)
 			return (getLastActionProcessed ? 
 				(this.appRef.gciMaster.currentResponseState as ResponseState).playerOneLastActionProcessed :

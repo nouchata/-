@@ -18,7 +18,8 @@ const samplePlayer : PlayerState = {
 		rainbowing: false
 	},
 	capacityLoaderPercentage: 0,
-	stockedCapacity: undefined,
+	capacityUnlockerPercentage: 0,
+	stockedCapacity: PLAYER_CAPACITY.NONE,
 	capacityTimeTrigger: 0
 };
 
@@ -92,10 +93,6 @@ class GameInstance {
 		// player object creation
 		this.playerOne.id = instanceSettings.playersId.one;
 		this.playerTwo.id = instanceSettings.playersId.two;
-		
-		/* DEV PURPOSE */
-		this.playerOne.stockedCapacity = PLAYER_CAPACITY.STUNNING;
-		/* DEV PURPOSE */
 
 		// ball stuff
 		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
@@ -271,6 +268,7 @@ class GameInstance {
 			newAngle += 2;
 			this.ballState.directionVector.y = newAngle / 10;
 			this.lastMsPlayerBallCollision = this.mSecElapsed;
+			this.capacityUnlocker(currentPlayer);
 			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);
 			if (this.ballState.flags.smash) {
 				this.ballState.flags.smash = false;
@@ -343,7 +341,7 @@ class GameInstance {
 			if (player.capacityTimeTrigger)
 			{
 				const msDifference : number = this.mSecElapsed - 
-					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity as PLAYER_CAPACITY];
+					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity];
 				if (msDifference < 50 && msDifference > -50) {
 					if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING) {
 						if (player === this.playerOne)
@@ -358,6 +356,7 @@ class GameInstance {
 					player.stockedCapacity = PLAYER_CAPACITY.NONE;
 					player.capacityTimeTrigger = 0;
 					player.capacityLoaderPercentage = 0;
+					player.capacityUnlockerPercentage = 0;
 					player.flags.capacityCharging = false;
 					player.flags.rainbowing = false;
 				}
@@ -374,6 +373,27 @@ class GameInstance {
 						this.playerOne.flags.stuned = true;
 				}
 			}
+		}
+	}
+
+	private capacityUnlocker(currentPlayer: PlayerState) {
+		if (this.gameOptions.gameType === "extended" && currentPlayer.capacityUnlockerPercentage !== 100) {
+			let points : number = 0;
+			if (!this.ballState.directionVector.y) {
+				points = 2;
+			} else {
+				if (this.ballState.directionVector.y < 0)
+					points = 10 / (((this.ballState.directionVector.y * -10) - 10)) * -2;
+				else
+					points = 10 / (((this.ballState.directionVector.y * 10) - 10)) * -2;
+			}
+			if (this.ballState.flags.smash)
+				points *= 2;
+			currentPlayer.capacityUnlockerPercentage += points;
+			if (currentPlayer.capacityUnlockerPercentage > 100)
+				currentPlayer.capacityUnlockerPercentage = 100;
+			if (currentPlayer.capacityUnlockerPercentage === 100)
+				currentPlayer.stockedCapacity = PLAYER_CAPACITY.SMASH; // Math.random() > 0.5 ? PLAYER_CAPACITY.STUNNING : PLAYER_CAPACITY.SMASH;
 		}
 	}
 

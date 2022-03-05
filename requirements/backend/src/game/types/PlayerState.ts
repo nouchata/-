@@ -19,8 +19,9 @@ type PlayerState = {
 	flags: RacketFlags;
 	/* actual percentage of the capacity loader */
 	capacityLoaderPercentage: number;
-	/* stocked capacity */
-	stockedCapacity: PLAYER_CAPACITY | undefined;
+	/* capacity related */
+	capacityUnlockerPercentage: number;
+	stockedCapacity: PLAYER_CAPACITY;
 	capacityTimeTrigger: number;
 }
 

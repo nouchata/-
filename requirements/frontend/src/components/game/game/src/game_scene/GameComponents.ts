@@ -1,5 +1,5 @@
 import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
-import { Container, Ticker } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import { IContainerElement, IParticleContainerElement, IScene } from "../../types/IScene";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { Ball } from "./ball/Ball";
@@ -12,20 +12,26 @@ class GameComponents extends Container implements IContainerElement {
 	private appRef : TranscendanceApp;
 	private deltaTotal : number = 0;
 	private shakeRightAnimation : Tween<{x: number}>;
+	public leftRacket : PlayerRacket | SpectatorRacket;
+	public rightRacket : PlayerRacket | SpectatorRacket;
+	public ball : Ball;
+	private fieldSeparator : Graphics = new Graphics();
 	shakeState : "left" | "right" | undefined = undefined;
 
 	constructor(appRef : TranscendanceApp) {
 		super();
 		this.appRef = appRef;
 	
-		const l_racket : PlayerRacket | SpectatorRacket = this.appRef.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.appRef, RacketUnit.LEFT) : new SpectatorRacket(this.appRef, RacketUnit.LEFT);
-		this.addChild(l_racket);
-		const r_racket : PlayerRacket | SpectatorRacket = this.appRef.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.appRef, RacketUnit.RIGHT) : new SpectatorRacket(this.appRef, RacketUnit.RIGHT);
-		this.addChild(r_racket);
-		const ball : Ball = new Ball(this.appRef, this);
-		this.addChild(ball);
+		this.leftRacket = this.appRef.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.appRef, RacketUnit.LEFT) : new SpectatorRacket(this.appRef, RacketUnit.LEFT);
+		this.addChild(this.leftRacket);
+		this.rightRacket = this.appRef.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.appRef, RacketUnit.RIGHT) : new SpectatorRacket(this.appRef, RacketUnit.RIGHT);
+		this.addChild(this.rightRacket);
+		this.ball = new Ball(this.appRef, this);
+		this.addChild(this.ball);
 		const ballParticles : BallParticles = new BallParticles(this.appRef, this);
 		this.addChild(ballParticles);
+		this.addChild(this.fieldSeparator);
+		this.fieldSeparator.alpha = 0.4;
 
 		this.resize();
 		this.shakeRightAnimation = new Tween({ x: 0 }).stop()
@@ -48,6 +54,12 @@ class GameComponents extends Container implements IContainerElement {
 	}
 
 	resize : Function = (function(this: GameComponents) {
+		// field separator
+		this.fieldSeparator.clear();
+		this.fieldSeparator.beginFill(0xFFFFFF);
+		this.fieldSeparator.drawRect(this.appRef.screen.width / 2 - 1, 0, 3, this.appRef.screen.height);
+		this.fieldSeparator.endFill();
+
 		this.x = this.appRef.screen.width / 2;
 		this.y = this.appRef.screen.height / 2;
 		this.pivot.set(this.x, this.y);

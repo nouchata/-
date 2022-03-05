@@ -16,6 +16,7 @@
         "axios": "^0.26.0",
         "html-react-parser": "^1.4.6",
         "pixi-particles": "^4.3.1",
+        "pixi-webfont-loader": "^1.0.2",
         "pixi.js": "^6.2.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
