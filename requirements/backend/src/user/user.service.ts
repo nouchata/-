@@ -187,10 +187,9 @@ export class UserService {
 		return friends;
 	}
 
-	async editFriendship(user: User, displayName: string, cb: any) : Promise<User> {
+	async editFriendship(user: User, displayName: string, cb: any) : Promise<FriendDTO> {
 		
 		const friend: User = await this.findUserByDisplayName(displayName); // find friend's entity
-
 		user.friends = await this.getFriendslist(user.id); // retrieve user's friend list
 		
 		// check the existing friendship relation between the two users
@@ -200,7 +199,8 @@ export class UserService {
 
 		// callback
 		user = cb(user, friend, friendIndex);
+		this.userRepo.save(user) // save new relation
 
-		return this.userRepo.save(user); // save new relation
+		return FriendDTO.fromEntity(friend);
 	}
 }
