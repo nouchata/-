@@ -11,64 +11,55 @@ import {
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
-import {
-	UserInterface,
-	UserRole,
-	UserStatus,
-} from '../interface/UserInterface';
+import { UserInterface, UserStatus } from '../interface/UserInterface';
 import { MatchHistory } from './match-history.entity';
 
-@Entity({ name: 'users' })
-export class User implements UserInterface {
-	@PrimaryGeneratedColumn()
+export class UserDto {
 	@ApiProperty({
 		description: 'id in the database',
 		example: 50,
 	})
 	id: number;
 
-	@Column({
-		unique: true,
-		update: false,
-	})
 	@ApiProperty({
 		description: 'The login of the user',
 		example: 'tmatis',
 	})
 	login: string;
 
-	@Column({
-		nullable: true,
-	})
 	@ApiProperty({
 		description: "The user's picture filename",
 		example: 'tmatis.jpg',
 	})
 	picture: string;
 
-	@Column()
-	@ApiProperty({
-		enum: ['user', 'moderator', 'admin'],
-		description: 'The role of the user',
-		example: 'user',
-	})
-	role: UserRole;
-
-	@Column({
-		unique: true,
-	})
 	@ApiProperty({
 		description: 'The display name of the user',
 		example: 'Theo Matis',
 	})
 	displayName: string;
+}
 
-	@Column()
-	@ApiProperty({
-		description: 'The profile url of the user',
-		example: 'https://profile.intra.42.fr/users/tmatis',
+@Entity({ name: 'users' })
+export class User implements UserInterface {
+	@PrimaryGeneratedColumn()
+	id: number;
+
+	@Column({
+		unique: true,
+		update: false,
 	})
-	profileURL: string;
+	login: string;
+
+	@Column({
+		nullable: true,
+	})
+	picture: string;
+
+	@Column({
+		unique: true,
+	})
+	displayName: string;
 
 	@Column({ nullable: true })
 	@ApiPropertyOptional({
@@ -166,8 +157,11 @@ export class User implements UserInterface {
 	})
 	twofa_secret: string;
 
-	hasRole(role: UserRole): boolean {
-		const roles_table: UserRole[] = ['user', 'moderator', 'admin'];
-		return roles_table.indexOf(role) <= roles_table.indexOf(this.role);
-	}
+	@ManyToMany((type) => User, (user) => user.blockedUsers)
+	@JoinTable()
+	@ApiProperty({
+		description: 'The list of the user blocked',
+		type: [User],
+	})
+	blockedUsers: User[];
 }

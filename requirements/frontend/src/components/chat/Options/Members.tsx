@@ -1,13 +1,11 @@
 import { faBan, faUser, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useContext, useState } from 'react';
-import { Link, Redirect, useHistory } from 'react-router-dom';
+import { useContext } from 'react';
 import ModalContext from '../../../contexts/ModalContext';
 import { ChannelDto } from '../types/user-channels.dto';
 import Button from './Button';
 
 const Members = ({
-	userId,
 	channel,
 }: {
 	userId: number;

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+	HttpException,
+	HttpStatus,
+	Injectable,
+	NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -79,7 +84,6 @@ export class UserService {
 
 		dto.general.name = entity.displayName;
 		dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
-		dto.general.role = entity.role;
 		dto.general.creation = entity.createdAt;
 		dto.general.status = entity.status;
 
@@ -164,5 +168,20 @@ export class UserService {
 			channelDtos.push(channel.toDto());
 		}
 		return channelDtos;
+	}
+
+	async blockUser(user: User, blockedUser: User) {
+		const userDB = await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['blockedUsers'],
+		});
+		if (!userDB)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		userDB.blockedUsers.push(blockedUser);
+		await this.userRepo.save(userDB);
+	}
+
+	async getBlockedUsers(user: User) {
+		return user.blockedUsers;
 	}
 }

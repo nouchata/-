@@ -6,7 +6,6 @@ import {
 	Get,
 	HttpException,
 	HttpStatus,
-	Inject,
 	Param,
 	ParseIntPipe,
 	Post,
@@ -32,7 +31,7 @@ import { LadderDTO } from './dto/ladder.dto';
 
 @Controller('user')
 export class UserController {
-	constructor(@Inject(UserService) private userService: UserService) {}
+	constructor(private userService: UserService) {}
 
 	@Get('ladder')
 	@UseGuards(GroupGuard)
@@ -166,5 +165,36 @@ export class UserController {
 	})
 	async getUserChannels(@Req() req: { user: User }): Promise<ChannelDto[]> {
 		return this.userService.getUserChannels({ id: req.user.id });
+	}
+
+	@Post('block/:id')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 200,
+		description: 'The user was blocked',
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'No id matching user',
+	})
+	async blockUser(
+		@Req() req: { user: User },
+		@Param('id', ParseIntPipe) id: number
+	) {
+		return this.userService.blockUser(
+			req.user,
+			await this.userService.findUserById(id)
+		);
+	}
+
+	@Get('block/list')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [User],
+		status: 200,
+		description: 'The users that are blocked',
+	})
+	async getBlockedUsers(@Req() req: { user: User }): Promise<User[]> {
+		return this.userService.getBlockedUsers(req.user);
 	}
 }
