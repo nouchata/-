@@ -1,5 +1,4 @@
 import { useState, useContext, useEffect, useCallback, useMemo } from 'react';
-import LoadingContent from '../../utils/LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 
@@ -21,16 +20,13 @@ import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
 import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
-import FriendsList from './FriendsList';
+import FriendsList from '../friends/FriendsList';
 import JoinCreateModal from '../chat/modal/JoinCreateModal';
+import AddFriendModal from '../friends/modal/AddFriendModal';
+import { FetchFriendsList } from '../../types/FetchFriendsList';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
-};
-
-const friendModalSettings: GenericModalProps = {
-	show: true,
-	content: <p>x</p>,
 };
 
 const HSocialField = () => {
@@ -44,6 +40,7 @@ const HSocialField = () => {
 	const { setModalProps } = useContext(ModalContext);
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const [friends, setFriends] = useState<FetchFriendsList[]>([]);
 	const fetchStatusValue: {
 		fetchStatus: FetchStatusData;
 		setFetchStatus: (fetchStatus: FetchStatusData) => void;
@@ -102,6 +99,22 @@ const HSocialField = () => {
 		}
 	}, [notificationHandler, chatSocket, onMessage]);
 
+	const AddFriend = async (name: string) => {
+		const data = await RequestWrapper.post<FetchFriendsList>(`/user/friends/add/`, { username: name }, (e) => {
+			console.error(e);
+		});
+		if (data) {
+			friends.push(data);
+			setFriends(friends);
+		}
+		setModalProps({ show: false });
+	}
+
+	const friendModalSettings: GenericModalProps = {
+		show: true,
+		content: <AddFriendModal cb={AddFriend}/>,
+	};
+
 	return (
 		<div className="social-field">
 			<button
@@ -137,7 +150,7 @@ const HSocialField = () => {
 			</div>
 			<div className='hsf-content'>
 				{isFriendTabSelected ?
-					<FriendsList/> :
+					<FriendsList friends={{ val: friends, set: setFriends }} setModal={setModalProps} /> :
 					<ul>
 						{chatSocket?.channels.map((channel, index) => {
 							return (
