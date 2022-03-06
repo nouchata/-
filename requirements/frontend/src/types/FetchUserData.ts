@@ -1,10 +1,12 @@
+import { UserStatus } from "../components/utils/StatusDisplay";
+
 export type FetchUserData = {
     general: {
         picture: string,
         name: string,
         role: string,
         creation: Date,
-        status: string
+        status: UserStatus
     },
     ranking: {
         vdRatio: [number, number],

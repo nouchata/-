@@ -53,6 +53,8 @@ services:
                   dockerfile: Dockerfile.prod
                 image: database:v1
                 container_name: database
+                ports: 
+                        - "5432:5432"
                 hostname: ${DB_HOSTNAME}
                 networks:
                         - database-network
@@ -65,4 +67,3 @@ volumes:
 
 networks:
         database-network:
-          
