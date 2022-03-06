@@ -38,7 +38,7 @@ const sampleBall : BallState = {
 
 class GameInstance {
 	// class related
-	private runState : RUNSTATE = RUNSTATE.RUNNING;
+	private runState : RUNSTATE = RUNSTATE.ENDED;
 	private lastDeltaTime : number = 0;
 
 	private mSecElapsed : number = 0;
@@ -60,7 +60,7 @@ class GameInstance {
 		racketSize: 6,
 		ballSpeedPPS: 50
 	};
-	private scoreDelay : number = 0;
+	private globalFreezeStartTimer : number = 0;
 
 	// ball related
 	private ballState : BallState = cloneDeep(sampleBall);
@@ -114,7 +114,7 @@ class GameInstance {
 	private async run() {
 		let actualDeltaTime : number = 0;
 		let delta : number = 0;
-		while (this.runState !== RUNSTATE.ENDED) {
+		while (this.runState !== RUNSTATE.PLAYER_DISCONNECTED) {
 			// delta handling
 			actualDeltaTime = Date.now();
 			delta = actualDeltaTime - this.lastDeltaTime;
@@ -126,7 +126,7 @@ class GameInstance {
 			this.powersHandler();
 			if (!this.ballState.flags.freezed)
 				this.ballHandler(delta);
-			this.scoreHandler();
+			this.globalFreezeHandler();
 
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
@@ -205,8 +205,18 @@ class GameInstance {
 	private scoreRegister() {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		players[this.ballState.pos.x < 50 ? 0 : 1].score++;
+		this.ballState.flags.rainbow = false;
+		this.ballState.flags.smash = false;
+		this.globalFreezeSetter({ resetBallPos: true, resetPlayerPos: true });
+		
+		/* needs a end game handler here */
+	}
+
+	private globalFreezeSetter(options? :{ resetPlayerPos?: boolean, resetBallPos?: boolean }) {
+		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		for (let player of players) {
-			player.pos.y = 50;
+			if (options?.resetPlayerPos)
+				player.pos.y = 50;
 			player.flags.rainbowing = false;
 			player.flags.capacityCharging = false;
 			player.flags.stuned = true;
@@ -214,28 +224,27 @@ class GameInstance {
 			player.capacityTimeTrigger = -1;
 		}
 		this.ballState.flags.freezed = true;
-		this.ballState.flags.rainbow = false;
-		this.ballState.flags.smash = false;
-		this.ballState.pos.x = 50;
-		this.ballState.pos.y = 50;
-		this.ballState.directionVector.x = this.ballState.pos.x < 50 ? -1 : 1;
-		this.ballState.directionVector.y = 0;
-		this.scoreDelay = this.mSecElapsed;
-		/* needs a end game handler here */
-		console.log(this.playerOne.pos.y);
+		// this.ballState.flags.rainbow = false;
+		// this.ballState.flags.smash = false;
+		if (options?.resetBallPos) {
+			this.ballState.directionVector.x = this.ballState.pos.x < 50 ? -1 : 1;
+			this.ballState.directionVector.y = 0;
+			this.ballState.pos.x = 50;
+			this.ballState.pos.y = 50;
+		}
+		this.globalFreezeStartTimer = this.mSecElapsed;
 	}
 
-	private scoreHandler() {
-		if (this.scoreDelay) {
-			const msDifference : number = this.mSecElapsed - this.scoreDelay - 3000;
-			if (msDifference < 50 && msDifference > -50) {
+	private globalFreezeHandler() {
+		if (this.globalFreezeStartTimer) {
+			const msDifference : number = this.mSecElapsed - this.globalFreezeStartTimer - 3000;
+			if (msDifference > -50) {
 				this.playerOne.flags.stuned = false;
 				this.playerTwo.flags.stuned = false;
 				this.playerOne.capacityTimeTrigger = 0;
 				this.playerTwo.capacityTimeTrigger = 0;
 				this.ballState.flags.freezed = false;
-				this.scoreDelay = 0;
-				console.log(this.playerOne.pos.y);
+				this.globalFreezeStartTimer = 0;
 			}
 		}
 	}
@@ -382,7 +391,7 @@ class GameInstance {
 			{
 				const msDifference : number = this.mSecElapsed - 
 					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity];
-				if (msDifference < 50 && msDifference > -50) {
+				if (msDifference > -50) {
 					if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING) {
 						if (player === this.playerOne)
 							this.playerTwo.flags.stuned = false;

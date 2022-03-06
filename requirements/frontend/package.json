@@ -10,6 +10,7 @@
         "@pixi/filter-advanced-bloom": "^4.1.5",
         "@pixi/filter-crt": "^4.1.6",
         "@pixi/filter-glitch": "^4.1.5",
+        "@pixi/filter-godray": "^4.1.5",
         "@pixi/math-extras": "^6.2.2",
         "@pixi/sound": "^4.2.0",
         "@tweenjs/tween.js": "^18.6.4",

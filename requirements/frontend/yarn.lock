@@ -1447,6 +1447,11 @@
   "resolved" "https://registry.npmjs.org/@pixi/filter-glitch/-/filter-glitch-4.1.5.tgz"
   "version" "4.1.5"
 
+"@pixi/filter-godray@^4.1.5":
+  "integrity" "sha512-SKRXKL3iCOBMGjPcH+AbrzPirRigQVd3xC9d2RbDaLANh62qUEn6Ajmj44j19I9KpSugi+pVso74fxvFiISUhw=="
+  "resolved" "https://registry.npmjs.org/@pixi/filter-godray/-/filter-godray-4.1.5.tgz"
+  "version" "4.1.5"
+
 "@pixi/filter-kawase-blur@4.1.5":
   "integrity" "sha512-YVzzfLoUMKYeEMuuj4TfpTJ1p14nBV/+JnWVL5dC63VuCQ1YMxzSmc6ahGNfbex0+nvhyKPWe87aO7jzX0waoA=="
   "resolved" "https://registry.npmjs.org/@pixi/filter-kawase-blur/-/filter-kawase-blur-4.1.5.tgz"

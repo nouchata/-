@@ -11,6 +11,8 @@ import { sound } from "@pixi/sound";
 import { GCI_STATE } from "../../GameClientInstance";
 import { RacketUnit } from "../game_scene/racket/Racket";
 import { IScene } from "../../types/IScene";
+import { RequestWrapper } from "../../../../../utils/RequestWrapper";
+import { FetchUserData } from "../../../../../types/FetchUserData";
 
 class LoaderScene extends Container implements IScene {
 	private appRef : TranscendanceApp;
@@ -102,6 +104,18 @@ class LoaderScene extends Container implements IScene {
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 		}
 
+		let dataFetched : FetchUserData | undefined = undefined;
+		dataFetched = await RequestWrapper.get<FetchUserData>(`/user/${this.appRef.gciMaster.currentResponseState.playerOne.id}`, undefined, () => {
+			this.appRef.gciMaster.playersAliases[0] = "Player 1";
+		});
+		if (dataFetched)
+			this.appRef.gciMaster.playersAliases[0] = dataFetched.general.name;
+		dataFetched = await RequestWrapper.get<FetchUserData>(`/user/${this.appRef.gciMaster.currentResponseState.playerTwo.id}`, undefined, () => {
+			this.appRef.gciMaster.playersAliases[1] = "Player 2";
+		});
+		if (dataFetched)
+			this.appRef.gciMaster.playersAliases[1] = dataFetched.general.name;
+
 		this.text.text = "Click on the screen to continue";
 		this.flickeringTween.start(0);
 		this.isLoaded = true;
@@ -123,7 +137,6 @@ class LoaderScene extends Container implements IScene {
 		else if (!this.appRef.forceSpectator && this.appRef.gciMaster.currentResponseState?.playerTwo.id === this.appRef.userId)
 			this.appRef.playerRacket = RacketUnit.RIGHT;
 		this.appRef.gciMaster.gciState = GCI_STATE.RUNNING;
-		this.appRef.manager.masterManagerLoop();
 	}
 
 	destroyScene() {
