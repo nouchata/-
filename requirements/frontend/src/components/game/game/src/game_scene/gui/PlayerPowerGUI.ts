@@ -97,10 +97,11 @@ class PlayerPowerGUI extends Container implements IContainerElement {
         }
 	}).bind(this);
 
-    public destroyContainerElem() {
+    public destroy() {
+        this.appRef.ticker.remove(this.update, this);
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
         this.powerLoaderShape.destroy();
-		this.destroy();
+		super.destroy();
 	}
 }
 

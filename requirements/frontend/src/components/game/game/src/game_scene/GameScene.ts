@@ -35,10 +35,11 @@ class GameScene extends Container implements IScene {
 		}
 	}
 
-	destroyScene() {
+	destroy() {
+		this.appRef.ticker.remove(this.update, this);
 		for (let item of this.children)
-			(item as IContainerElement | IParticleContainerElement).destroyContainerElem();
-		this.destroy();
+			item.destroy();
+		super.destroy();
 	}
 };
 

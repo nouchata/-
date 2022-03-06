@@ -39,7 +39,7 @@ class GameClientInstance {
 	public playersAliases: Array<string> = [];
 
 	constructor(userId: number, instanceId: number, forceSpectator: boolean) {
-		this.wsClient = new GameWS(instanceId, this.onSocketStateUpdate.bind(this), this.onSocketError.bind(this));
+		this.wsClient = new GameWS(instanceId, forceSpectator, this.onSocketStateUpdate.bind(this), this.onSocketError.bind(this));
 
 		this.app = new TranscendanceApp(
 			this,

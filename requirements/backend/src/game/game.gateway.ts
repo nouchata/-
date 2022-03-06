@@ -79,7 +79,7 @@ export class GameGateway {
 	}
 
 	@SubscribeMessage('joinGame')
-	joinGame(client: Socket & { request: { user: User } }, { instanceId }: { instanceId: number }) {
+	joinGame(client: Socket & { request: { user: User } }, { instanceId, forceSpectator }: { instanceId: number, forceSpectator: number }) {
 		
 		if (this.gameInstances[instanceId] === undefined)
 			throw new WsException("The given instance ID is invalid");
@@ -90,7 +90,7 @@ export class GameGateway {
 		
 		client.join("game#" + instanceId);
 
-		if (this.associatedPlayers[client.request.user.id] === instanceId)
+		if (this.associatedPlayers[client.request.user.id] === instanceId && !forceSpectator)
 			this.gameInstances[instanceId]?.updatePlayerNetState(client.request.user.id, true);	
 	}
 

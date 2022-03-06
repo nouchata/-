@@ -40,11 +40,12 @@ class BallParticles extends ParticleContainer implements IParticleContainerEleme
 		this.currentEmitter.update(delta / this.appRef.ticker.FPS);
 	}
 
-	public destroyContainerElem() {
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		for (let emitter of this.emitters)
 			emitter.destroy();
-		this.destroy();
+		super.destroy();
 	}
 }
 

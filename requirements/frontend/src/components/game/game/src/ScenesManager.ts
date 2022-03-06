@@ -5,11 +5,12 @@ import { RUNSTATE } from "../types/ResponseState";
 import { GameScene } from "./game_scene/GameScene";
 import { EndScene } from "./other_scenes/EndScene";
 import { LoaderScene } from "./other_scenes/LoaderScene";
+import { WaitingScene } from "./other_scenes/WaitingScene";
 import { TranscendanceApp } from "./TranscendanceApp";
 
 const sceneType : Array<
-	typeof LoaderScene | typeof GameScene | typeof EndScene
-> = [ LoaderScene, LoaderScene, GameScene, LoaderScene, EndScene ];
+	typeof WaitingScene | typeof GameScene | typeof EndScene
+> = [ WaitingScene, GameScene, WaitingScene, EndScene ];
 
 class ScenesManager {
 	private appRef : TranscendanceApp;
@@ -28,9 +29,9 @@ class ScenesManager {
 					this.currentScene.alpha = object.opacity
 			} )
 			.onComplete(() => {
+				this.currentScene?.destroy();
 				this.appRef.stage.removeAllListeners();
 				this.appRef.stage.removeChildren();
-				this.currentScene?.destroyScene();
 				this.currentScene = this.newScene;
 				if (this.currentScene) {
 					this.currentScene.alpha = 0;
@@ -57,11 +58,20 @@ class ScenesManager {
 			this.appRef.gciMaster.currentResponseState &&
 			this.appRef.gciMaster.currentResponseState.runState !== this.currentState)
 		{
-			this.currentState = this.appRef.gciMaster.currentResponseState.runState;
-			this.newScene = new sceneType[this.currentState](this.appRef);
-			this.transitionSceneAnimation.start(this.deltaTotal);
+			console.log(this.appRef.gciMaster.currentResponseState.runState);
+			if (this.appRef.gciMaster.currentResponseState.runState === RUNSTATE.ENDED)
+				this.appRef.gciMaster.gciState = GCI_STATE.ENDED;
+			else {
+				this.currentState = this.appRef.gciMaster.currentResponseState.runState;
+				this.newScene = new sceneType[this.currentState](this.appRef);
+				this.transitionSceneAnimation.start(this.deltaTotal);
+			}
 		}
 		tweenUpdate(delta, true);
+	}
+
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
 	}
 }
 

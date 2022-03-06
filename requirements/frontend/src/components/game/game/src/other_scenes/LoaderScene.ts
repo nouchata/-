@@ -139,12 +139,13 @@ class LoaderScene extends Container implements IScene {
 		this.appRef.gciMaster.gciState = GCI_STATE.RUNNING;
 	}
 
-	destroyScene() {
+	destroy() {
+		this.appRef.ticker.remove(this.update, this);
+		this.flickeringTween.stop();
 		this.logo.destroy();
 		this.text.destroy();
-		this.flickeringTween.stop();
-		this.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		super.destroy();
 	}
 }
 

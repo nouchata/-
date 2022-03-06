@@ -38,12 +38,13 @@ const sampleBall : BallState = {
 
 class GameInstance {
 	// class related
-	private runState : RUNSTATE = RUNSTATE.ENDED;
+	private runState : RUNSTATE = RUNSTATE.WAITING;
 	private lastDeltaTime : number = 0;
 
 	private mSecElapsed : number = 0;
 	/* used to define a condition based on time elapsed */
-	private runStateSecCondition : number = 0;
+	private runStateStartWaitingTime : number = 0;
+	private runStateStartBeforeGameTime : number = 0;
 	private instanceId : number;
 	private gameInstances : { [instanceId: number]: GameInstance | undefined };
 	private associatedPlayers : { [userId: number]: number | undefined };
@@ -70,6 +71,7 @@ class GameInstance {
 	private playerOneLastActionProcessed : number = -1;
 	private playerTwo : PlayerState = cloneDeep(samplePlayer);
 	private playerTwoLastActionProcessed : number = -1;
+	private playersDisconnectTimer : Array<number> = [0, 0];
 
 	private responseState : ResponseState;
 
@@ -114,7 +116,7 @@ class GameInstance {
 	private async run() {
 		let actualDeltaTime : number = 0;
 		let delta : number = 0;
-		while (this.runState !== RUNSTATE.PLAYER_DISCONNECTED) {
+		while (this.runState !== RUNSTATE.ENDED) {
 			// delta handling
 			actualDeltaTime = Date.now();
 			delta = actualDeltaTime - this.lastDeltaTime;
@@ -139,44 +141,35 @@ class GameInstance {
 	}
 
 	private runStateHandler() {
-		if (this.runState === RUNSTATE.WAITING)
-		{ // if both players aren't connected after 2 minutes the game is kill
-			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed + (1000 * 120);
-			if (this.playerOne.connected && this.playerTwo.connected) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.ABOUT_TO_RUN;
+		if (this.runState === RUNSTATE.WAITING || this.runState === RUNSTATE.PLAYER_DISCONNECTED)
+		{
+			if (!this.runStateStartWaitingTime && (!this.playerOne.connected || !this.playerTwo.connected)) {
+				this.runStateStartBeforeGameTime = 0;
+				this.runStateStartWaitingTime = this.mSecElapsed;
 			}
-			else if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
+			if (!this.runStateStartBeforeGameTime && this.playerOne.connected && this.playerTwo.connected) {
+				this.runStateStartWaitingTime = 0;
+				this.runStateStartBeforeGameTime = this.mSecElapsed;
+			}
+			
+			if (this.runStateStartWaitingTime && 
+			this.mSecElapsed - this.runStateStartWaitingTime - ((this.runState === RUNSTATE.WAITING ? 120 : 60) * 1000) > -50) {
+				this.runStateStartBeforeGameTime = 0;
+				this.runStateStartWaitingTime = 0;
 				this.runState = RUNSTATE.ENDED;
 			}
-		}
-		else if (this.runState === RUNSTATE.ABOUT_TO_RUN)
-		{ // wait 5 seconds and launch the game
-			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed + (1000 * 5);
-			if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
+			if (this.runStateStartBeforeGameTime && 
+			this.mSecElapsed - this.runStateStartBeforeGameTime - (5 * 1000) > -50) {
+				this.runStateStartBeforeGameTime = 0;
+				this.runStateStartWaitingTime = 0;
 				this.runState = RUNSTATE.RUNNING;
+				this.globalFreezeSetter();
 			}
 		}
 		else if (this.runState === RUNSTATE.RUNNING)
 		{
-			// if (!this.playerOne.connected || !this.playerTwo.connected)
-			// 	this.runState = RUNSTATE.PLAYER_DISCONNECTED;
-		}
-		else if (this.runState === RUNSTATE.PLAYER_DISCONNECTED)
-		{ // wait 2 minutes for player to connect again or kill the game
-			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed + (1000 * 120);
-			if (this.playerOne.connected && this.playerTwo.connected) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.RUNNING;
-			} else if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.ENDED;
-			}
+			if (!this.playerOne.connected || !this.playerTwo.connected)
+				this.runState = RUNSTATE.PLAYER_DISCONNECTED;
 		}
 	}
 
@@ -207,9 +200,13 @@ class GameInstance {
 		players[this.ballState.pos.x < 50 ? 0 : 1].score++;
 		this.ballState.flags.rainbow = false;
 		this.ballState.flags.smash = false;
+
+		if (players[this.ballState.pos.x < 50 ? 0 : 1].score >= 1) {
+			this.runState = RUNSTATE.AFTER_GAME;
+			return ;
+		}
+
 		this.globalFreezeSetter({ resetBallPos: true, resetPlayerPos: true });
-		
-		/* needs a end game handler here */
 	}
 
 	private globalFreezeSetter(options? :{ resetPlayerPos?: boolean, resetBallPos?: boolean }) {
@@ -448,11 +445,38 @@ class GameInstance {
 
 	// PUBLIC FUNCTIONS
 
+	/* debouncer du bled */
 	updatePlayerNetState(playerId: number, state: boolean) {
-		if (playerId === this.playerOne.id)
-			this.playerOne.connected = state;
-		else if (playerId === this.playerTwo.id)
-			this.playerTwo.connected = state;
+		if (playerId === this.playerOne.id) {
+			if (state) {
+				if (this.playersDisconnectTimer[0]) {
+					clearTimeout(this.playersDisconnectTimer[0]);
+					this.playersDisconnectTimer[0] = 0;
+				}
+				this.playerOne.connected = true;
+			} else {
+				if (!this.playersDisconnectTimer[0])
+					this.playersDisconnectTimer[0] = setTimeout(() => {
+						this.playerOne.connected = false;
+						this.playersDisconnectTimer[0] = 0;
+					}, 500) as unknown as number;
+			}
+		}
+		else if (playerId === this.playerTwo.id) {
+			if (state) {
+				if (this.playersDisconnectTimer[1]) {
+					clearTimeout(this.playersDisconnectTimer[1]);
+					this.playersDisconnectTimer[1] = 0;
+				}
+				this.playerTwo.connected = true;
+			} else {
+				if (!this.playersDisconnectTimer[1])
+					this.playersDisconnectTimer[1] = setTimeout(() => {
+						this.playerTwo.connected = false;
+						this.playersDisconnectTimer[1] = 0;
+					}, 500) as unknown as number;
+			}
+		}
 	}
 
 	injectGameAction(gameAction: GameAction, playerId: number) {

@@ -64,10 +64,11 @@ class EndScene extends Container implements IScene {
 		tweenUpdate(delta, true);
 	}
 
-	destroyScene() {
+	destroy() {
+		this.appRef.ticker.remove(this.update, this);
 		this.text.destroy();
-		this.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		super.destroy();
 	}
 }
 

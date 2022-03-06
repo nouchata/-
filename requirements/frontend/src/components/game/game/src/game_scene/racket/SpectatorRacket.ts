@@ -114,6 +114,11 @@ class SpectatorRacket extends Racket {
 		}
 		return (false);
 	}
+
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
+		super.destroy();
+	}
 }
 
 export { SpectatorRacket };

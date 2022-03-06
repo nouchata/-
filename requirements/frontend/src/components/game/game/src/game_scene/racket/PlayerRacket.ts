@@ -161,6 +161,11 @@ class PlayerRacket extends Racket {
 			}
 		} 
 	}
+
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
+		super.destroy();
+	}
 }
 
 export { PlayerRacket };

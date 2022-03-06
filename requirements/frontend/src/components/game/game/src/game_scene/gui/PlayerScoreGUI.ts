@@ -88,11 +88,12 @@ class PlayerScoreGUI extends Container implements IContainerElement {
 		}
 	}).bind(this);
 
-    public destroyContainerElem() {
+    public destroy() {
+		this.appRef.ticker.remove(this.update, this);
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
         this.scoreDisplays[0].destroy();
 		this.scoreDisplays[1].destroy();
-		this.destroy();
+		super.destroy();
 	}
 }
 

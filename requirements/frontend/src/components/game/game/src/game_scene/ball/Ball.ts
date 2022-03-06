@@ -364,10 +364,11 @@ class Ball extends Container implements IContainerElement {
 		this.draw();
 	}
 
-	public destroyContainerElem() {
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
 		this.ballShape.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
-		this.destroy();
+		super.destroy();
 	}
 }
 

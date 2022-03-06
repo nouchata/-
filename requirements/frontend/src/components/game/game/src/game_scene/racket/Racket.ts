@@ -223,10 +223,10 @@ class Racket extends Container implements IContainerElement {
 		this.serverLastFlags = cloneDeep((this.selectCorrectUnit() as PlayerState).flags);
 	}
 
-	public destroyContainerElem () {
+	public destroy() {
 		this.shape.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
-		this.destroy();
+		super.destroy();
 	}
 }
 
