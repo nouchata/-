@@ -64,23 +64,15 @@ class Ball extends Container implements IContainerElement {
 
 		this.ballShape = new Graphics();
 
-		this.addChild(this.ballShape);
-		this.ballSize = this.appRef.screen.height / 50;
-		if (this.ballSize > ballShapeStuff.width)
-			this.ballSize = ballShapeStuff.width;
-		this.draw();
-
-		this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
-		this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+		
+		this.localBallState = cloneDeep(this.appRef.gciMaster.currentResponseState?.ballState as BallState);
 		this.oldServerPosVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
 		this.oldServerPosVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
-		this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
-		this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
-
-		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
-		this.y = toPx(this.localBallState.pos.y, this.appRef.screen.height);
-
+		
 		this.parentContainer = parentContainer;
+		this.addChild(this.ballShape);
+
+		this.resize();
 
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
@@ -145,15 +137,6 @@ class Ball extends Container implements IContainerElement {
 		} else if (this.localBallState.pos.y > 100) {
 			this.localBallState.pos.y = 100 - (this.localBallState.pos.y - 100);
 			this.localBallState.directionVector.y *= -1;
-		}
-		if (this.localBallState.pos.x < 0) {
-			this.localBallState.pos.x *= -1;
-			this.localBallState.directionVector.x *= -1;
-			(this.parentContainer as GameComponents).shakeState = "left";
-		} else if (this.localBallState.pos.x > 100) {
-			this.localBallState.pos.x = 100 - (this.localBallState.pos.x - 100);
-			this.localBallState.directionVector.x *= -1;
-			(this.parentContainer as GameComponents).shakeState = "right";
 		}
 	}
 
@@ -242,7 +225,7 @@ class Ball extends Container implements IContainerElement {
 						(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo.stockedCapacity === PLAYER_CAPACITY.SMASH
 					)
 				))
-					sound.play("normalHit", { volume: 0.2 });
+					// try { sound.play("normalHit", { volume: 0.2 }); } catch(e) {}
 				// shaking after smash reception
 				if (this.localBallState.flags.smash) {
 					this.falseBallFlagsState({ showed: true, rainbow: false, smash: false, freezed: false });
@@ -307,7 +290,7 @@ class Ball extends Container implements IContainerElement {
 	protected localSmashHandler() {
 		if (!this.localBallState.flags.smash && this.serverLastBallFlags.smash &&
 			!this.localBallState.flags.freezed && this.serverLastBallFlags.freezed) {
-				sound.play("smashLoading");
+				// try { sound.play("smashLoading"); } catch(e) {}
 				if (this.localBallState.pos.x < 50)
 					(this.parentContainer as GameComponents).leftRacket.canCollide = false;
 				else
@@ -315,7 +298,7 @@ class Ball extends Container implements IContainerElement {
 		}
 		if (this.localBallState.flags.smash && this.localBallState.flags.freezed &&
 			!this.serverLastBallFlags.freezed) {
-				sound.play("smashFire");
+				// try { sound.play("smashFire"); } catch(e) {}
 				(this.parentContainer as GameComponents).shakeState = this.localBallState.pos.x < 50 ? "left" : "right";
 				if (this.localBallState.pos.x < 50)
 					(this.parentContainer as GameComponents).leftRacket.cancelCharging = true;

@@ -49,7 +49,7 @@ class LoaderScene extends Container implements IScene {
 			.to({ blur: 3 }, 100)
 			.easing(Easing.Elastic.InOut)
 			.onStart(() => {
-				sound.play("flickeringNeon", { volume: 0.5 });
+				// try { sound.play("flickeringNeon", { volume: 0.5 }); } catch(e) {}
 			})
 			.onUpdate((object) => this.bloomFilter.blur = object.blur)
 			.chain(
@@ -116,10 +116,12 @@ class LoaderScene extends Container implements IScene {
 		if (dataFetched)
 			this.appRef.gciMaster.playersAliases[1] = dataFetched.general.name;
 
-		this.text.text = "Click on the screen to continue";
+		// this.text.text = "Click on the screen to continue";
+		this.text.text = "All done";
 		this.flickeringTween.start(0);
 		this.isLoaded = true;
-		this.once("pointertap", this.quitLoadingScreen, this);
+		// this.once("pointertap", this.quitLoadingScreen, this);
+		this.quitLoadingScreen();
 	}
 
 	errorLoading(error?: Error) {

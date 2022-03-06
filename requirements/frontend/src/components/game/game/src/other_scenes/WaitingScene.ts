@@ -90,7 +90,7 @@ class WaitingScene extends Container implements IScene {
 			this.tweenText[1].stop();
 		
 		this.statusTextHandler();
-		tweenUpdate(delta, true);
+		tweenUpdate(this.deltaTotal);
 	}
 
 	statusTextHandler() {

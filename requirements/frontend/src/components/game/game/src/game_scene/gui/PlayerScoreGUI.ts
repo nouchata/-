@@ -69,9 +69,9 @@ class PlayerScoreGUI extends Container implements IContainerElement {
 			this.scoreDisplays[1].text = String(this.lastScore);
 			this.rollingTween.start(this.deltaTotal);
 			this.parentContainer.newScore = true;
+			this.parentContainer.gameComps.shakeState = this.associatedRacket.unit === RacketUnit.LEFT ? "right" : "left";
 		}
-
-		tweenUpdate(delta, true);
+		tweenUpdate(this.deltaTotal);
     }
 
 	resize : Function = (function(this: PlayerScoreGUI) {

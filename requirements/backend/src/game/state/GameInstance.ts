@@ -14,12 +14,12 @@ const samplePlayer : PlayerState = {
 	flags: {
 		falsePosAnimation: false,
 		capacityCharging: false,
-		stuned: false,
+		stuned: true,
 		rainbowing: false
 	},
 	score: 0,
 	capacityLoaderPercentage: 0,
-	capacityUnlockerPercentage: 99,
+	capacityUnlockerPercentage: 0,
 	stockedCapacity: PLAYER_CAPACITY.NONE,
 	capacityTimeTrigger: 0
 };
@@ -31,7 +31,7 @@ const sampleBall : BallState = {
 	flags: {
 		rainbow: false,
 		smash: false,
-		freezed: false,
+		freezed: true,
 		showed: false
 	}
 }
@@ -62,6 +62,7 @@ class GameInstance {
 		ballSpeedPPS: 50
 	};
 	private globalFreezeStartTimer : number = 0;
+	private forceGlobalFreeze : boolean = true;
 
 	// ball related
 	private ballState : BallState = cloneDeep(sampleBall);
@@ -164,6 +165,7 @@ class GameInstance {
 				this.runStateStartWaitingTime = 0;
 				this.runState = RUNSTATE.RUNNING;
 				this.globalFreezeSetter();
+				this.forceGlobalFreeze = false;
 			}
 		}
 		else if (this.runState === RUNSTATE.RUNNING)
@@ -197,13 +199,13 @@ class GameInstance {
 
 	private scoreRegister() {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
-		players[this.ballState.pos.x < 50 ? 0 : 1].score++;
+		players[this.ballState.pos.x < 50 ? 1 : 0].score++;
 		this.ballState.flags.rainbow = false;
 		this.ballState.flags.smash = false;
 
-		if (players[this.ballState.pos.x < 50 ? 0 : 1].score >= 1) {
+		if (players[this.ballState.pos.x < 50 ? 1 : 0].score >= 6) {
+			this.forceGlobalFreeze = true;
 			this.runState = RUNSTATE.AFTER_GAME;
-			return ;
 		}
 
 		this.globalFreezeSetter({ resetBallPos: true, resetPlayerPos: true });
@@ -235,7 +237,7 @@ class GameInstance {
 	private globalFreezeHandler() {
 		if (this.globalFreezeStartTimer) {
 			const msDifference : number = this.mSecElapsed - this.globalFreezeStartTimer - 3000;
-			if (msDifference > -50) {
+			if (msDifference > -50 && !this.forceGlobalFreeze) {
 				this.playerOne.flags.stuned = false;
 				this.playerTwo.flags.stuned = false;
 				this.playerOne.capacityTimeTrigger = 0;
@@ -252,7 +254,6 @@ class GameInstance {
 			if (gameAction.data.chargingOn) {
 				playerState.flags.capacityCharging = true;
 				playerState.flags.rainbowing = true;
-				this.scoreRegister();
 			}
 			else {
 				playerState.flags.capacityCharging = false;
@@ -273,13 +274,8 @@ class GameInstance {
 			this.ballState.pos.y = 100 - (this.ballState.pos.y - 100);
 			this.ballState.directionVector.y *= -1;
 		}
-		if (this.ballState.pos.x < 0) {
-			this.ballState.pos.x *= -1;
-			this.ballState.directionVector.x *= -1;
-		}
-		else if (this.ballState.pos.x > 100) {
-			this.ballState.pos.x = 100 - (this.ballState.pos.x - 100);
-			this.ballState.directionVector.x *= -1;
+		if (this.ballState.pos.x < -30 || this.ballState.pos.x > 130) {
+			this.scoreRegister();
 		}
 	}
 
@@ -459,6 +455,8 @@ class GameInstance {
 					this.playersDisconnectTimer[0] = setTimeout(() => {
 						this.playerOne.connected = false;
 						this.playersDisconnectTimer[0] = 0;
+						this.globalFreezeSetter();
+						this.forceGlobalFreeze = true;
 					}, 500) as unknown as number;
 			}
 		}
@@ -474,6 +472,8 @@ class GameInstance {
 					this.playersDisconnectTimer[1] = setTimeout(() => {
 						this.playerTwo.connected = false;
 						this.playersDisconnectTimer[1] = 0;
+						this.globalFreezeSetter();
+						this.forceGlobalFreeze = true;
 					}, 500) as unknown as number;
 			}
 		}

@@ -6,7 +6,7 @@ import PlayerScoreGUI from "./gui/PlayerScoreGUI";
 
 class GameScene extends Container implements IScene {
 	private appRef : TranscendanceApp;
-	private gameComps : GameComponents;
+	public gameComps : GameComponents;
 	private scoreGUI : Array<PlayerScoreGUI> = [];
 	public newScore : boolean = false;
 
@@ -37,8 +37,9 @@ class GameScene extends Container implements IScene {
 
 	destroy() {
 		this.appRef.ticker.remove(this.update, this);
-		for (let item of this.children)
-			item.destroy();
+		this.scoreGUI[0].destroy();
+		this.scoreGUI[1].destroy();
+		this.gameComps.destroy();
 		super.destroy();
 	}
 };

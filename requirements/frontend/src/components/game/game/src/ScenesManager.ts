@@ -14,8 +14,8 @@ const sceneType : Array<
 
 class ScenesManager {
 	private appRef : TranscendanceApp;
-	private currentScene : IScene | undefined = undefined;
-	private newScene : IScene | undefined = undefined;
+	private currentScene : LoaderScene | WaitingScene | GameScene | EndScene | undefined = undefined;
+	private newScene : LoaderScene | WaitingScene | GameScene | EndScene | undefined = undefined;
 	private transitionSceneAnimation : Tween<{ opacity: number }>;
 	private deltaTotal : number = 0;
 	private currentState : RUNSTATE | undefined = undefined;
@@ -44,7 +44,7 @@ class ScenesManager {
 					.onUpdate((object) => {
 						if (this.currentScene)
 							this.currentScene.alpha = object.opacity
-					} )
+					})
 			);
 
 		this.appRef.ticker.add(this.update, this);
@@ -67,10 +67,11 @@ class ScenesManager {
 				this.transitionSceneAnimation.start(this.deltaTotal);
 			}
 		}
-		tweenUpdate(delta, true);
+		tweenUpdate(this.deltaTotal);
 	}
 
 	public destroy() {
+		this.transitionSceneAnimation.end();
 		this.appRef.ticker.remove(this.update, this);
 	}
 }

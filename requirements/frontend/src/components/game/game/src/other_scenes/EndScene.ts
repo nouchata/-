@@ -61,7 +61,7 @@ class EndScene extends Container implements IScene {
 	update(delta: number) {
 		this.deltaTotal += delta;
 		this.godrayFilter.time += delta / 50;
-		tweenUpdate(delta, true);
+		tweenUpdate(this.deltaTotal);
 	}
 
 	destroy() {

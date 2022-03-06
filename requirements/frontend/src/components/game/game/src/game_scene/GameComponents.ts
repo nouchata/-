@@ -17,6 +17,7 @@ class GameComponents extends Container implements IContainerElement {
 	public leftRacket : PlayerRacket | SpectatorRacket;
 	public rightRacket : PlayerRacket | SpectatorRacket;
 	public ball : Ball;
+	private ballParticles : BallParticles;
 	private fieldSeparator : Graphics = new Graphics();
 	private playersGUI : Array<PlayerPowerGUI> = [];
 	shakeState : "left" | "right" | undefined = undefined;
@@ -28,7 +29,7 @@ class GameComponents extends Container implements IContainerElement {
 		this.leftRacket = this.appRef.playerRacket === RacketUnit.LEFT ? new PlayerRacket(this.appRef, RacketUnit.LEFT) : new SpectatorRacket(this.appRef, RacketUnit.LEFT);
 		this.rightRacket = this.appRef.playerRacket === RacketUnit.RIGHT ? new PlayerRacket(this.appRef, RacketUnit.RIGHT) : new SpectatorRacket(this.appRef, RacketUnit.RIGHT);
 		this.ball = new Ball(this.appRef, this);
-		const ballParticles : BallParticles = new BallParticles(this.appRef, this);
+		this.ballParticles = new BallParticles(this.appRef, this);
 		
 		if ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.gameType === "extended") {
 			this.playersGUI = [
@@ -42,7 +43,7 @@ class GameComponents extends Container implements IContainerElement {
 		this.addChild(this.leftRacket);
 		this.addChild(this.rightRacket);
 		this.addChild(this.ball);
-		this.addChild(ballParticles);
+		this.addChild(this.ballParticles);
 		this.fieldSeparator.alpha = 0.4;
 
 		this.resize();
@@ -86,8 +87,11 @@ class GameComponents extends Container implements IContainerElement {
 
 	public destroy() {
 		this.appRef.ticker.remove(this.update, this);
-		for (let item of this.children)
-			item.destroy();
+		this.fieldSeparator.destroy();
+		this.leftRacket.destroy();
+		this.rightRacket.destroy();
+		this.ball.destroy();
+		this.ballParticles.destroy();
 		super.destroy();
 	}
 }
