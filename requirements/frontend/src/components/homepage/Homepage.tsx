@@ -15,7 +15,7 @@ const Homepage = () : JSX.Element => {
 	return (
 		<div>
 			<div className='homepage-header'>
-				<h1><Link to="#">Welcome back</Link>, <br /><span>{userCtx.fetchStatus.user?.displayName}</span> !</h1>
+				<h1>Welcome back, <br /><span>{userCtx.fetchStatus.user?.displayName}</span> !</h1>
 				<HProfileOverview {...userCtx.fetchStatus} />
 			</div>
 			<div className='homepage-widgets'>
