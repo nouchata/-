@@ -4,6 +4,11 @@
     width: 100%;
 }
 
+.friendslist-message {
+    margin: 5%;
+    text-align: center;
+}
+
 .friend-row {
 
     width: 100%;
@@ -46,5 +51,60 @@
         > .friend-remove-button:hover {
             color: red;
         }
+    }
+}
+
+.friend-remove-modal {
+
+    text-align: center;
+
+    > .remove-modal-buttons {
+        display: flex;
+        justify-content: space-evenly;
+        margin-top: 10%;
+
+        > button {
+            border: none;
+            cursor: pointer;
+            font-size: 2em;
+            width: 30%;
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        > button:hover {
+            background-color: theme.$primary-color;
+        }
+    }
+}
+
+.friend-add-modal {
+    text-align: center;
+
+    > .add-modal-container {
+
+        > .add-modal-input {
+            text-align: center;
+            border: none;
+            border-radius: 20px 0 0 20px;
+            height: 50px;
+        }
+    
+        > .add-modal-submit {
+            transform: translateY(2px);
+            cursor: pointer;
+            font-size: larger;
+            border: none;
+            border-radius: 0 20px 20px 0;
+            height: 50px;
+        }
+    
+        > .add-modal-submit:hover {
+            background-color: theme.$primary-color
+        }
+    }
+
+    > .add-modal-error {
+        color: red;
     }
 }

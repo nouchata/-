@@ -100,19 +100,29 @@ const HSocialField = () => {
 	}, [notificationHandler, chatSocket, onMessage]);
 
 	const AddFriend = async (name: string) => {
-		const data = await RequestWrapper.post<FetchFriendsList>(`/user/friends/add/`, { username: name }, (e) => {
-			console.error(e);
+		const data = await RequestWrapper.post<FetchFriendsList>(
+			'/user/friends/add',
+			{ username: name },
+			(e) => {
+				let errinfo: string;
+				if (e.response) {
+					errinfo = e.response.data.message;
+				} else {
+					errinfo = 'Unexpected Error :(';
+				}
+				setModalProps({ show: true, content: <AddFriendModal cb={AddFriend} info={errinfo} /> })
 		});
 		if (data) {
 			friends.push(data);
 			setFriends(friends);
+			setModalProps({ show: false });
 		}
-		setModalProps({ show: false });
 	}
 
 	const friendModalSettings: GenericModalProps = {
 		show: true,
 		content: <AddFriendModal cb={AddFriend}/>,
+		width: '25%'
 	};
 
 	return (

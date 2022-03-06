@@ -2,6 +2,7 @@ import { useState } from "react";
 
 interface IProps {
     cb: (name: string) => void
+    info?: string
 }
 
 const AddFriendModal = (props: IProps) => {
@@ -11,6 +12,12 @@ const AddFriendModal = (props: IProps) => {
     return (
         <div className='friend-add-modal'>
             <h1>Who do you want to add as your friend ?</h1>
+            {
+                props.info ?
+                    <h3 className='add-modal-error'>ERROR: {props.info}</h3> :
+                    null
+            }
+            <div className='add-modal-container'>
             <input
                 className='add-modal-input'
                 type='text'
@@ -24,6 +31,7 @@ const AddFriendModal = (props: IProps) => {
             >
                 Submit
             </button>
+            </div>
         </div>
     );
 }

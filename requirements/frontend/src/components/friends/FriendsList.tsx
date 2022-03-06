@@ -38,13 +38,18 @@ const FriendsList = (props: IProps) => {
     }, []);
 
     const RemoveFriend = (name: string) => {
-        const userConfirm = (confirmed: boolean) => {
+        const userConfirm = async (confirmed: boolean) => {
             if (confirmed) {
-                RequestWrapper.delete(`/user/friends/delete/${name}`, (e) => {
-                    console.error(e);
-                }).then(() => {
+                const res = await RequestWrapper.delete(`/user/friends/delete/${name}`, (e) => {
+                    if (e.response) {
+                        alert(e.response.data.message);
+                    } else {
+                        alert('Unexpected error !');
+                    }
+                }, true)
+                if (res) {
                     props.friends.set(props.friends.val.filter(friend => friend.displayName !== name));
-                });
+                }
             }
             props.setModal({ show: false })
         }
