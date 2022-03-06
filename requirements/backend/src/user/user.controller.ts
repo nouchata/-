@@ -10,6 +10,7 @@ import {
 	HttpException,
 	HttpStatus,
 	Inject,
+	NotFoundException,
 	Param,
 	ParseIntPipe,
 	Post,
@@ -66,8 +67,11 @@ export class UserController {
 		@Param('id', ParseIntPipe) id: number
 	): Promise<FindUserDTO> {
 		const userDB = await this.userService.findUserById(id);
-		const dto = await this.userService.createUserDTO(userDB);
+		if (!userDB) {
+			throw new NotFoundException(`"${req.user.displayName}" is not an existing user.`);
+		}
 
+		const dto = await this.userService.createUserDTO(userDB);
 		dto.isEditable = req.user?.id === id;
 		return dto;
 	}
@@ -147,8 +151,11 @@ export class UserController {
 		if (file) dto.picture = file.filename;
 		if (body.twofa) dto.twofa = body.twofa === 'true' ? true : false;
 
-		const prevUser = await this.userService.findUserById(req.user.id);
-		const newUser = await this.userService.editUser(dto);
+		const prevUser = await this.userService.findUserById(dto.id);
+		if (!prevUser) {
+			throw new NotFoundException(`"${req.user.displayName}" is not an existing user.`);
+		}
+		const newUser = await this.userService.editUser(dto, prevUser.picture);
 
 		// delete the user's previous picture
 		if (prevUser.picture !== newUser.picture) {
@@ -201,12 +208,17 @@ export class UserController {
 		description: "Already friend with this user"
 	})
 	async addFriend(@Req() req: { user: User }, @Body() body: { username: string }) : Promise<FriendDTO> {
+		const friend = await this.userService.findUserByDisplayName(body.username); // find friend's entity
+		if (!friend) {
+			throw new NotFoundException(`"${body.username}" is not an existing user.`);
+		}
+
 		return this.userService.editFriendship(
 			req.user,
-			body.username,
+			friend,
 			(user: User, friend: User, index: number) => {
 				if (index !== -1) {
-					throw new ConflictException(`${friend.displayName} and you are already friends.`);
+					throw new ConflictException(`"${friend.displayName}" and you are already friends.`);
 				} else if (user.id === friend.id) {
 					throw new ConflictException(`You cannot add yourself !`);
 				}
@@ -232,9 +244,14 @@ export class UserController {
 		description: "User is not your friend"
 	})
 	async deleteFriend(@Req() req: { user: User }, @Param('name') username: string) {
+		const friend = await this.userService.findUserByDisplayName(username); // find friend's entity
+		if (!friend) {
+			throw new NotFoundException(`"${username}" is not an existing user.`);
+		}
+
 		this.userService.editFriendship(
 			req.user,
-			username,
+			friend,
 			(user: User, friend: User, index: number) => {
 				if (index === -1) {
 					throw new ConflictException(`${friend.displayName} is not your friend.`);
