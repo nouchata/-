@@ -44,27 +44,19 @@ export class UserService {
 		});
 	}
 
-	async findUserByDisplayName(name: string) : Promise<User> {
-		const userDB = await this.userRepo.findOne({ displayName: name });
-		if (!userDB) {
-			throw new NotFoundException(`User ${name} does not exist.`);
-		}
-		return userDB;
+	async findUserByDisplayName(name: string) {
+		return this.userRepo.findOne({ displayName: name });;
 	}
 
 	async findUserById(id: number) {
-		const userDB = await this.userRepo.findOne({ id });
-		if (!userDB) throw new NotFoundException(`User ${id} does not exist.`);
-		return userDB;
+		return this.userRepo.findOne({ id });
 	}
 
-	async editUser(dto: EditUserDTO) {
-		const user = await this.findUserById(dto.id);
-
+	async editUser(dto: EditUserDTO, userPicture: string) {
 		if (!dto.picture) {
-			dto.picture = user.picture;
+			dto.picture = userPicture;
 		}
-		return await this.userRepo.save(dto.toEntity());
+		return this.userRepo.save(dto.toEntity());
 	}
 
 	async getLadder() {
@@ -187,9 +179,7 @@ export class UserService {
 		return friends;
 	}
 
-	async editFriendship(user: User, displayName: string, cb: any) : Promise<FriendDTO> {
-		
-		const friend: User = await this.findUserByDisplayName(displayName); // find friend's entity
+	async editFriendship(user: User, friend: User, cb: any) : Promise<FriendDTO> {
 		user.friends = await this.getFriendslist(user.id); // retrieve user's friend list
 		
 		// check the existing friendship relation between the two users
