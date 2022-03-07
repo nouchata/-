@@ -1,15 +1,7 @@
 /* eslint-disable */
 
-import { AdvancedBloomFilter } from '@pixi/filter-advanced-bloom';
-import { GlitchFilter } from '@pixi/filter-glitch';
-import { AbstractRenderer, autoDetectRenderer, BaseRenderTexture, Container, Filter, Graphics, LINE_JOIN, Loader, PI_2, Rectangle, RenderTexture, Sprite, Text, Texture, UPDATE_PRIORITY } from 'pixi.js'
 import { GameWS } from './GameWS';
-import { Ball } from './src/game_scene/ball/Ball';
-import { GameComponents } from './src/game_scene/GameComponents';
-import { PlayerRacket } from './src/game_scene/racket/PlayerRacket';
-import { Racket, RacketUnit } from './src/game_scene/racket/Racket';
-import { SpectatorRacket } from './src/game_scene/racket/SpectatorRacket';
-import { LoaderScene } from './src/loader_scene/LoaderScene';
+import { RacketUnit } from './src/game_scene/racket/Racket';
 import { TranscendanceApp } from './src/TranscendanceApp';
 import { GameAction } from './types/GameAction';
 import { ResponseState, RUNSTATE } from './types/ResponseState';
@@ -44,8 +36,10 @@ class GameClientInstance {
 
 	private runState: RUNSTATE = RUNSTATE.WAITING;
 
+	public playersAliases: Array<string> = [];
+
 	constructor(userId: number, instanceId: number, forceSpectator: boolean) {
-		this.wsClient = new GameWS(instanceId, this.onSocketStateUpdate.bind(this), this.onSocketError.bind(this));
+		this.wsClient = new GameWS(instanceId, forceSpectator, this.onSocketStateUpdate.bind(this), this.onSocketError.bind(this));
 
 		this.app = new TranscendanceApp(
 			this,

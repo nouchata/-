@@ -1,6 +1,6 @@
 import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
 import { GlitchFilter } from "@pixi/filter-glitch";
-import { Container, Filter, Graphics, PI_2, Rectangle } from "pixi.js";
+import { Container, Graphics, Rectangle } from "pixi.js";
 import { GA_KEY } from "../../../types/GameAction";
 import { RacketFlags } from "../../../types/RacketFlags";
 import { PlayerState } from "../../../types/PlayerState";
@@ -19,9 +19,6 @@ const rSS : {
 
 // client
 const angleFactor = 2;
-
-// server
-const defaultScreenHeightPercentagePerSec = 50;
 
 enum RacketUnit {
 	NONE,
@@ -192,7 +189,7 @@ class Racket extends Container implements IContainerElement {
 			(this.filters[1] as GlitchFilter).enabled = false;
 	}
 
-	protected selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {
+	public selectCorrectUnit(getLastActionProcessed?: boolean) : PlayerState | number {
 		if (this.unit === RacketUnit.LEFT)
 			return (getLastActionProcessed ? 
 				(this.appRef.gciMaster.currentResponseState as ResponseState).playerOneLastActionProcessed :
@@ -212,16 +209,22 @@ class Racket extends Container implements IContainerElement {
 			this.height
 		));
 	}
+
+	public resetData() {
+		this.localCapacityChargingState = false;
+		this.capacityLoader = 0;
+		this.draw();
+	}
 	
 	protected getServerFlags() {
 		this.glitchedRacket();
 		this.serverLastFlags = cloneDeep((this.selectCorrectUnit() as PlayerState).flags);
 	}
 
-	public destroyContainerElem () {
+	public destroy() {
 		this.shape.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
-		this.destroy();
+		super.destroy();
 	}
 }
 

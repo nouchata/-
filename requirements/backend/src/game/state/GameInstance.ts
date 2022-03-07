@@ -14,11 +14,13 @@ const samplePlayer : PlayerState = {
 	flags: {
 		falsePosAnimation: false,
 		capacityCharging: false,
-		stuned: false,
+		stuned: true,
 		rainbowing: false
 	},
+	score: 0,
 	capacityLoaderPercentage: 0,
-	stockedCapacity: undefined,
+	capacityUnlockerPercentage: 0,
+	stockedCapacity: PLAYER_CAPACITY.NONE,
 	capacityTimeTrigger: 0
 };
 
@@ -29,19 +31,20 @@ const sampleBall : BallState = {
 	flags: {
 		rainbow: false,
 		smash: false,
-		freezed: false,
+		freezed: true,
 		showed: false
 	}
 }
 
 class GameInstance {
 	// class related
-	private runState : RUNSTATE = RUNSTATE.RUNNING;
+	private runState : RUNSTATE = RUNSTATE.WAITING;
 	private lastDeltaTime : number = 0;
 
 	private mSecElapsed : number = 0;
 	/* used to define a condition based on time elapsed */
-	private runStateSecCondition : number = 0;
+	private runStateStartWaitingTime : number = 0;
+	private runStateStartBeforeGameTime : number = 0;
 	private instanceId : number;
 	private gameInstances : { [instanceId: number]: GameInstance | undefined };
 	private associatedPlayers : { [userId: number]: number | undefined };
@@ -58,19 +61,18 @@ class GameInstance {
 		racketSize: 6,
 		ballSpeedPPS: 50
 	};
+	private globalFreezeStartTimer : number = 0;
+	private forceGlobalFreeze : boolean = true;
 
 	// ball related
 	private ballState : BallState = cloneDeep(sampleBall);
-	private lastMsPlayerBallCollision : number = 0;
-	private smashDelay : number = 0;
 
 	// player related
 	private playerOne : PlayerState = cloneDeep(samplePlayer);
 	private playerOneLastActionProcessed : number = -1;
-	private playerOnePowerTriggerTime : number = 0;
 	private playerTwo : PlayerState = cloneDeep(samplePlayer);
 	private playerTwoLastActionProcessed : number = -1;
-	private playerTwoPowerTriggerTime : number = 0;
+	private playersDisconnectTimer : Array<number> = [0, 0];
 
 	private responseState : ResponseState;
 
@@ -92,10 +94,6 @@ class GameInstance {
 		// player object creation
 		this.playerOne.id = instanceSettings.playersId.one;
 		this.playerTwo.id = instanceSettings.playersId.two;
-		
-		/* DEV PURPOSE */
-		this.playerOne.stockedCapacity = PLAYER_CAPACITY.STUNNING;
-		/* DEV PURPOSE */
 
 		// ball stuff
 		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
@@ -131,6 +129,7 @@ class GameInstance {
 			this.powersHandler();
 			if (!this.ballState.flags.freezed)
 				this.ballHandler(delta);
+			this.globalFreezeHandler();
 
 			this.responseRefresh();
 			this.wsServer.to(this.wsRoom).emit('stateUpdate', this.responseState);
@@ -143,44 +142,36 @@ class GameInstance {
 	}
 
 	private runStateHandler() {
-		if (this.runState === RUNSTATE.WAITING)
-		{ // if both players aren't connected after 2 minutes the game is kill
-			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed + (1000 * 120);
-			if (this.playerOne.connected && this.playerTwo.connected) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.ABOUT_TO_RUN;
+		if (this.runState === RUNSTATE.WAITING || this.runState === RUNSTATE.PLAYER_DISCONNECTED)
+		{
+			if (!this.runStateStartWaitingTime && (!this.playerOne.connected || !this.playerTwo.connected)) {
+				this.runStateStartBeforeGameTime = 0;
+				this.runStateStartWaitingTime = this.mSecElapsed;
 			}
-			else if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
+			if (!this.runStateStartBeforeGameTime && this.playerOne.connected && this.playerTwo.connected) {
+				this.runStateStartWaitingTime = 0;
+				this.runStateStartBeforeGameTime = this.mSecElapsed;
+			}
+			
+			if (this.runStateStartWaitingTime && 
+			this.mSecElapsed - this.runStateStartWaitingTime - ((this.runState === RUNSTATE.WAITING ? 120 : 60) * 1000) > -50) {
+				this.runStateStartBeforeGameTime = 0;
+				this.runStateStartWaitingTime = 0;
 				this.runState = RUNSTATE.ENDED;
 			}
-		}
-		else if (this.runState === RUNSTATE.ABOUT_TO_RUN)
-		{ // wait 5 seconds and launch the game
-			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed + (1000 * 5);
-			if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
+			if (this.runStateStartBeforeGameTime && 
+			this.mSecElapsed - this.runStateStartBeforeGameTime - (5 * 1000) > -50) {
+				this.runStateStartBeforeGameTime = 0;
+				this.runStateStartWaitingTime = 0;
 				this.runState = RUNSTATE.RUNNING;
+				this.globalFreezeSetter();
+				this.forceGlobalFreeze = false;
 			}
 		}
 		else if (this.runState === RUNSTATE.RUNNING)
 		{
-			// if (!this.playerOne.connected || !this.playerTwo.connected)
-			// 	this.runState = RUNSTATE.PLAYER_DISCONNECTED;
-		}
-		else if (this.runState === RUNSTATE.PLAYER_DISCONNECTED)
-		{ // wait 2 minutes for player to connect again or kill the game
-			if (!this.runStateSecCondition)
-				this.runStateSecCondition = this.mSecElapsed + (1000 * 120);
-			if (this.playerOne.connected && this.playerTwo.connected) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.RUNNING;
-			} else if (this.runStateSecCondition === this.mSecElapsed) {
-				this.runStateSecCondition = 0;
-				this.runState = RUNSTATE.ENDED;
-			}
+			if (!this.playerOne.connected || !this.playerTwo.connected)
+				this.runState = RUNSTATE.PLAYER_DISCONNECTED;
 		}
 	}
 
@@ -203,6 +194,58 @@ class GameInstance {
 				this.playerOneLastActionProcessed = gameAction.id;
 			else
 				this.playerTwoLastActionProcessed = gameAction.id;
+		}
+	}
+
+	private scoreRegister() {
+		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+		players[this.ballState.pos.x < 50 ? 1 : 0].score++;
+		this.ballState.flags.rainbow = false;
+		this.ballState.flags.smash = false;
+		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
+
+		if (players[this.ballState.pos.x < 50 ? 1 : 0].score >= 6) {
+			this.forceGlobalFreeze = true;
+			this.runState = RUNSTATE.AFTER_GAME;
+		}
+
+		this.globalFreezeSetter({ resetBallPos: true, resetPlayerPos: true });
+	}
+
+	private globalFreezeSetter(options? :{ resetPlayerPos?: boolean, resetBallPos?: boolean }) {
+		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
+		for (let player of players) {
+			if (options?.resetPlayerPos)
+				player.pos.y = 50;
+			player.flags.rainbowing = false;
+			player.flags.capacityCharging = false;
+			player.flags.stuned = true;
+			player.capacityLoaderPercentage = 0;
+			player.capacityTimeTrigger = -1;
+		}
+		this.ballState.flags.freezed = true;
+		// this.ballState.flags.rainbow = false;
+		// this.ballState.flags.smash = false;
+		if (options?.resetBallPos) {
+			this.ballState.directionVector.x = this.ballState.pos.x < 50 ? -1 : 1;
+			this.ballState.directionVector.y = 0;
+			this.ballState.pos.x = 50;
+			this.ballState.pos.y = 50;
+		}
+		this.globalFreezeStartTimer = this.mSecElapsed;
+	}
+
+	private globalFreezeHandler() {
+		if (this.globalFreezeStartTimer) {
+			const msDifference : number = this.mSecElapsed - this.globalFreezeStartTimer - 3000;
+			if (msDifference > -50 && !this.forceGlobalFreeze) {
+				this.playerOne.flags.stuned = false;
+				this.playerTwo.flags.stuned = false;
+				this.playerOne.capacityTimeTrigger = 0;
+				this.playerTwo.capacityTimeTrigger = 0;
+				this.ballState.flags.freezed = false;
+				this.globalFreezeStartTimer = 0;
+			}
 		}
 	}
 
@@ -232,13 +275,8 @@ class GameInstance {
 			this.ballState.pos.y = 100 - (this.ballState.pos.y - 100);
 			this.ballState.directionVector.y *= -1;
 		}
-		if (this.ballState.pos.x < 0) {
-			this.ballState.pos.x *= -1;
-			this.ballState.directionVector.x *= -1;
-		}
-		else if (this.ballState.pos.x > 100) {
-			this.ballState.pos.x = 100 - (this.ballState.pos.x - 100);
-			this.ballState.directionVector.x *= -1;
+		if (this.ballState.pos.x < -30 || this.ballState.pos.x > 130) {
+			this.scoreRegister();
 		}
 	}
 
@@ -270,7 +308,9 @@ class GameInstance {
 				newAngle += 2;
 			newAngle += 2;
 			this.ballState.directionVector.y = newAngle / 10;
-			this.lastMsPlayerBallCollision = this.mSecElapsed;
+			this.ballState.speedPPS += 0.5; //
+			// this.lastMsPlayerBallCollision = this.mSecElapsed;
+			this.capacityUnlocker(currentPlayer);
 			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);
 			if (this.ballState.flags.smash) {
 				this.ballState.flags.smash = false;
@@ -298,17 +338,19 @@ class GameInstance {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		let i: number = 0;
 		for (let player of players) {
-			let responsePlayer: PlayerState = !i ? this.responseState.playerOne : this.responseState.playerTwo;
-			if (player.pos.y > responsePlayer.pos.y) { // goes bottom
-				if ((player.pos.y - responsePlayer.pos.y) > hundredMsMovementAllowed)
-					player.pos.y = responsePlayer.pos.y + hundredMsMovementAllowed;
-				if (player.pos.y > 100 - percentageHalfRacketSize)
-					player.pos.y = 100 - percentageHalfRacketSize;
-			} else if (player.pos.y < responsePlayer.pos.y) {
-				if ((responsePlayer.pos.y - player.pos.y) > hundredMsMovementAllowed)
-					player.pos.y = responsePlayer.pos.y - hundredMsMovementAllowed;
-				if (player.pos.y < percentageHalfRacketSize)
-					player.pos.y = percentageHalfRacketSize;
+			if (!player.flags.stuned) {
+				let responsePlayer: PlayerState = !i ? this.responseState.playerOne : this.responseState.playerTwo;
+				if (player.pos.y > responsePlayer.pos.y) { // goes bottom
+					if ((player.pos.y - responsePlayer.pos.y) > hundredMsMovementAllowed)
+						player.pos.y = responsePlayer.pos.y + hundredMsMovementAllowed;
+					if (player.pos.y > 100 - percentageHalfRacketSize)
+						player.pos.y = 100 - percentageHalfRacketSize;
+				} else if (player.pos.y < responsePlayer.pos.y) {
+					if ((responsePlayer.pos.y - player.pos.y) > hundredMsMovementAllowed)
+						player.pos.y = responsePlayer.pos.y - hundredMsMovementAllowed;
+					if (player.pos.y < percentageHalfRacketSize)
+						player.pos.y = percentageHalfRacketSize;
+				}
 			}
 			i++;
 		}
@@ -340,11 +382,11 @@ class GameInstance {
 	private powersHandler() {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
 		for (let player of players) {
-			if (player.capacityTimeTrigger)
+			if (player.capacityTimeTrigger > 0)
 			{
 				const msDifference : number = this.mSecElapsed - 
-					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity as PLAYER_CAPACITY];
-				if (msDifference < 50 && msDifference > -50) {
+					player.capacityTimeTrigger - playerCapacityDelay[player.stockedCapacity];
+				if (msDifference > -50) {
 					if (player.stockedCapacity === PLAYER_CAPACITY.STUNNING) {
 						if (player === this.playerOne)
 							this.playerTwo.flags.stuned = false;
@@ -358,6 +400,7 @@ class GameInstance {
 					player.stockedCapacity = PLAYER_CAPACITY.NONE;
 					player.capacityTimeTrigger = 0;
 					player.capacityLoaderPercentage = 0;
+					player.capacityUnlockerPercentage = 0;
 					player.flags.capacityCharging = false;
 					player.flags.rainbowing = false;
 				}
@@ -377,13 +420,65 @@ class GameInstance {
 		}
 	}
 
+	private capacityUnlocker(currentPlayer: PlayerState) {
+		if (this.gameOptions.gameType === "extended" && currentPlayer.capacityUnlockerPercentage !== 100) {
+			let points : number = 0;
+			if (!this.ballState.directionVector.y) {
+				points = 2;
+			} else {
+				if (this.ballState.directionVector.y < 0)
+					points = 10 / (((this.ballState.directionVector.y * -10) - 10)) * -2;
+				else
+					points = 10 / (((this.ballState.directionVector.y * 10) - 10)) * -2;
+			}
+			if (this.ballState.flags.smash)
+				points *= 2;
+			currentPlayer.capacityUnlockerPercentage += points;
+			if (currentPlayer.capacityUnlockerPercentage > 100)
+				currentPlayer.capacityUnlockerPercentage = 100;
+			if (currentPlayer.capacityUnlockerPercentage === 100)
+				currentPlayer.stockedCapacity = Math.random() > 0.5 ? PLAYER_CAPACITY.STUNNING : PLAYER_CAPACITY.SMASH;
+		}
+	}
+
 	// PUBLIC FUNCTIONS
 
+	/* debouncer du bled */
 	updatePlayerNetState(playerId: number, state: boolean) {
-		if (playerId === this.playerOne.id)
-			this.playerOne.connected = state;
-		else if (playerId === this.playerTwo.id)
-			this.playerTwo.connected = state;
+		if (playerId === this.playerOne.id) {
+			if (state) {
+				if (this.playersDisconnectTimer[0]) {
+					clearTimeout(this.playersDisconnectTimer[0]);
+					this.playersDisconnectTimer[0] = 0;
+				}
+				this.playerOne.connected = true;
+			} else {
+				if (!this.playersDisconnectTimer[0])
+					this.playersDisconnectTimer[0] = setTimeout(() => {
+						this.playerOne.connected = false;
+						this.playersDisconnectTimer[0] = 0;
+						this.globalFreezeSetter();
+						this.forceGlobalFreeze = true;
+					}, 500) as unknown as number;
+			}
+		}
+		else if (playerId === this.playerTwo.id) {
+			if (state) {
+				if (this.playersDisconnectTimer[1]) {
+					clearTimeout(this.playersDisconnectTimer[1]);
+					this.playersDisconnectTimer[1] = 0;
+				}
+				this.playerTwo.connected = true;
+			} else {
+				if (!this.playersDisconnectTimer[1])
+					this.playersDisconnectTimer[1] = setTimeout(() => {
+						this.playerTwo.connected = false;
+						this.playersDisconnectTimer[1] = 0;
+						this.globalFreezeSetter();
+						this.forceGlobalFreeze = true;
+					}, 500) as unknown as number;
+			}
+		}
 	}
 
 	injectGameAction(gameAction: GameAction, playerId: number) {

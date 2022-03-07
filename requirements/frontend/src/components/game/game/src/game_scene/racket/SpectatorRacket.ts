@@ -12,13 +12,18 @@ class SpectatorRacket extends Racket {
 	}
 
 	update(delta: number) {
-		const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
+		const playerData : PlayerState = this.selectCorrectUnit() as PlayerState;
 		let redraw: boolean = false;
 		this.getServerFlags();
 
 		this.deltaTotal += delta;
 
-		const playerData : PlayerState = this.selectCorrectUnit() as PlayerState;
+		if (playerData.flags.stuned) {
+			this.absolutePosition.y = toPx(playerData.pos.y, this.appRef.screen.height);
+			this.y = this.absolutePosition.y;
+		}
+
+		const actualPerPos: number = toPer(this.absolutePosition.y, this.currScreenSize);
 
 		if (actualPerPos > playerData.pos.y) { // to top
 			// lag proof smooth movement or teleportation if there's too much delay (10% ahead for a 50% per sec)
@@ -108,6 +113,11 @@ class SpectatorRacket extends Racket {
 			}
 		}
 		return (false);
+	}
+
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
+		super.destroy();
 	}
 }
 

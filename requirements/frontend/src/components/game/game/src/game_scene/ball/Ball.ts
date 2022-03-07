@@ -3,7 +3,7 @@ import { BallFlags, BallState } from "../../../types/BallState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
 import { Racket, RacketUnit, toPer, toPx } from "../racket/Racket";
-import { sound } from "@pixi/sound";
+import { sound } from "@pixi/sound"; // eslint-disable-line
 import "@pixi/math-extras";
 import { GA_KEY } from "../../../types/GameAction";
 import { GameComponents } from "../GameComponents";
@@ -35,8 +35,6 @@ class Ball extends Container implements IContainerElement {
 	protected oldServerDirectionVector : { x: number, y: number } = { x: 0, y: 0 };
 	protected oldServerPosVector : { x: number, y: number } = { x: 0, y: 0 };
 
-	protected rackets : Racket[] = [];
-
 	protected sweetCorrectionType : boolean = false;
 
 	public localBallState : BallState = {
@@ -66,26 +64,15 @@ class Ball extends Container implements IContainerElement {
 
 		this.ballShape = new Graphics();
 
-		this.addChild(this.ballShape);
-		this.ballSize = this.appRef.screen.height / 50;
-		if (this.ballSize > ballShapeStuff.width)
-			this.ballSize = ballShapeStuff.width;
-		this.draw();
-
-		this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
-		this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+		
+		this.localBallState = cloneDeep(this.appRef.gciMaster.currentResponseState?.ballState as BallState);
 		this.oldServerPosVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
 		this.oldServerPosVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
-		this.localBallState.directionVector.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.x;
-		this.localBallState.directionVector.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.directionVector.y;
-
-		this.x = toPx(this.localBallState.pos.x, this.appRef.screen.width);
-		this.y = toPx(this.localBallState.pos.y, this.appRef.screen.height);
-
+		
 		this.parentContainer = parentContainer;
-		let x : DisplayObject[] = this.parentContainer.children.filter((elem) => elem instanceof Racket);
-		this.rackets[0] = (x[0] as Racket).unit === RacketUnit.LEFT ? x[0] as Racket : x[1] as Racket;
-		this.rackets[1] = (x[0] as Racket).unit === RacketUnit.LEFT ? x[1] as Racket : x[0] as Racket;
+		this.addChild(this.ballShape);
+
+		this.resize();
 
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
@@ -141,7 +128,7 @@ class Ball extends Container implements IContainerElement {
 	}
 
 	protected manageMovement(delta: number) {
-		let ballSpeed : number = this.localBallState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
+		const ballSpeed : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
 		this.localBallState.pos.x += this.localBallState.directionVector.x * (ballSpeed / this.appRef.ticker.FPS) * delta;
 		this.localBallState.pos.y += this.localBallState.directionVector.y * (ballSpeed / this.appRef.ticker.FPS) * delta;
 		if (this.localBallState.pos.y < 0) {
@@ -150,15 +137,6 @@ class Ball extends Container implements IContainerElement {
 		} else if (this.localBallState.pos.y > 100) {
 			this.localBallState.pos.y = 100 - (this.localBallState.pos.y - 100);
 			this.localBallState.directionVector.y *= -1;
-		}
-		if (this.localBallState.pos.x < 0) {
-			this.localBallState.pos.x *= -1;
-			this.localBallState.directionVector.x *= -1;
-			(this.parentContainer as GameComponents).shakeState = "left";
-		} else if (this.localBallState.pos.x > 100) {
-			this.localBallState.pos.x = 100 - (this.localBallState.pos.x - 100);
-			this.localBallState.directionVector.x *= -1;
-			// (this.parentContainer as GameComponents).shakeState = "right";
 		}
 	}
 
@@ -195,10 +173,15 @@ class Ball extends Container implements IContainerElement {
 			correctionDirectionVector.x = 0;
 		if (isNaN(correctionDirectionVector.y))
 			correctionDirectionVector.y = 0;
+		const ballSpeed : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
 		/* le facteur de vitesse doit être proportionnel à la distance qu'il reste à parcourir */
-		this.localBallState.pos.x += correctionDirectionVector.x * (this.localBallState.speedPPS * 2 / this.appRef.ticker.FPS) * delta;
-		this.localBallState.pos.y += correctionDirectionVector.y * (this.localBallState.speedPPS * 2 / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.x += correctionDirectionVector.x * (ballSpeed * 2 / this.appRef.ticker.FPS) * delta;
+		this.localBallState.pos.y += correctionDirectionVector.y * (ballSpeed * 2 / this.appRef.ticker.FPS) * delta;
 
+		if (this.localBallState.pos.x < -10 || this.localBallState.pos.x > 110) {
+			this.localBallState.pos.x = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x;
+			this.localBallState.pos.y = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.y;
+		}
 		if ((this.localBallState.directionVector.x > 0 && this.localBallState.pos.x >= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x) ||
 		(this.localBallState.directionVector.x < 0 && this.localBallState.pos.x <= (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.pos.x)) {
 			this.sweetCorrectionType = false;
@@ -212,9 +195,9 @@ class Ball extends Container implements IContainerElement {
 		if (this.lastCollision && this.deltaTotal - this.lastCollision > 10)
 			this.lastCollision = 0;
 		if (this.localBallState.pos.x < 25)
-			currentRacket = this.rackets[0];
+			currentRacket = (this.parentContainer as GameComponents).leftRacket;
 		if (this.localBallState.pos.x > 75)
-			currentRacket = this.rackets[1];
+			currentRacket = (this.parentContainer as GameComponents).rightRacket;
 		
 		if (!this.lastCollision && currentRacket && currentRacket.canCollide) {
 			if (this.checkCollision(currentRacket, this)) {
@@ -242,7 +225,7 @@ class Ball extends Container implements IContainerElement {
 						(this.appRef.gciMaster.currentResponseState as ResponseState).playerTwo.stockedCapacity === PLAYER_CAPACITY.SMASH
 					)
 				))
-					sound.play("normalHit", { volume: 0.2 });
+					// try { sound.play("normalHit", { volume: 0.2 }); } catch(e) {}
 				// shaking after smash reception
 				if (this.localBallState.flags.smash) {
 					this.falseBallFlagsState({ showed: true, rainbow: false, smash: false, freezed: false });
@@ -307,22 +290,25 @@ class Ball extends Container implements IContainerElement {
 	protected localSmashHandler() {
 		if (!this.localBallState.flags.smash && this.serverLastBallFlags.smash &&
 			!this.localBallState.flags.freezed && this.serverLastBallFlags.freezed) {
-				sound.play("smashLoading");
+				// try { sound.play("smashLoading"); } catch(e) {}
 				if (this.localBallState.pos.x < 50)
-					this.rackets[0].canCollide = false;
+					(this.parentContainer as GameComponents).leftRacket.canCollide = false;
 				else
-					this.rackets[1].canCollide = false;
+					(this.parentContainer as GameComponents).rightRacket.canCollide = false;
 		}
 		if (this.localBallState.flags.smash && this.localBallState.flags.freezed &&
 			!this.serverLastBallFlags.freezed) {
-				sound.play("smashFire");
+				// try { sound.play("smashFire"); } catch(e) {}
 				(this.parentContainer as GameComponents).shakeState = this.localBallState.pos.x < 50 ? "left" : "right";
-				this.rackets[this.localBallState.pos.x < 50 ? 0 : 1].cancelCharging = true;
+				if (this.localBallState.pos.x < 50)
+					(this.parentContainer as GameComponents).leftRacket.cancelCharging = true;
+				else
+					(this.parentContainer as GameComponents).rightRacket.cancelCharging = true;
 				setTimeout(() => {
 					if (this.localBallState.pos.x < 50)
-						this.rackets[0].canCollide = true;
+						(this.parentContainer as GameComponents).leftRacket.canCollide = true;
 					else
-						this.rackets[1].canCollide = true;
+						(this.parentContainer as GameComponents).rightRacket.canCollide = true;
 				}, 50);
 		}
 		if (this.serverLastBallFlags.smash && this.scaleFactor === 1) {
@@ -353,10 +339,19 @@ class Ball extends Container implements IContainerElement {
 		this.falseBallFlags = undefined;
 	}
 
-	public destroyContainerElem() {
+	public resetData() {
+		this.scaleFactor = 1;
+		this.falseBallFlags = undefined;
+		this.localBallState = cloneDeep((this.appRef.gciMaster.currentResponseState as ResponseState).ballState);
+		this.serverLastBallFlags = cloneDeep((this.appRef.gciMaster.currentResponseState as ResponseState).ballState.flags);
+		this.draw();
+	}
+
+	public destroy() {
+		this.appRef.ticker.remove(this.update, this);
 		this.ballShape.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
-		this.destroy();
+		super.destroy();
 	}
 }
 

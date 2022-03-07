@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext, useMemo } from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useState, useEffect, useContext } from 'react';
+import { useHistory } from 'react-router-dom';
 import LoginContext from '../contexts/LoginContext';
 import { FetchStatusData, LoginState } from '../types/FetchStatusData';
 import { LoginDataSet } from '../types/LoginDataSet';

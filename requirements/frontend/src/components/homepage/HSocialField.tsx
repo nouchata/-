@@ -1,9 +1,7 @@
 import { useState, useContext, useEffect, useCallback, useMemo } from 'react';
-import LoadingContent from '../../utils/LoadingContent';
 import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 
-import UserAsset from '../../assets/homepage/user.png';
 import CloseAsset from '../../assets/chat/close.png';
 import MinusAsset from '../../assets/chat/minus.png';
 import ContainMaxAsset from '../../assets/chat/contain-max.png';
@@ -21,16 +19,14 @@ import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
 import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
+import FriendsList from '../friends/FriendsList';
 import JoinCreateModal from '../chat/modal/JoinCreateModal';
 import ChatOption from '../chat/Options/ChatOption';
+import AddFriendModal from '../friends/modal/AddFriendModal';
+import { FetchFriendsList } from '../../types/FetchFriendsList';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
-};
-
-const friendModalSettings: GenericModalProps = {
-	show: true,
-	content: <p>x</p>,
 };
 
 const HSocialField = () => {
@@ -44,6 +40,7 @@ const HSocialField = () => {
 	const { setModalProps } = useContext(ModalContext);
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const [friends, setFriends] = useState<FetchFriendsList[]>([]);
 	const fetchStatusValue: {
 		fetchStatus: FetchStatusData;
 		setFetchStatus: (fetchStatus: FetchStatusData) => void;
@@ -102,6 +99,32 @@ const HSocialField = () => {
 		}
 	}, [notificationHandler, chatSocket, onMessage]);
 
+	const AddFriend = async (name: string) => {
+		const data = await RequestWrapper.post<FetchFriendsList>(
+			'/user/friends/add',
+			{ username: name },
+			(e) => {
+				let errinfo: string;
+				if (e.response) {
+					errinfo = e.response.data.message;
+				} else {
+					errinfo = 'Unexpected Error :(';
+				}
+				setModalProps({ show: true, content: <AddFriendModal cb={AddFriend} info={errinfo} /> })
+		});
+		if (data) {
+			friends.push(data);
+			setFriends(friends);
+			setModalProps({ show: false });
+		}
+	}
+
+	const friendModalSettings: GenericModalProps = {
+		show: true,
+		content: <AddFriendModal cb={AddFriend}/>,
+		width: '25%'
+	};
+
 	return (
 		<div className="social-field">
 			<button
@@ -135,10 +158,9 @@ const HSocialField = () => {
 					Channels
 				</button>
 			</div>
-			<div className="hsf-content">
-				{isFriendTabSelected ? (
-					<LoadingContent widget={true} image={UserAsset} />
-				) : (
+			<div className='hsf-content'>
+				{isFriendTabSelected ?
+					<FriendsList friends={{ val: friends, set: setFriends }} setModal={setModalProps} /> :
 					<ul>
 						{chatSocket?.channels.map((channel, index) => {
 							return (
@@ -164,7 +186,7 @@ const HSocialField = () => {
 							);
 						})}
 					</ul>
-				)}
+				}
 			</div>
 			{chatSocket?.channels[selectChannelIndex] && (
 				<div className={chatToggleCSS(chatStatus)}>

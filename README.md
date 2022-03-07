@@ -34,6 +34,7 @@ COOKIE_SECRET=
 # FRONTEND CONFIG
 
 REACT_APP_BACKEND_ADDRESS=http://localhost:3000
+GENERATE_SOURCEMAP=false
 
 # 42 AUTH CONFIG
 
@@ -103,6 +104,7 @@ you need to setup a file named dev.env in _./requirements/backend_ with those fi
 
 ```
 REACT_APP_BACKEND_ADDRESS=http://localhost:3000
+GENERATE_SOURCEMAP=false
 ```
 
 run 
