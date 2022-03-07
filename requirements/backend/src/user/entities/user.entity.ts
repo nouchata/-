@@ -74,8 +74,16 @@ export class UserDto {
 
 	@ApiProperty({
 		description: "The user's friends list",
+		type: [UserDto],
 	})
-	friends: User[];
+	friends: UserDto[];
+
+	@ApiProperty({
+		enum: ['online', 'offline', 'ingame'],
+		description: 'The state of the user',
+		example: 'online',
+	})
+	status: UserStatus;
 }
 
 @Entity({ name: 'users' })
@@ -158,9 +166,6 @@ export class User implements UserInterface {
 	@Column({
 		default: false,
 	})
-	@ApiProperty({
-		description: 'Toggled to true if the 2fa authentication is used',
-	})
 	twofa: boolean;
 
 	@Column({
@@ -168,7 +173,27 @@ export class User implements UserInterface {
 	})
 	twofa_secret: string;
 
-	@ManyToMany((type) => User, (user) => user.blockedUsers)
+	@ManyToMany((type) => User, {
+		onDelete: 'CASCADE',
+	})
 	@JoinTable()
 	blockedUsers: User[];
+
+	toDto(): UserDto {
+		const dto: UserDto = {
+			id: this.id,
+			login: this.login,
+			picture: this.picture,
+			displayName: this.displayName,
+			email: this.email,
+			createdAt: this.createdAt,
+			elo: this.elo,
+			victories: this.victories,
+			history: this.history,
+			friends: this.friends?.map((friend) => friend.toDto()),
+			status: this.status,
+			blockedUsers: this.blockedUsers?.map((user) => user.toDto()),
+		};
+		return dto;
+	}
 }

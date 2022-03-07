@@ -21,7 +21,7 @@ import {
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
-import { User } from './entities/user.entity';
+import { User, UserDto } from './entities/user.entity';
 import { UserService } from './user.service';
 import { FindUserDTO } from './dto/find-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -196,21 +196,22 @@ export class UserController {
 		@Req() req: { user: User },
 		@Param('id', ParseIntPipe) id: number
 	) {
-		return this.userService.blockUser(
-			req.user,
-			await this.userService.findUserById(id)
-		);
+		const blockedUser = await this.userService.findUserById(id);
+		if (!blockedUser) {
+			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+		}
+		return this.userService.blockUser(req.user, blockedUser);
 	}
 
 	@Get('block/list')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
-		type: [User],
+		type: [UserDto],
 		status: 200,
 		description: 'The users that are blocked',
 	})
-	async getBlockedUsers(@Req() req: { user: User }): Promise<User[]> {
-		return this.userService.getBlockedUsers(req.user);
+	async getBlockedUsers(@Req() req: { user: User }) {
+		return await this.userService.getBlockedUsers(req.user);
 	}
 
 	@Get('friends/list')

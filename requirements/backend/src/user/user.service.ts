@@ -7,7 +7,6 @@ import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
 import download from './utils/download';
-import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
 import { LadderDTO } from './dto/ladder.dto';
 import { FriendDTO } from './dto/friend.dto';
 
@@ -136,8 +135,6 @@ export class UserService {
 	}
 
 	async getUserChannels(user: { id: number }) {
-		const channelDtos: ChannelDto[] = [];
-
 		const channels = (
 			await this.userRepo.findOne({
 				where: { id: user.id },
@@ -152,18 +149,21 @@ export class UserService {
 			})
 		)?.channels;
 
-		if (!channels) return channelDtos;
+		if (!channels) return [];
+		const blockedUsers = await this.getBlockedUsers(user);
 		// sort messages by date
 		channels.forEach((channel) => {
+			channel.messages = channel.messages.filter((message) => {
+				return !blockedUsers.find((user) => {
+					return user.id === message.user?.id;
+				});
+			});
 			channel.messages.sort((a, b) => {
 				return a.createdAt > b.createdAt ? 1 : -1;
 			});
 		});
 
-		for (const channel of channels) {
-			channelDtos.push(channel.toDto());
-		}
-		return channelDtos;
+		return channels.map((channel) => channel.toDto());
 	}
 
 	async blockUser(user: User, blockedUser: User) {
@@ -177,8 +177,14 @@ export class UserService {
 		await this.userRepo.save(userDB);
 	}
 
-	async getBlockedUsers(user: User) {
-		return user.blockedUsers;
+	async getBlockedUsers(user: { id: number }) {
+		const userDB = await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['blockedUsers'],
+		});
+		if (!userDB)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		return userDB.blockedUsers;
 	}
 
 	async getFriendslist(id: number): Promise<User[]> {
