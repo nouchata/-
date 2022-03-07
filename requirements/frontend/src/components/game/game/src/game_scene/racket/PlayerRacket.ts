@@ -20,8 +20,10 @@ class PlayerRacket extends Racket {
 		this.getServerFlags();
 
 		this.deltaTotal += delta;
-		if ((this.selectCorrectUnit() as PlayerState).flags.stuned)
+		if ((this.selectCorrectUnit() as PlayerState).flags.stuned) {
 			this.absolutePosition.y = toPx((this.selectCorrectUnit() as PlayerState).pos.y, this.appRef.screen.height);
+			this.y = this.absolutePosition.y;
+		}
 		else
 			this.absolutePosition.y = toPx(this.manageMovementReconciliation(), this.appRef.screen.height);
 
@@ -107,7 +109,8 @@ class PlayerRacket extends Racket {
 					return (true);
 				}
 			}
-			if (!this.localCapacityChargingState) {
+			if (!this.localCapacityChargingState || !playerState.stockedCapacity) {
+				this.localCapacityChargingState = false;
 				if (this.capacityLoader) {
 					this.capacityLoader = 
 						this.capacityLoader - delta * ((this.appRef.gciMaster.currentResponseState as ResponseState).gameOptions.capChargingPPS / this.appRef.ticker.FPS) < 0 ?

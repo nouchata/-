@@ -128,7 +128,7 @@ class Ball extends Container implements IContainerElement {
 	}
 
 	protected manageMovement(delta: number) {
-		const ballSpeed : number = this.localBallState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
+		const ballSpeed : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
 		this.localBallState.pos.x += this.localBallState.directionVector.x * (ballSpeed / this.appRef.ticker.FPS) * delta;
 		this.localBallState.pos.y += this.localBallState.directionVector.y * (ballSpeed / this.appRef.ticker.FPS) * delta;
 		if (this.localBallState.pos.y < 0) {
@@ -173,7 +173,7 @@ class Ball extends Container implements IContainerElement {
 			correctionDirectionVector.x = 0;
 		if (isNaN(correctionDirectionVector.y))
 			correctionDirectionVector.y = 0;
-		const ballSpeed : number = this.localBallState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
+		const ballSpeed : number = (this.appRef.gciMaster.currentResponseState as ResponseState).ballState.speedPPS * (this.localBallState.flags.smash ? 2 : 1);
 		/* le facteur de vitesse doit être proportionnel à la distance qu'il reste à parcourir */
 		this.localBallState.pos.x += correctionDirectionVector.x * (ballSpeed * 2 / this.appRef.ticker.FPS) * delta;
 		this.localBallState.pos.y += correctionDirectionVector.y * (ballSpeed * 2 / this.appRef.ticker.FPS) * delta;

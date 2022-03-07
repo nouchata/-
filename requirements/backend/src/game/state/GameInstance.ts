@@ -202,6 +202,7 @@ class GameInstance {
 		players[this.ballState.pos.x < 50 ? 1 : 0].score++;
 		this.ballState.flags.rainbow = false;
 		this.ballState.flags.smash = false;
+		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
 
 		if (players[this.ballState.pos.x < 50 ? 1 : 0].score >= 6) {
 			this.forceGlobalFreeze = true;
@@ -307,6 +308,7 @@ class GameInstance {
 				newAngle += 2;
 			newAngle += 2;
 			this.ballState.directionVector.y = newAngle / 10;
+			this.ballState.speedPPS += 0.5; //
 			// this.lastMsPlayerBallCollision = this.mSecElapsed;
 			this.capacityUnlocker(currentPlayer);
 			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);

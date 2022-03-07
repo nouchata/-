@@ -216,6 +216,7 @@ class Racket extends Container implements IContainerElement {
 	public resetData() {
 		this.localCapacityChargingState = false;
 		this.capacityLoader = 0;
+		this.draw();
 	}
 	
 	protected getServerFlags() {
