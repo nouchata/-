@@ -1,6 +1,5 @@
 import { Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import { GCI_STATE } from "../GameClientInstance";
-import { IScene } from "../types/IScene";
 import { RUNSTATE } from "../types/ResponseState";
 import { GameScene } from "./game_scene/GameScene";
 import { EndScene } from "./other_scenes/EndScene";

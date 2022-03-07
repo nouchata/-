@@ -1,6 +1,6 @@
 import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
 import { GlitchFilter } from "@pixi/filter-glitch";
-import { Container, Filter, Graphics, PI_2, Rectangle } from "pixi.js";
+import { Container, Graphics, Rectangle } from "pixi.js";
 import { GA_KEY } from "../../../types/GameAction";
 import { RacketFlags } from "../../../types/RacketFlags";
 import { PlayerState } from "../../../types/PlayerState";
@@ -19,9 +19,6 @@ const rSS : {
 
 // client
 const angleFactor = 2;
-
-// server
-const defaultScreenHeightPercentagePerSec = 50;
 
 enum RacketUnit {
 	NONE,

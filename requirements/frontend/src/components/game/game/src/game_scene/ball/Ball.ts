@@ -3,7 +3,7 @@ import { BallFlags, BallState } from "../../../types/BallState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
 import { Racket, RacketUnit, toPer, toPx } from "../racket/Racket";
-import { sound } from "@pixi/sound";
+import { sound } from "@pixi/sound"; // eslint-disable-line
 import "@pixi/math-extras";
 import { GA_KEY } from "../../../types/GameAction";
 import { GameComponents } from "../GameComponents";

@@ -1,5 +1,5 @@
 import { Container } from "pixi.js";
-import { IContainerElement, IParticleContainerElement, IScene } from "../../types/IScene";
+import { IScene } from "../../types/IScene";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { GameComponents } from "./GameComponents";
 import PlayerScoreGUI from "./gui/PlayerScoreGUI";

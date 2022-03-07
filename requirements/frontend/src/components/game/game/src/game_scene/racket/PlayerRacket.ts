@@ -3,7 +3,7 @@ import { GameAction, GA_KEY } from "../../../types/GameAction";
 import { PlayerState } from "../../../types/PlayerState";
 import { ResponseState } from "../../../types/ResponseState";
 import { TranscendanceApp } from "../../TranscendanceApp";
-import { Racket, RacketUnit, toPer, toPx } from "./Racket";
+import { Racket, RacketUnit, toPx } from "./Racket";
 
 class PlayerRacket extends Racket {
 

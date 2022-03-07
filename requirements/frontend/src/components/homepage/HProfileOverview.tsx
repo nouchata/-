@@ -5,7 +5,6 @@ import { getVictoryRatio } from '../profile/UserDetails';
 
 import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
-import StarAsset from '../../assets/profile/star.png';
 import { GenericModalProps } from '../utils/GenericModal';
 import ProfileOptionsModal from '../modals/ProfileOptionsModal';
 import { useContext } from 'react';

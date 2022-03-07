@@ -4,7 +4,6 @@ import { HideDisplayData } from "../../types/HideDisplayData";
 import "./styles/game.scss";
 import { GameClientInstance } from "./game/GameClientInstance";
 import { useQuery } from "../../utils/useQuery";
-import { GameWS } from "./game/GameWS";
 import LoginContext from "../../contexts/LoginContext";
 import { FetchStatusData } from "../../types/FetchStatusData";
 
@@ -20,10 +19,12 @@ const Game = () : JSX.Element => {
 
 	useEffect(() => {
 		setHideDisplay({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true } as HideDisplayData);
-		setTimeout(() => gci = new GameClientInstance(fetchStatus?.user?.id as number, Number(queryCode), querySpectator ? true : false), 0);
+		// eslint-disable-next-line
+		setTimeout(() => gci = new GameClientInstance(fetchStatus?.user?.id as number, Number(queryCode), querySpectator ? true : false), 10);
 		
 
 		return function cleanup() {
+			gci.destroy();
 			setHideDisplay({});
 		};
 	}, []);

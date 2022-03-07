@@ -1,6 +1,6 @@
 import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import { Container, Graphics } from "pixi.js";
-import { IContainerElement, IParticleContainerElement, IScene } from "../../types/IScene";
+import { IContainerElement } from "../../types/IScene";
 import { ResponseState } from "../../types/ResponseState";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { Ball } from "./ball/Ball";
