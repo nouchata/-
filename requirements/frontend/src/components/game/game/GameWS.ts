@@ -11,6 +11,7 @@ class GameWS {
 
 	constructor(
 		instanceId: number,
+		forceSpectator: boolean,
 		stateCallback: (newState: ResponseState) => void,
 		errorCallback: (e: any) => void
 	) {
@@ -25,7 +26,7 @@ class GameWS {
 
 		this.socket.on('stateUpdate', stateCallback);
 
-		this.socket.emit('joinGame', { instanceId: this.instanceId });
+		this.socket.emit('joinGame', { instanceId: this.instanceId, forceSpectator: forceSpectator ? 1 : 0 });
 	}
 
 	emit(gameAction: GameAction) {

@@ -4,9 +4,9 @@ import { PlayerState } from "./PlayerState";
 
 enum RUNSTATE {
 	WAITING,
-	ABOUT_TO_RUN,
 	RUNNING,
 	PLAYER_DISCONNECTED,
+	AFTER_GAME,
 	ENDED
 };
 

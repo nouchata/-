@@ -1,18 +1,23 @@
-import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
+import { Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import { GCI_STATE } from "../GameClientInstance";
-import { IScene } from "../types/IScene";
 import { RUNSTATE } from "../types/ResponseState";
-import { GameComponents } from "./game_scene/GameComponents";
 import { GameScene } from "./game_scene/GameScene";
-import { LoaderScene } from "./loader_scene/LoaderScene";
+import { EndScene } from "./other_scenes/EndScene";
+import { LoaderScene } from "./other_scenes/LoaderScene";
+import { WaitingScene } from "./other_scenes/WaitingScene";
 import { TranscendanceApp } from "./TranscendanceApp";
+
+const sceneType : Array<
+	typeof WaitingScene | typeof GameScene | typeof EndScene
+> = [ WaitingScene, GameScene, WaitingScene, EndScene ];
 
 class ScenesManager {
 	private appRef : TranscendanceApp;
-	private currentScene : IScene | undefined = undefined;
-	private newScene : IScene | undefined = undefined;
+	private currentScene : LoaderScene | WaitingScene | GameScene | EndScene | undefined = undefined;
+	private newScene : LoaderScene | WaitingScene | GameScene | EndScene | undefined = undefined;
 	private transitionSceneAnimation : Tween<{ opacity: number }>;
 	private deltaTotal : number = 0;
+	private currentState : RUNSTATE | undefined = undefined;
 	constructor(appRef : TranscendanceApp) {
 		this.appRef = appRef;
 
@@ -23,9 +28,9 @@ class ScenesManager {
 					this.currentScene.alpha = object.opacity
 			} )
 			.onComplete(() => {
+				this.currentScene?.destroy();
+				this.appRef.stage.removeAllListeners();
 				this.appRef.stage.removeChildren();
-				if (this.currentScene)
-						this.currentScene.destroyScene();
 				this.currentScene = this.newScene;
 				if (this.currentScene) {
 					this.currentScene.alpha = 0;
@@ -38,44 +43,35 @@ class ScenesManager {
 					.onUpdate((object) => {
 						if (this.currentScene)
 							this.currentScene.alpha = object.opacity
-					} )
+					})
 			);
 
-		this.currentScene = new LoaderScene(this.appRef);
 		this.appRef.ticker.add(this.update, this);
+		this.currentScene = new LoaderScene(this.appRef);
 		this.appRef.stage.addChild(this.currentScene);
-	}
-
-	async masterManagerLoop() {
-		while (true) {
-			this.updateScene();
-			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
-			break ;
-		}
 	}
 
 	update(delta: number) {
 		this.deltaTotal += delta;
+		if (this.appRef.gciMaster.gciState === GCI_STATE.RUNNING &&
+			this.appRef.gciMaster.currentResponseState &&
+			this.appRef.gciMaster.currentResponseState.runState !== this.currentState)
+		{
+			console.log(this.appRef.gciMaster.currentResponseState.runState);
+			if (this.appRef.gciMaster.currentResponseState.runState === RUNSTATE.ENDED)
+				this.appRef.gciMaster.gciState = GCI_STATE.ENDED;
+			else {
+				this.currentState = this.appRef.gciMaster.currentResponseState.runState;
+				this.newScene = new sceneType[this.currentState](this.appRef);
+				this.transitionSceneAnimation.start(this.deltaTotal);
+			}
+		}
 		tweenUpdate(this.deltaTotal);
 	}
 
-	private updateScene() {
-		this.newScene = new GameComponents(this.appRef);
-		this.transitionSceneAnimation.start(this.deltaTotal);
-		// this.appRef.stage.removeChildren();
-		// if (this.currentScene instanceof LoaderScene)
-		// 		this.currentScene.destroyScene();
-		// this.currentScene = new GameComponents(this.appRef);
-		// this.currentScene.alpha = 0;
-		// this.appRef.stage.addChild(this.currentScene);
-		// this.transitionSceneAnimation[0].start(this.deltaTotal);
-		// let sceneType : Array<Object> = [ LoaderScene ];
-		// for (let scene)
-		// if (this.appRef.gciMaster.currentResponseState?.runState === RUNSTATE.RUNNING && !(this.currentScene instanceof GameScene)) {
-		// 	if (this.currentScene)
-		// 		this.currentScene.destroyScene();
-		// 	this.currentScene = new 
-		// }
+	public destroy() {
+		this.transitionSceneAnimation.end();
+		this.appRef.ticker.remove(this.update, this);
 	}
 }
 

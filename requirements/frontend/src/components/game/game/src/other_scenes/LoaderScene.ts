@@ -1,4 +1,5 @@
 import { Container, Loader, Rectangle, Sprite, Text } from "pixi.js";
+import { WebfontLoaderPlugin } from "pixi-webfont-loader";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
 import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
@@ -6,10 +7,12 @@ import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import Logo from "../../../../../assets/tempresize.png";
 import { gameAssets } from "../_assets";
 
-import { sound } from "@pixi/sound";
+import { sound } from "@pixi/sound"; // eslint-disable-line
 import { GCI_STATE } from "../../GameClientInstance";
 import { RacketUnit } from "../game_scene/racket/Racket";
 import { IScene } from "../../types/IScene";
+import { RequestWrapper } from "../../../../../utils/RequestWrapper";
+import { FetchUserData } from "../../../../../types/FetchUserData";
 
 class LoaderScene extends Container implements IScene {
 	private appRef : TranscendanceApp;
@@ -46,7 +49,7 @@ class LoaderScene extends Container implements IScene {
 			.to({ blur: 3 }, 100)
 			.easing(Easing.Elastic.InOut)
 			.onStart(() => {
-				sound.play("flickeringNeon", { volume: 0.5 });
+				// try { sound.play("flickeringNeon", { volume: 0.5 }); } catch(e) {}
 			})
 			.onUpdate((object) => this.bloomFilter.blur = object.blur)
 			.chain(
@@ -62,6 +65,7 @@ class LoaderScene extends Container implements IScene {
 		window.addEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.appRef.ticker.add(this.update, this);
 
+		Loader.registerPlugin(WebfontLoaderPlugin);
 		try {
 			Loader.shared.add(gameAssets);
 			Loader.shared.onError.once(this.errorLoading, this);
@@ -100,10 +104,24 @@ class LoaderScene extends Container implements IScene {
 			await new Promise((resolve) => setTimeout(() => resolve(1), 100));
 		}
 
-		this.text.text = "Click on the screen to continue";
+		let dataFetched : FetchUserData | undefined = undefined;
+		dataFetched = await RequestWrapper.get<FetchUserData>(`/user/${this.appRef.gciMaster.currentResponseState.playerOne.id}`, undefined, () => {
+			this.appRef.gciMaster.playersAliases[0] = "Player 1";
+		});
+		if (dataFetched)
+			this.appRef.gciMaster.playersAliases[0] = dataFetched.general.name;
+		dataFetched = await RequestWrapper.get<FetchUserData>(`/user/${this.appRef.gciMaster.currentResponseState.playerTwo.id}`, undefined, () => {
+			this.appRef.gciMaster.playersAliases[1] = "Player 2";
+		});
+		if (dataFetched)
+			this.appRef.gciMaster.playersAliases[1] = dataFetched.general.name;
+
+		// this.text.text = "Click on the screen to continue";
+		this.text.text = "All done";
 		this.flickeringTween.start(0);
 		this.isLoaded = true;
-		this.once("pointertap", this.quitLoadingScreen, this);
+		// this.once("pointertap", this.quitLoadingScreen, this);
+		this.quitLoadingScreen();
 	}
 
 	errorLoading(error?: Error) {
@@ -121,15 +139,15 @@ class LoaderScene extends Container implements IScene {
 		else if (!this.appRef.forceSpectator && this.appRef.gciMaster.currentResponseState?.playerTwo.id === this.appRef.userId)
 			this.appRef.playerRacket = RacketUnit.RIGHT;
 		this.appRef.gciMaster.gciState = GCI_STATE.RUNNING;
-		this.appRef.manager.masterManagerLoop();
 	}
 
-	destroyScene() {
+	destroy() {
+		this.appRef.ticker.remove(this.update, this);
+		this.flickeringTween.stop();
 		this.logo.destroy();
 		this.text.destroy();
-		this.flickeringTween.stop();
-		this.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		super.destroy();
 	}
 }
 
