@@ -38,6 +38,44 @@ export class UserDto {
 		example: 'Theo Matis',
 	})
 	displayName: string;
+
+	@ApiPropertyOptional({
+		description: 'The email of the user',
+		example: 'tmatis@student.42.fr',
+	})
+	email?: string;
+
+	@ApiProperty({
+		description: 'The date of creation of the user',
+		example: '2021-12-01T17:45:40.162Z',
+	})
+	createdAt: Date;
+
+	@ApiProperty({
+		description: "The user's elo score to determine their ranking",
+		example: 1450,
+	})
+	elo: number;
+	@ApiProperty({
+		description: 'The number of victories of the user',
+		example: 22,
+	})
+	victories: number;
+	@ApiProperty({
+		description: 'The history of the previous matches of the user',
+	})
+	history: MatchHistory[];
+
+	@ApiProperty({
+		description: 'The list of the user blocked',
+		type: [UserDto],
+	})
+	blockedUsers: UserDto[];
+
+	@ApiProperty({
+		description: "The user's friends list",
+	})
+	friends: User[];
 }
 
 @Entity({ name: 'users' })
@@ -62,18 +100,10 @@ export class User implements UserInterface {
 	displayName: string;
 
 	@Column({ nullable: true })
-	@ApiPropertyOptional({
-		description: 'The email of the user',
-		example: 'tmatis@student.42.fr',
-	})
 	email?: string;
 
 	@CreateDateColumn({
 		update: false,
-	})
-	@ApiProperty({
-		description: 'The date of creation of the user',
-		example: '2021-12-01T17:45:40.162Z',
 	})
 	createdAt: Date;
 
@@ -81,27 +111,15 @@ export class User implements UserInterface {
 		type: 'int',
 		default: 1000,
 	})
-	@ApiProperty({
-		description: "The user's elo score to determine their ranking",
-		example: 1450,
-	})
 	elo = 1000;
 
 	@Column({
 		default: 0,
 	})
-	@ApiProperty({
-		description: 'The number of victories of the user',
-		example: 22,
-	})
 	victories: number;
 
 	@Column({
 		default: 0,
-	})
-	@ApiProperty({
-		description: 'The number of losses of the user',
-		example: 13,
 	})
 	losses: number;
 
@@ -114,9 +132,6 @@ export class User implements UserInterface {
 
 	@ManyToMany((type) => User)
 	@JoinTable()
-	@ApiProperty({
-		description: "The user's friends list",
-	})
 	friends: User[];
 
 	@ManyToMany((type) => Channel, (channel) => channel.users, {
@@ -151,17 +166,9 @@ export class User implements UserInterface {
 	@Column({
 		default: true,
 	})
-	@ApiProperty({
-		description: 'Filled if 2FA is enabled (16 chars)',
-		example: 'OFUQCLIWNMOQ24BF',
-	})
 	twofa_secret: string;
 
 	@ManyToMany((type) => User, (user) => user.blockedUsers)
 	@JoinTable()
-	@ApiProperty({
-		description: 'The list of the user blocked',
-		type: [User],
-	})
 	blockedUsers: User[];
 }
