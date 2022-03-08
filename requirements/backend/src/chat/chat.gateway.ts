@@ -1,3 +1,4 @@
+import { UserService } from 'src/user/user.service';
 import { Inject, UseGuards, forwardRef } from '@nestjs/common';
 import {
 	SubscribeMessage,
@@ -15,7 +16,8 @@ import { MessageDto } from './dtos/user-channels.dto';
 export class ChatGateway {
 	constructor(
 		@Inject(forwardRef(() => ChannelService))
-		private channelService: ChannelService
+		private channelService: ChannelService,
+		private userService: UserService
 	) {}
 
 	@WebSocketServer()
@@ -27,9 +29,35 @@ export class ChatGateway {
 	} = {};
 
 	async sendMessageToChannel(channelId: number, message: MessageDto) {
-		Object.values(this.userSockets)
+		/*Object.keys(this.userSockets).forEach(async (userId) => {
+			const blockedUsers = await this.userService.getBlockedUsers({
+				id: Number(userId),
+			});
+			console.log(blockedUsers);
+		});*/
+		/*Object.values(this.userSockets)
 			.filter(({ channels }) => channels.includes(channelId))
 			.forEach(({ socket }) => {
+				socket.emit('receiveMessage', {
+					...message,
+					channelId: channelId,
+				});
+			});*/
+		Object.keys(this.userSockets)
+			.filter(async (userId) => {
+				const blockedUsers = await this.userService.getBlockedUsers({
+					id: Number(userId),
+				});
+				return !blockedUsers.some(
+					(blockedUser) => blockedUser.id === message.userId
+				);
+			})
+			.filter((userId) => {
+				const { channels } = this.userSockets[Number(userId)];
+				return channels.includes(channelId);
+			})
+			.forEach((userId) => {
+				const { socket } = this.userSockets[Number(userId)];
 				socket.emit('receiveMessage', {
 					...message,
 					channelId: channelId,
