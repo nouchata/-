@@ -3,11 +3,10 @@ import { Inject, UseGuards, forwardRef } from '@nestjs/common';
 import {
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer,
 	WsException,
 } from '@nestjs/websockets';
 import { WsGroupGuard } from 'src/auth/guards/group.guard';
-import { Socket, Server } from 'socket.io';
+import { Socket } from 'socket.io';
 import { User } from 'src/user/entities/user.entity';
 import { ChannelService } from './channel/channel.service';
 import { MessageDto } from './dtos/user-channels.dto';
@@ -20,39 +19,27 @@ export class ChatGateway {
 		private userService: UserService
 	) {}
 
-	@WebSocketServer()
-	wsServer: Server;
-
 	// [userId: number] => Socket
 	private userSockets: {
 		[userId: number]: { socket: Socket; channels: number[] };
 	} = {};
 
 	async sendMessageToChannel(channelId: number, message: MessageDto) {
-		/*Object.keys(this.userSockets).forEach(async (userId) => {
+		for (const userId of Object.keys(this.userSockets)) {
 			const blockedUsers = await this.userService.getBlockedUsers({
-				id: Number(userId),
+				id: +userId,
 			});
-			console.log(blockedUsers);
-		});*/
-		/*Object.values(this.userSockets)
-			.filter(({ channels }) => channels.includes(channelId))
-			.forEach(({ socket }) => {
-				socket.emit('receiveMessage', {
+			if (
+				this.userSockets[+userId].channels.includes(channelId) &&
+				!blockedUsers.some((u) => u.id === message.userId)
+			) {
+				this.userSockets[+userId].socket.emit('receiveMessage', {
 					...message,
 					channelId: channelId,
 				});
-			});*/
-		Object.keys(this.userSockets)
-			.filter(async (userId) => {
-				const blockedUsers = await this.userService.getBlockedUsers({
-					id: Number(userId),
-				});
-				return !blockedUsers.some(
-					(blockedUser) => blockedUser.id === message.userId
-				);
-			})
-			.filter((userId) => {
+			}
+		}
+		/*.filter((userId) => {
 				const { channels } = this.userSockets[Number(userId)];
 				return channels.includes(channelId);
 			})
@@ -62,7 +49,7 @@ export class ChatGateway {
 					...message,
 					channelId: channelId,
 				});
-			});
+			});*/
 	}
 
 	async addNewUser(channelId: number, user: User) {
