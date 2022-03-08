@@ -6,7 +6,7 @@ import { Racket, RacketUnit } from "../racket/Racket";
 import { update as tweenUpdate, Tween, Easing } from "@tweenjs/tween.js";
 import { GameScene } from "../GameScene";
 
-const playerCapacityColor: Array<number> = [0xFFFFFF, 0xFF0000, 0x00FF00, 0x0000FF];
+const playerCapacityColor: Array<number> = [0xFFFFFF, 0xFF0000, 0x00FF00, 0x0000FF]; // eslint-disable-line
 
 class PlayerScoreGUI extends Container implements IContainerElement {
     private appRef : TranscendanceApp;

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -9,6 +9,7 @@ import { MatchHistoryDTO } from './dto/match-history.dto';
 import download from './utils/download';
 import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
 import { LadderDTO } from './dto/ladder.dto';
+import { FriendDTO } from './dto/friend.dto';
 
 @Injectable()
 export class UserService {
@@ -43,19 +44,19 @@ export class UserService {
 		});
 	}
 
-	async findUserById(id: number) {
-		const userDB = await this.userRepo.findOne({ id });
-		if (!userDB) throw new NotFoundException(`User ${id} does not exist.`);
-		return userDB;
+	async findUserByDisplayName(name: string) {
+		return this.userRepo.findOne({ displayName: name });;
 	}
 
-	async editUser(dto: EditUserDTO) {
-		const user = await this.findUserById(dto.id);
+	async findUserById(id: number) {
+		return this.userRepo.findOne({ id });
+	}
 
+	async editUser(dto: EditUserDTO, userPicture: string) {
 		if (!dto.picture) {
-			dto.picture = user.picture;
+			dto.picture = userPicture;
 		}
-		return await this.userRepo.save(dto.toEntity());
+		return this.userRepo.save(dto.toEntity());
 	}
 
 	async getLadder() {
@@ -163,5 +164,32 @@ export class UserService {
 			channelDtos.push(channel.toDto());
 		}
 		return channelDtos;
+	}
+
+	async getFriendslist(id: number) : Promise<User[]> {
+		const friends = (await this.userRepo.findOne({
+			where: { id },
+			relations: ['friends']
+		}))?.friends;
+
+		if (!friends) {
+			return [];
+		}
+		return friends;
+	}
+
+	async editFriendship(user: User, friend: User, cb: any) : Promise<FriendDTO> {
+		user.friends = await this.getFriendslist(user.id); // retrieve user's friend list
+		
+		// check the existing friendship relation between the two users
+		const friendIndex = user.friends.findIndex((current) => {
+			return (current.id === friend.id);
+		});
+
+		// callback
+		user = cb(user, friend, friendIndex);
+		this.userRepo.save(user) // save new relation
+
+		return FriendDTO.fromEntity(friend);
 	}
 }

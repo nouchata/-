@@ -2,7 +2,6 @@ import { Container, Filter, Rectangle, Text } from "pixi.js";
 import { TranscendanceApp } from "../TranscendanceApp";
 import { IScene } from "../../types/IScene";
 import { AdvancedBloomFilter } from "@pixi/filter-advanced-bloom";
-import { GCI_STATE } from "../../GameClientInstance";
 import { update as tweenUpdate, Tween, Easing } from "@tweenjs/tween.js";
 import { RUNSTATE } from "../../types/ResponseState";
 

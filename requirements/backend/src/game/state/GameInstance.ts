@@ -206,6 +206,7 @@ class GameInstance {
 		players[winner].score++;
 		this.ballState.flags.rainbow = false;
 		this.ballState.flags.smash = false;
+		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
 
 		if (players[winner].score >= 6) { // a player won
 			this.forceGlobalFreeze = true;
@@ -313,6 +314,7 @@ class GameInstance {
 				newAngle += 2;
 			newAngle += 2;
 			this.ballState.directionVector.y = newAngle / 10;
+			this.ballState.speedPPS += 0.5; //
 			// this.lastMsPlayerBallCollision = this.mSecElapsed;
 			this.capacityUnlocker(currentPlayer);
 			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);

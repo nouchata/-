@@ -7,7 +7,6 @@ import Game from './game/Game';
 import Homepage from './homepage/Homepage';
 import Login from './Login';
 import Profile from './profile/Profile';
-import Error from '../components/utils/Error';
 
 
 const LinkTree = () : JSX.Element => {

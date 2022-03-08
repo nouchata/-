@@ -7,7 +7,7 @@ import { Easing, Tween, update as tweenUpdate } from "@tweenjs/tween.js";
 import Logo from "../../../../../assets/tempresize.png";
 import { gameAssets } from "../_assets";
 
-import { sound } from "@pixi/sound";
+import { sound } from "@pixi/sound"; // eslint-disable-line
 import { GCI_STATE } from "../../GameClientInstance";
 import { RacketUnit } from "../game_scene/racket/Racket";
 import { IScene } from "../../types/IScene";
