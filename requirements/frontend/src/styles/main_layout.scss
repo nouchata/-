@@ -53,15 +53,23 @@ $chat-width: 280px;
 	}
 }
 
+.main-content > .social-field {
+	display: flex;
+	flex: 0 0 $chat-width;
+	position: relative;
+	border-right: 1px solid theme.$primary-color;
+	filter: drop-shadow(0 10px 1rem crimson);
+	//overflow-x: hidden;
+}
 
-.social-field {
+.main-field > .social-field {
 	display: none;
 }
 
 .main-content {
 	margin: 0;
 	padding: 20px 0 20px 0;
-	height: 100%;
+	// height: 100%;
 	overflow-x: hidden;
 
 	* {
@@ -81,7 +89,7 @@ $chat-width: 280px;
 		height: 100vh;
 	}
 
-	.social-field {
+	.main-field > .social-field {
 		display: flex;
 		flex: 0 0 $chat-width;
 		position: relative;

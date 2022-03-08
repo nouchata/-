@@ -10,9 +10,6 @@ import Error from './components/utils/Error';
 import GenericModal from './components/utils/GenericModal';
 import { GenericModalProps } from './components/utils/GenericModal';
 
-import ChatAsset from './assets/homepage/chat.png';
-import JoyAsset from './assets/homepage/joystick.png';
-
 import './styles/global.scss';
 import './styles/main_layout.scss';
 import './styles/profile_overview.scss';
@@ -22,6 +19,7 @@ import DisplayContext from './contexts/HideDisplayContext';
 import { fetchStatusCompare } from './utils/fetchStatusCompare';
 import LinkTree from './components/LinkTree';
 import { HideDisplayData } from './types/HideDisplayData';
+import MaterialLikeBtns from './components/homepage/MaterialLikeBtns';
 
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
@@ -74,12 +72,7 @@ const App = (): JSX.Element => {
 						}
 						{fetchStatus && <div className="App">
 							{fetchStatus.loggedIn === LoginState.LOGGED &&
-							!hideDisplay.hideButtons && /* PLAY AND CHAT BUTTONS */
-								<div className='material-like-fab'>
-									<button><img src={ChatAsset} alt='Chats' /></button>
-									<button><img src={JoyAsset} alt='Play' /></button>
-								</div>
-							}
+							!hideDisplay.hideButtons && <MaterialLikeBtns />}
 							<div className='main-field'>
 								<div className='main-content' style={hideDisplay.hideMainContainerStyle ? {padding: 0} : {}}>
 									{fetchStatus.fetched ?
@@ -91,7 +84,7 @@ const App = (): JSX.Element => {
 								{fetchStatus.loggedIn === LoginState.LOGGED &&
 								!hideDisplay.hideSidebar &&
 									<HSocialField />
-								} {/* CHAT AND FRIEND THING */}
+								}
 							</div>
 						</div>
 						}

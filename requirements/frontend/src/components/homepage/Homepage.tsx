@@ -13,7 +13,7 @@ const Homepage = () : JSX.Element => {
 	const userCtx : { fetchStatus: FetchStatusData } = useContext(LoginContext);
 
 	return (
-		<div>
+		<>
 			<div className='homepage-header'>
 				<h1>Welcome back, <br /><span>{userCtx.fetchStatus.user?.displayName}</span> !</h1>
 				<HProfileOverview {...userCtx.fetchStatus} />
@@ -25,7 +25,7 @@ const Homepage = () : JSX.Element => {
 					</div>
 					
 			</div>
-		</div>
+		</>
 	);
 }
 
