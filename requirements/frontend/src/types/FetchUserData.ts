@@ -18,7 +18,6 @@ export type FetchUserData = {
         winner: string,
         loser: string,
         score: [number, number],
-        duration: number,
         date: Date
     }[],
     isEditable: boolean

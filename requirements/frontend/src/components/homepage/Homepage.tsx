@@ -7,7 +7,6 @@ import RankingTable from '../../components/homepage/RankingTable';
 
 import '../../styles/homepage.scss';
 import '../../styles/profile_overview.scss';
-import { Link } from 'react-router-dom';
 
 const Homepage = () : JSX.Element => {
 	const userCtx : { fetchStatus: FetchStatusData } = useContext(LoginContext);
