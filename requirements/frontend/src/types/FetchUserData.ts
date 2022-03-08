@@ -1,6 +1,7 @@
 import { UserStatus } from "../components/utils/StatusDisplay";
 
 export type FetchUserData = {
+    id: number;
     general: {
         picture: string,
         name: string,

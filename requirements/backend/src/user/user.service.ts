@@ -77,6 +77,7 @@ export class UserService {
 	async createUserDTO(entity: User): Promise<FindUserDTO> {
 		const dto = new FindUserDTO();
 
+		dto.id = entity.id;
 		dto.general.name = entity.displayName;
 		dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
 		dto.general.creation = entity.createdAt;
@@ -174,6 +175,19 @@ export class UserService {
 		if (!userDB)
 			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 		userDB.blockedUsers.push(blockedUser);
+		await this.userRepo.save(userDB);
+	}
+
+	async unblockUser(user: User, blockedUser: User) {
+		const userDB = await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['blockedUsers'],
+		});
+		if (!userDB)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		userDB.blockedUsers = userDB.blockedUsers.filter(
+			(curr) => curr.id !== blockedUser.id
+		);
 		await this.userRepo.save(userDB);
 	}
 

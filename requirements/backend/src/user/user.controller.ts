@@ -200,7 +200,34 @@ export class UserController {
 		if (!blockedUser) {
 			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 		}
-		return this.userService.blockUser(req.user, blockedUser);
+		await this.userService.blockUser(req.user, blockedUser);
+		return {
+			message: `${req.user.displayName} has blocked ${blockedUser.displayName}`,
+		};
+	}
+
+	@Delete('block/:id')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 200,
+		description: 'The user was unblocked',
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'No id matching user',
+	})
+	async unblockUser(
+		@Req() req: { user: User },
+		@Param('id', ParseIntPipe) id: number
+	) {
+		const blockedUser = await this.userService.findUserById(id);
+		if (!blockedUser) {
+			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+		}
+		await this.userService.unblockUser(req.user, blockedUser);
+		return {
+			message: `${req.user.displayName} has unblocked ${blockedUser.displayName}`,
+		};
 	}
 
 	@Get('block/list')
