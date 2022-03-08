@@ -26,13 +26,6 @@ export class MatchHistoryDTO {
 	score: [number, number];
 
 	@ApiProperty({
-		description: 'The duration of the match in seconds',
-		example: 300,
-	})
-	@IsNumber()
-	duration: number;
-
-	@ApiProperty({
 		description: 'The day of the match',
 		example: '2022-01-02 15:25:37.579292',
 	})

@@ -107,7 +107,6 @@ export class UserService {
 				matchInfo.id = match.id;
 				matchInfo.score[0] = match.winScore;
 				matchInfo.score[1] = match.loseScore;
-				matchInfo.duration = match.duration;
 				matchInfo.date = match.date;
 
 				return matchInfo;
