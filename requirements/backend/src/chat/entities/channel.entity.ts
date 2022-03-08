@@ -57,16 +57,14 @@ export class Channel {
 	}
 
 	toDto(): ChannelDto {
-		const messageDtos: MessageDto[] = [];
-		for (const message of this.messages) messageDtos.push(message.toDto());
 		const channelDto: ChannelDto = {
 			id: this.id,
 			name: this.name,
 			channelType: this.channelType,
-			owner: this.owner,
-			users: this.users,
-			admins: this.admins,
-			messages: messageDtos,
+			owner: this.owner.toDto(),
+			users: this.users.map((user) => user.toDto()),
+			admins: this.admins.map((u) => u.toDto()),
+			messages: this.messages.map((m) => m.toDto()),
 		};
 		return channelDto;
 	}

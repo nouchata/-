@@ -1,5 +1,5 @@
+import { UserDto } from './../../user/entities/user.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { User } from 'src/user/entities/user.entity';
 import { MessageType } from '../entities/message.entity';
 
 export class MessageDto {
@@ -29,14 +29,14 @@ export class ChannelDto {
 	@ApiProperty({ description: 'type of the channel', example: 'private' })
 	channelType: string;
 
-	@ApiProperty({ description: 'Owner of the channel', type: User })
-	owner: User;
+	@ApiProperty({ description: 'Owner of the channel', type: UserDto })
+	owner: UserDto;
 
-	@ApiProperty({ description: 'Admins of the channel', type: [User] })
-	admins: User[];
+	@ApiProperty({ description: 'Admins of the channel', type: [UserDto] })
+	admins: UserDto[];
 
-	@ApiProperty({ description: 'Users of the channel', type: [User] })
-	users: User[];
+	@ApiProperty({ description: 'Users of the channel', type: [UserDto] })
+	users: UserDto[];
 
 	@ApiProperty({ description: 'Messages of the channel', type: [MessageDto] })
 	messages: MessageDto[];
