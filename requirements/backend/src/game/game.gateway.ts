@@ -7,12 +7,13 @@ import { OnlineStateGuard } from 'src/auth/guards/online-state.guard';
 import { GameInstance } from './state/GameInstance';
 import { GameOptions } from './types/GameOptions';
 import { GameAction, GA_KEY } from './types/GameAction';
+import { GameService } from './game.service';
 
 @UseGuards(OnlineStateGuard)
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
-	constructor() {
+	constructor(@Inject(GameService) private gameService: GameService) {
 		// debug test fake p2
 		setTimeout(() => {
 			this.createInstance(1, 2, { gameType: "extended" }, 123456);
@@ -127,7 +128,9 @@ export class GameGateway {
 		this.associatedPlayers[playerOneId] = instanceId;
 		this.associatedPlayers[playerTwoId] = instanceId;
 
-		this.gameInstances[instanceId] = new GameInstance({
+		this.gameInstances[instanceId] = new GameInstance(
+			this.gameService,
+			{
 			wsServer: this.wsServer,
 			instanceId: instanceId,
 			associatedPlayers: this.associatedPlayers,
