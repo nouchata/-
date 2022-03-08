@@ -115,7 +115,7 @@ export class UserService {
 
 		// sort matches by date
 		dto.history.sort((a, b) => {
-			if (a.date < b.date) {
+			if (a.date > b.date) {
 				return -1;
 			} else {
 				return 1;
