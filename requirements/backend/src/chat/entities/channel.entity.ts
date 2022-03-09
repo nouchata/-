@@ -56,17 +56,24 @@ export class Channel {
 		return this.users.some((u) => u.id === user.id);
 	}
 
-	toDto(): ChannelDto {
-		const messageDtos: MessageDto[] = [];
-		for (const message of this.messages) messageDtos.push(message.toDto());
+	toDto(blockedUsers: User[]): ChannelDto {
 		const channelDto: ChannelDto = {
 			id: this.id,
 			name: this.name,
 			channelType: this.channelType,
-			owner: this.owner,
-			users: this.users,
-			admins: this.admins,
-			messages: messageDtos,
+			owner: this.owner.toDto(),
+			users: this.users.map((user) => user.toDto()),
+			admins: this.admins.map((u) => u.toDto()),
+			messages: this.messages
+				.filter((message) => {
+					return !blockedUsers.find((user) => {
+						return user.id === message.user?.id;
+					});
+				})
+				.sort((a, b) => {
+					return a.createdAt > b.createdAt ? 1 : -1;
+				})
+				.map((m) => m.toDto()),
 		};
 		return channelDto;
 	}

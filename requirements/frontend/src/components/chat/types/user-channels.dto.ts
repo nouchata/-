@@ -11,6 +11,7 @@ export interface User
 	displayName: string;
 	profileURL: string;
 	email?: string;
+	status: string;
 }
 
 export interface MessageDto

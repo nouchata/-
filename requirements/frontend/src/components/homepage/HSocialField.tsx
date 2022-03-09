@@ -3,7 +3,6 @@ import LoginContext from '../../contexts/LoginContext';
 import ModalContext from '../../contexts/ModalContext';
 
 import CloseAsset from '../../assets/chat/close.png';
-import MaxAsset from '../../assets/chat/max.png';
 import MinusAsset from '../../assets/chat/minus.png';
 import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
@@ -22,8 +21,9 @@ import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
 import FriendsList from '../friends/FriendsList';
 import JoinCreateModal from '../chat/modal/JoinCreateModal';
+import ChatOption from '../chat/Options/ChatOption';
 import AddFriendModal from '../friends/modal/AddFriendModal';
-import { FetchFriendsList } from '../../types/FetchFriendsList';
+import { useFriendList } from '../friends/utils/FriendListHook';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
@@ -40,12 +40,12 @@ const HSocialField = () => {
 	const { setModalProps } = useContext(ModalContext);
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
-	const [friends, setFriends] = useState<FetchFriendsList[]>([]);
 	const fetchStatusValue: {
 		fetchStatus: FetchStatusData;
 		setFetchStatus: (fetchStatus: FetchStatusData) => void;
 	} = useContext(LoginContext);
 	let notificationHandler = useContext(NotificationContext);
+	const friendList = useFriendList();
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -100,7 +100,7 @@ const HSocialField = () => {
 	}, [notificationHandler, chatSocket, onMessage]);
 
 	const AddFriend = async (name: string) => {
-		const data = await RequestWrapper.post<FetchFriendsList>(
+		/*const data = await RequestWrapper.post<FetchFriendsList>(
 			'/user/friends/add',
 			{ username: name },
 			(e) => {
@@ -116,13 +116,30 @@ const HSocialField = () => {
 			friends.push(data);
 			setFriends(friends);
 			setModalProps({ show: false });
+		}*/
+		try {
+			await friendList.addFriendByName(name);
+		} catch (e: any) {
+			console.log('error caught');
+			let errinfo: string;
+			console.log(e.response.data);
+			if (e.response.data.message) {
+				errinfo = e.response.data.message;
+			} else {
+				errinfo = 'Unexpected Error :(';
+			}
+			console.log(errinfo);
+			setModalProps({
+				show: true,
+				content: <AddFriendModal cb={AddFriend} info={errinfo} />,
+			});
 		}
-	}
+	};
 
 	const friendModalSettings: GenericModalProps = {
 		show: true,
-		content: <AddFriendModal cb={AddFriend}/>,
-		width: '25%'
+		content: <AddFriendModal cb={AddFriend} />,
+		width: '25%',
 	};
 
 	return (
@@ -158,9 +175,10 @@ const HSocialField = () => {
 					Channels
 				</button>
 			</div>
-			<div className='hsf-content'>
-				{isFriendTabSelected ?
-					<FriendsList friends={{ val: friends, set: setFriends }} setModal={setModalProps} /> :
+			<div className="hsf-content">
+				{isFriendTabSelected ? (
+					<FriendsList setModal={setModalProps} />
+				) : (
 					<ul>
 						{chatSocket?.channels.map((channel, index) => {
 							return (
@@ -186,16 +204,15 @@ const HSocialField = () => {
 							);
 						})}
 					</ul>
-				}
+				)}
 			</div>
 			{chatSocket?.channels[selectChannelIndex] && (
 				<div className={chatToggleCSS(chatStatus)}>
 					<div className="hsf-chat-controls">
 						<h2>{chatSocket?.channels[selectChannelIndex].name}</h2>
-						<button title="Maximize in another window">
-							<img src={MaxAsset} alt="maximize" />
-						</button>
-
+						<ChatOption
+							channel={chatSocket.channels[selectChannelIndex]}
+						/>
 						{chatStatus.state === 'OPENED' ? (
 							<button
 								title="Minimize"

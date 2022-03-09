@@ -1,12 +1,12 @@
+import { UserService } from 'src/user/user.service';
 import { Inject, UseGuards, forwardRef } from '@nestjs/common';
 import {
 	SubscribeMessage,
 	WebSocketGateway,
-	WebSocketServer,
 	WsException,
 } from '@nestjs/websockets';
 import { WsGroupGuard } from 'src/auth/guards/group.guard';
-import { Socket, Server } from 'socket.io';
+import { Socket } from 'socket.io';
 import { User } from 'src/user/entities/user.entity';
 import { ChannelService } from './channel/channel.service';
 import { MessageDto } from './dtos/user-channels.dto';
@@ -15,39 +15,86 @@ import { MessageDto } from './dtos/user-channels.dto';
 export class ChatGateway {
 	constructor(
 		@Inject(forwardRef(() => ChannelService))
-		private channelService: ChannelService
+		private channelService: ChannelService,
+		private userService: UserService
 	) {}
 
-	@WebSocketServer()
-	wsServer: Server;
-
 	// [userId: number] => Socket
-	private userSockets: { [userId: number]: Socket } = {};
+	private userSockets: {
+		[userId: number]: { socket: Socket; channels: number[] };
+	} = {};
 
 	async sendMessageToChannel(channelId: number, message: MessageDto) {
-		this.wsServer
-			.to('channel#' + channelId)
-			.emit('receiveMessage', { ...message, channelId: channelId });
+		for (const userId of Object.keys(this.userSockets)) {
+			const blockedUsers = await this.userService.getBlockedUsers({
+				id: +userId,
+			});
+			if (
+				this.userSockets[+userId].channels.includes(channelId) &&
+				!blockedUsers.some((u) => u.id === message.userId)
+			) {
+				this.userSockets[+userId].socket.emit('receiveMessage', {
+					...message,
+					channelId: channelId,
+				});
+			}
+		}
+		/*.filter((userId) => {
+				const { channels } = this.userSockets[Number(userId)];
+				return channels.includes(channelId);
+			})
+			.forEach((userId) => {
+				const { socket } = this.userSockets[Number(userId)];
+				socket.emit('receiveMessage', {
+					...message,
+					channelId: channelId,
+				});
+			});*/
 	}
 
 	async addNewUser(channelId: number, user: User) {
-		this.wsServer
-			.to('channel#' + channelId)
-			.emit('newUser', { ...user, channelId: channelId });
+		for (const userId of Object.keys(this.userSockets)) {
+			if (this.userSockets[+userId].channels.includes(channelId)) {
+				this.userSockets[+userId].socket.emit('newUser', {
+					...user,
+					channelId: channelId,
+				});
+			}
+		}
 	}
 
 	async removeUserChannel(channelId: number, user: User) {
 		// remove user from room
-		this.wsServer
-			.to('channel#' + channelId)
-			.emit('removeUser', { ...user, channelId: channelId });
-		this.userSockets[user.id].leave('channel#' + channelId);
+		/*Object.values(this.userSockets)
+			.filter(({ channels }) => channels.includes(channelId))
+			.forEach(({ socket }) => {
+				socket.emit('removeUser', { ...user, channelId: channelId });
+			});
+		if (!this.userSockets[user.id]) return;
+		this.userSockets[user.id].channels = this.userSockets[
+			user.id
+		].channels.filter((c) => c !== channelId);*/
+		for (const userId of Object.keys(this.userSockets)) {
+			if (this.userSockets[+userId].channels.includes(channelId)) {
+				this.userSockets[+userId].socket.emit('removeUser', {
+					...user,
+					channelId: channelId,
+				});
+			}
+		}
+		if (!this.userSockets[user.id]) return;
+		this.userSockets[user.id].channels = this.userSockets[
+			user.id
+		].channels.filter((c) => c !== channelId);
 	}
 
 	// handle user connection
 	@UseGuards(WsGroupGuard)
 	handleConnection(client: Socket & { request: { user: User } }) {
-		this.userSockets[client.request.user.id] = client;
+		this.userSockets[client.request.user.id] = {
+			socket: client,
+			channels: [],
+		};
 	}
 
 	// handle user disconnection
@@ -66,7 +113,11 @@ export class ChatGateway {
 
 		if (channelFound) {
 			if (channelFound.canUserAccess(client.request.user)) {
-				client.join('channel#' + channelId);
+				if (!this.userSockets[client.request.user.id])
+					throw new WsException('User not found');
+				this.userSockets[client.request.user.id].channels.push(
+					channelId
+				);
 				client.emit('joinedChannel', channelFound);
 			} else
 				throw new WsException(

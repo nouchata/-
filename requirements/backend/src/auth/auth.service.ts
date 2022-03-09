@@ -15,7 +15,7 @@ export class AuthService {
 
 		if (user) return user;
 		else {
-			const createUser: UserInterface = { ...details, role: 'user' };
+			const createUser: UserInterface = { ...details };
 			return this.userService.createUser(createUser);
 		}
 	}

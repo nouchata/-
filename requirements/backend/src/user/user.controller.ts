@@ -2,14 +2,11 @@ import { GroupGuard } from 'src/auth/guards/group.guard';
 import { EditUserDTO } from './dto/edit-user.dto';
 import {
 	Body,
-	ConflictException,
 	Controller,
 	Delete,
 	Get,
-	HttpCode,
 	HttpException,
 	HttpStatus,
-	Inject,
 	NotFoundException,
 	Param,
 	ParseIntPipe,
@@ -22,7 +19,7 @@ import {
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
-import { User } from './entities/user.entity';
+import { User, UserDto } from './entities/user.entity';
 import { UserService } from './user.service';
 import { FindUserDTO } from './dto/find-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -37,7 +34,7 @@ import { FriendDTO } from './dto/friend.dto';
 
 @Controller('user')
 export class UserController {
-	constructor(@Inject(UserService) private userService: UserService) {}
+	constructor(private userService: UserService) {}
 
 	@Get('ladder')
 	@UseGuards(GroupGuard)
@@ -68,7 +65,9 @@ export class UserController {
 	): Promise<FindUserDTO> {
 		const userDB = await this.userService.findUserById(id);
 		if (!userDB) {
-			throw new NotFoundException(`"${req.user.displayName}" is not an existing user.`);
+			throw new NotFoundException(
+				`"${req.user.displayName}" is not an existing user.`
+			);
 		}
 
 		const dto = await this.userService.createUserDTO(userDB);
@@ -153,7 +152,9 @@ export class UserController {
 
 		const prevUser = await this.userService.findUserById(dto.id);
 		if (!prevUser) {
-			throw new NotFoundException(`"${req.user.displayName}" is not an existing user.`);
+			throw new NotFoundException(
+				`"${req.user.displayName}" is not an existing user.`
+			);
 		}
 		const newUser = await this.userService.editUser(dto, prevUser.picture);
 
@@ -179,86 +180,161 @@ export class UserController {
 		return this.userService.getUserChannels({ id: req.user.id });
 	}
 
+	@Post('block/:id')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 200,
+		description: 'The user was blocked',
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'No id matching user',
+	})
+	async blockUser(
+		@Req() req: { user: User },
+		@Param('id', ParseIntPipe) id: number
+	) {
+		const blockedUser = await this.userService.findUserById(id);
+		if (!blockedUser) {
+			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+		}
+		await this.userService.blockUser(req.user, blockedUser);
+		return {
+			message: `${req.user.displayName} has blocked ${blockedUser.displayName}`,
+		};
+	}
+
+	@Delete('block/:id')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 200,
+		description: 'The user was unblocked',
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'No id matching user',
+	})
+	async unblockUser(
+		@Req() req: { user: User },
+		@Param('id', ParseIntPipe) id: number
+	) {
+		const blockedUser = await this.userService.findUserById(id);
+		if (!blockedUser) {
+			throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+		}
+		await this.userService.unblockUser(req.user, blockedUser);
+		return {
+			message: `${req.user.displayName} has unblocked ${blockedUser.displayName}`,
+		};
+	}
+
+	@Get('block/list')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		type: [UserDto],
+		status: 200,
+		description: 'The users that are blocked',
+	})
+	async getBlockedUsers(@Req() req: { user: User }) {
+		return await this.userService.getBlockedUsers(req.user);
+	}
+
 	@Get('friends/list')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		type: [FriendDTO],
 		status: 200,
-		description: "The list of all the user's friends"
+		description: "The list of all the user's friends",
 	})
 	async getFriendslistDTO(@Req() req: { user: User }): Promise<FriendDTO[]> {
 		const list = await this.userService.getFriendslist(req.user.id);
 		return list.map((friend) => {
-			return (FriendDTO.fromEntity(friend));
+			return FriendDTO.fromEntity(friend);
 		});
 	}
 
-	@Post('friends/add')
+	@Post('friends/addByName/:id')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 201,
-		description: "Add the specified user as friend"
+		description: 'Add the specified user as friend',
+		type: FriendDTO,
 	})
 	@ApiResponse({
 		status: 404,
-		description: "User does not exist"
+		description: 'User does not exist',
 	})
 	@ApiResponse({
 		status: 409,
-		description: "Already friend with this user"
+		description: 'Already friend with this user',
 	})
-	async addFriend(@Req() req: { user: User }, @Body() body: { username: string }) : Promise<FriendDTO> {
-		const friend = await this.userService.findUserByDisplayName(body.username); // find friend's entity
+	async addFriend(
+		@Req() req: { user: User },
+		@Param('id') displayName: string
+	): Promise<FriendDTO> {
+		const friend = await this.userService.findUserByDisplayName(
+			displayName
+		); // find friend's entity
 		if (!friend) {
-			throw new NotFoundException(`"${body.username}" is not an existing user.`);
+			throw new NotFoundException(
+				`"${displayName}" is not an existing user.`
+			);
 		}
-
-		return this.userService.editFriendship(
-			req.user,
-			friend,
-			(user: User, friend: User, index: number) => {
-				if (index !== -1) {
-					throw new ConflictException(`"${friend.displayName}" and you are already friends.`);
-				} else if (user.id === friend.id) {
-					throw new ConflictException(`You cannot add yourself !`);
-				}
-				user.friends.push(friend);
-				return user;
-			}
-		);
+		return this.userService.addFriend(req.user, friend);
 	}
 
-	@Delete('friends/delete/:name')
-	@HttpCode(HttpStatus.NO_CONTENT)
+	@Post('friends/add/:id')
+	@UseGuards(GroupGuard)
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'Add the specified user as friend',
+		type: FriendDTO,
+	})
+	@ApiResponse({
+		status: 404,
+		description: 'User does not exist',
+	})
+	@ApiResponse({
+		status: 409,
+		description: 'Already friend with this user',
+	})
+	async addFriendById(
+		@Req() req: { user: User },
+		@Param('id', ParseIntPipe) id: number
+	): Promise<FriendDTO> {
+		const friend = await this.userService.findUserById(id); // find friend's entity
+		if (!friend) {
+			throw new NotFoundException(`"${id}" is not an existing user.`);
+		}
+		return this.userService.addFriend(req.user, friend);
+	}
+
+	@Delete('friends/delete/:id')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 200,
-		description: "Delete an user from your friends list"
+		description: 'Delete an user from your friends list',
 	})
 	@ApiResponse({
 		status: 404,
-		description: "User does not exist"
+		description: 'User does not exist',
 	})
 	@ApiResponse({
 		status: 409,
-		description: "User is not your friend"
+		description: 'User is not your friend',
 	})
-	async deleteFriend(@Req() req: { user: User }, @Param('name') username: string) {
-		const friend = await this.userService.findUserByDisplayName(username); // find friend's entity
+	async deleteFriendById(
+		@Req() req: { user: User },
+		@Param('id', ParseIntPipe) id: number
+	) {
+		const friend = await this.userService.findUserById(id); // find friend's entity
 		if (!friend) {
-			throw new NotFoundException(`"${username}" is not an existing user.`);
+			throw new NotFoundException(`"${id}" is not an existing user.`);
 		}
-
-		this.userService.editFriendship(
-			req.user,
-			friend,
-			(user: User, friend: User, index: number) => {
-				if (index === -1) {
-					throw new ConflictException(`${friend.displayName} is not your friend.`);
-				}
-				user.friends.splice(index, 1);
-				return user;
-			}
-		);
+		await this.userService.deleteFriend(req.user, friend);
+		return {
+			message: `${req.user.displayName} has deleted ${friend.displayName} from their friends list`,
+		};
 	}
 }

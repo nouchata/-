@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+	ConflictException,
+	HttpException,
+	HttpStatus,
+	Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -7,7 +12,6 @@ import { User } from './entities/user.entity';
 import { UserInterface } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
 import download from './utils/download';
-import { ChannelDto } from 'src/chat/dtos/user-channels.dto';
 import { LadderDTO } from './dto/ladder.dto';
 import { FriendDTO } from './dto/friend.dto';
 
@@ -45,7 +49,7 @@ export class UserService {
 	}
 
 	async findUserByDisplayName(name: string) {
-		return this.userRepo.findOne({ displayName: name });;
+		return this.userRepo.findOne({ displayName: name });
 	}
 
 	async findUserById(id: number) {
@@ -78,9 +82,9 @@ export class UserService {
 	async createUserDTO(entity: User): Promise<FindUserDTO> {
 		const dto = new FindUserDTO();
 
+		dto.id = entity.id;
 		dto.general.name = entity.displayName;
 		dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
-		dto.general.role = entity.role;
 		dto.general.creation = entity.createdAt;
 		dto.general.status = entity.status;
 
@@ -136,8 +140,6 @@ export class UserService {
 	}
 
 	async getUserChannels(user: { id: number }) {
-		const channelDtos: ChannelDto[] = [];
-
 		const channels = (
 			await this.userRepo.findOne({
 				where: { id: user.id },
@@ -152,25 +154,52 @@ export class UserService {
 			})
 		)?.channels;
 
-		if (!channels) return channelDtos;
-		// sort messages by date
-		channels.forEach((channel) => {
-			channel.messages.sort((a, b) => {
-				return a.createdAt > b.createdAt ? 1 : -1;
-			});
-		});
-
-		for (const channel of channels) {
-			channelDtos.push(channel.toDto());
-		}
-		return channelDtos;
+		if (!channels) return [];
+		const blockedUsers = await this.getBlockedUsers(user);
+		return channels.map((channel) => channel.toDto(blockedUsers));
 	}
 
-	async getFriendslist(id: number) : Promise<User[]> {
-		const friends = (await this.userRepo.findOne({
-			where: { id },
-			relations: ['friends']
-		}))?.friends;
+	async blockUser(user: User, blockedUser: User) {
+		const userDB = await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['blockedUsers'],
+		});
+		if (!userDB)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		userDB.blockedUsers.push(blockedUser);
+		await this.userRepo.save(userDB);
+	}
+
+	async unblockUser(user: User, blockedUser: User) {
+		const userDB = await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['blockedUsers'],
+		});
+		if (!userDB)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		userDB.blockedUsers = userDB.blockedUsers.filter(
+			(curr) => curr.id !== blockedUser.id
+		);
+		await this.userRepo.save(userDB);
+	}
+
+	async getBlockedUsers(user: { id: number }) {
+		const userDB = await this.userRepo.findOne({
+			where: { id: user.id },
+			relations: ['blockedUsers'],
+		});
+		if (!userDB)
+			throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+		return userDB.blockedUsers;
+	}
+
+	async getFriendslist(id: number): Promise<User[]> {
+		const friends = (
+			await this.userRepo.findOne({
+				where: { id },
+				relations: ['friends'],
+			})
+		)?.friends;
 
 		if (!friends) {
 			return [];
@@ -178,18 +207,56 @@ export class UserService {
 		return friends;
 	}
 
-	async editFriendship(user: User, friend: User, cb: any) : Promise<FriendDTO> {
+	async editFriendship(
+		user: User,
+		friend: User,
+		cb: any
+	): Promise<FriendDTO> {
 		user.friends = await this.getFriendslist(user.id); // retrieve user's friend list
-		
+
 		// check the existing friendship relation between the two users
 		const friendIndex = user.friends.findIndex((current) => {
-			return (current.id === friend.id);
+			return current.id === friend.id;
 		});
 
 		// callback
 		user = cb(user, friend, friendIndex);
-		this.userRepo.save(user) // save new relation
+		this.userRepo.save(user); // save new relation
 
 		return FriendDTO.fromEntity(friend);
+	}
+
+	async addFriend(user: User, friend: User) {
+		return this.editFriendship(
+			user,
+			friend,
+			(user: User, friend: User, index: number) => {
+				if (index !== -1) {
+					throw new ConflictException(
+						`"${friend.displayName}" and you are already friends.`
+					);
+				} else if (user.id === friend.id) {
+					throw new ConflictException(`You cannot add yourself !`);
+				}
+				user.friends.push(friend);
+				return user;
+			}
+		);
+	}
+
+	async deleteFriend(user: User, friend: User) {
+		this.editFriendship(
+			user,
+			friend,
+			(user: User, friend: User, index: number) => {
+				if (index === -1) {
+					throw new ConflictException(
+						`${friend.displayName} is not your friend.`
+					);
+				}
+				user.friends.splice(index, 1);
+				return user;
+			}
+		);
 	}
 }

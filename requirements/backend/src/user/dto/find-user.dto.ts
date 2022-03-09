@@ -78,6 +78,13 @@ export class FindUserDTO {
 		this.history = [];
 	}
 
+	@ApiProperty({
+		description: 'id of the user',
+		example: 5,
+	})
+	@IsNumber()
+	id: number;
+
 	@ApiProperty({ description: 'General description of the user' })
 	@ValidateNested()
 	general: GeneralInfo;

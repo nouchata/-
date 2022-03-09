@@ -1,5 +1,16 @@
 /****** PROFILE ******/
 
+.social-option {
+    width: 150px;
+    margin-top: 10px;
+    margin-bottom: -60px;
+    margin-left: 3px;
+    div {
+        padding: 5px;
+        margin-top: 5px;
+    }
+}
+
 .return-button {
     color: rgb(184, 111, 83);
     cursor: pointer;
@@ -17,7 +28,7 @@
     text-align: center;
 }
 
-.general-info > img {
+.general-info>img {
     margin-top: 2%;
     flex: 1 1 0%;
     border-radius: 100%;
@@ -25,7 +36,7 @@
     height: 150px;
 }
 
-.general-info > p {
+.general-info>p {
     font-size: x-large;
     font-weight: bold;
 }
@@ -51,18 +62,20 @@
     margin-right: 10px
 }
 
+
 /****** SEPARATOR ******/
 
 .separator {
     display: flex;
     margin-bottom: 10px;
-    color:rgb(184, 111, 83);
+    color: rgb(184, 111, 83);
     width: 100%;
     align-items: center;
     text-align: center;
 }
 
-.separator::after, .separator::before {
+.separator::after,
+.separator::before {
     content: "";
     border: 2px solid rgb(184, 111, 83);
     border-radius: 15px;
@@ -72,10 +85,11 @@
 .separator:not(:empty)::before {
     margin-right: 0.25em;
 }
-  
+
 .separator:not(:empty)::after {
     margin-left: 0.25em;
 }
+
 
 /****** RANKING ******/
 
@@ -110,12 +124,13 @@
 .rank-info {
     margin-top: 2%;
     margin: 0 auto;
-    justify-content: space-around                                                                                                                                                             ;
+    justify-content: space-around;
     display: flex;
     font-size: 4em;
     text-align: center;
     color: rgb(184, 111, 83);
 }
+
 
 /****** HISTORY ******/
 
@@ -129,7 +144,8 @@
     width: 100%;
 }
 
-.matches td, .matches th {
+.matches td,
+.matches th {
     padding: 8px;
 }
 
@@ -149,13 +165,14 @@
     background-color: red;
 }
 
+
 /****** EDITION ******/
 
 .edition-page {
     transform: translateY(50%);
 }
 
-.edition-page > h1 {
+.edition-page>h1 {
     transform: translateY(-60%);
     text-align: center;
     font-size: 4em;
@@ -167,7 +184,7 @@
     flex-wrap: wrap;
 }
 
-.edition-block > img {
+.edition-block>img {
     border-radius: 15%;
     width: 200px;
     height: 200px;
@@ -198,7 +215,7 @@
     z-index: -1;
 }
 
-.file-input + label {
+.file-input+label {
     margin: 2%;
     margin-left: 9%;
     font-size: 1.25em;
@@ -208,7 +225,7 @@
     cursor: pointer;
 }
 
-.file-input + label:hover {
+.file-input+label:hover {
     color: rgb(133, 78, 57);
 }
 
