@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
 	createContext,
 	ReactNode,
@@ -10,7 +11,7 @@ import { RequestWrapper } from '../../../utils/RequestWrapper';
 
 interface IFriendList {
 	addFriend: (id: number) => void;
-	addFriendByName: (name: string) => void;
+	addFriendByName: (name: string) => Promise<void>;
 	removeFriend: (id: number) => void;
 	friends: FetchFriendsList[];
 	isFriend: (id: number) => boolean;
@@ -56,11 +57,12 @@ const FriendListProvider = ({ children }: { children: ReactNode }) => {
 	};
 
 	const addFriendByName = async (name: string) => {
-		const res = await RequestWrapper.post<FetchFriendsList>(
-			`/user/friends/addByName/${name}`
+		const res = await axios.post<FetchFriendsList>(
+			`${process.env.REACT_APP_BACKEND_ADDRESS}/user/friends/addByName/${name}`,
+			undefined,
+			{withCredentials: true}
 		);
-		if (!res) return;
-		setFriends([...friends, res]);
+		setFriends([...friends, res.data]);
 	};
 
 	const removeFriend = async (id: number) => {
