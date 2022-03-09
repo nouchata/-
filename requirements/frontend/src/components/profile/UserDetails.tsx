@@ -6,8 +6,13 @@ import { Link } from 'react-router-dom';
 import UserStatus from '../utils/StatusDisplay';
 import Button from '../chat/Options/Button';
 import { useBlocked } from '../chat/utils/BlockedHook';
-import { faBan, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import {
+	faBan,
+	faUserMinus,
+	faUserPlus,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useFriendList } from '../friends/utils/FriendListHook';
 
 interface IProps {
 	data: FetchUserData;
@@ -42,6 +47,7 @@ export const getVictoryRatio = (victories: number, loses: number) => {
 
 const UserDetails = (props: IProps) => {
 	const blockedHook = useBlocked();
+	const friendList = useFriendList();
 
 	// get the winrate of the user in percentage
 	let ratio = getVictoryRatio(
@@ -62,7 +68,7 @@ const UserDetails = (props: IProps) => {
 			<Link to="/homepage" className="return-button">
 				Return to homepage
 			</Link>
-            <div className="social-option">
+			<div className="social-option">
 				<Button
 					onClick={() => {
 						blockedHook.isBlocked(props.data.id)
@@ -74,9 +80,31 @@ const UserDetails = (props: IProps) => {
 					<FontAwesomeIcon icon={faBan} className="icon" />
 					{blockedHook.isBlocked(props.data.id) ? 'Unblock' : 'Block'}
 				</Button>
-                <Button onClick={() => {}} className="friend-button">
-					<FontAwesomeIcon icon={faUserPlus} className="icon" />
-					Add to friends
+				<Button
+					onClick={() => {
+						friendList.isFriend(props.data.id)
+							? friendList.removeFriend(props.data.id)
+							: friendList.addFriend(props.data.id);
+					}}
+					className="friend-button"
+				>
+					{friendList.isFriend(props.data.id) ? (
+						<>
+							<FontAwesomeIcon
+								icon={faUserMinus}
+								className="icon"
+							/>
+							Remove friend
+						</>
+					) : (
+						<>
+							<FontAwesomeIcon
+								icon={faUserPlus}
+								className="icon"
+							/>
+							Add friend
+						</>
+					)}
 				</Button>
 			</div>
 

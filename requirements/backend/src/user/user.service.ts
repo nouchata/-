@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+	ConflictException,
+	HttpException,
+	HttpStatus,
+	Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -232,5 +237,39 @@ export class UserService {
 		this.userRepo.save(user); // save new relation
 
 		return FriendDTO.fromEntity(friend);
+	}
+
+	async addFriend(user: User, friend: User) {
+		return this.editFriendship(
+			user,
+			friend,
+			(user: User, friend: User, index: number) => {
+				if (index !== -1) {
+					throw new ConflictException(
+						`"${friend.displayName}" and you are already friends.`
+					);
+				} else if (user.id === friend.id) {
+					throw new ConflictException(`You cannot add yourself !`);
+				}
+				user.friends.push(friend);
+				return user;
+			}
+		);
+	}
+
+	async deleteFriend(user: User, friend: User) {
+		this.editFriendship(
+			user,
+			friend,
+			(user: User, friend: User, index: number) => {
+				if (index === -1) {
+					throw new ConflictException(
+						`${friend.displayName} is not your friend.`
+					);
+				}
+				user.friends.splice(index, 1);
+				return user;
+			}
+		);
 	}
 }

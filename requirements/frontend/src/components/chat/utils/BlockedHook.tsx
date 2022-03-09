@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { User } from '../types/user-channels.dto';
 
@@ -18,7 +18,7 @@ const useBlocked = () => {
 	return context;
 };
 
-const BlockedProvider = ({ children }: { children: React.ReactNode }) => {
+const BlockedProvider = ({ children }: { children: ReactNode }) => {
 	const [blocked, setBlocked] = useState<number[]>([]);
 
 	useEffect(() => {

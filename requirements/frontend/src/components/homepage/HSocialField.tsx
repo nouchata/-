@@ -160,7 +160,7 @@ const HSocialField = () => {
 			</div>
 			<div className='hsf-content'>
 				{isFriendTabSelected ?
-					<FriendsList friends={{ val: friends, set: setFriends }} setModal={setModalProps} /> :
+					<FriendsList setModal={setModalProps} /> :
 					<ul>
 						{chatSocket?.channels.map((channel, index) => {
 							return (

@@ -25,6 +25,7 @@ import { fetchStatusCompare } from './utils/fetchStatusCompare';
 import LinkTree from './components/LinkTree';
 import { HideDisplayData } from './types/HideDisplayData';
 import { BlockedProvider } from './components/chat/utils/BlockedHook';
+import { FriendListProvider } from './components/friends/utils/FriendListHook';
 
 const App = (): JSX.Element => {
 	const [fetchStatus, setFetchStatus] = useState<FetchStatusData>();
@@ -90,62 +91,65 @@ const App = (): JSX.Element => {
 					<ModalContext.Provider
 						value={{ modalProps, setModalProps }}
 					>
-						<BlockedProvider>
-							{fetchStatus?.loggedIn === LoginState.LOGGED && (
-								<>
-									<GenericModal {...modalProps} />
-									<Notifications />
-								</>
-							)}
-							{fetchStatus && (
-								<div className="App">
-									{fetchStatus.loggedIn ===
-										LoginState.LOGGED &&
-										!hideDisplay.hideButtons /* PLAY AND CHAT BUTTONS */ && (
-											<div className="material-like-fab">
-												<button>
-													<img
-														src={ChatAsset}
-														alt="Chats"
-													/>
-												</button>
-												<button>
-													<img
-														src={JoyAsset}
-														alt="Play"
-													/>
-												</button>
-											</div>
-										)}
-									<div className="main-field">
-										<div
-											className="main-content"
-											style={
-												hideDisplay.hideMainContainerStyle
-													? { padding: 0 }
-													: {}
-											}
-										>
-											{fetchStatus.fetched ? (
-												<LinkTree />
-											) : (
-												<Error
-													errorCode="503"
-													message="Server Unreachable"
-												/>
-											)}
-										</div>
+						<FriendListProvider>
+							<BlockedProvider>
+								{fetchStatus?.loggedIn ===
+									LoginState.LOGGED && (
+									<>
+										<GenericModal {...modalProps} />
+										<Notifications />
+									</>
+								)}
+								{fetchStatus && (
+									<div className="App">
 										{fetchStatus.loggedIn ===
 											LoginState.LOGGED &&
-											!hideDisplay.hideSidebar && (
-												<HSocialField />
-											)}{' '}
-										{/* CHAT AND FRIEND THING */}
+											!hideDisplay.hideButtons /* PLAY AND CHAT BUTTONS */ && (
+												<div className="material-like-fab">
+													<button>
+														<img
+															src={ChatAsset}
+															alt="Chats"
+														/>
+													</button>
+													<button>
+														<img
+															src={JoyAsset}
+															alt="Play"
+														/>
+													</button>
+												</div>
+											)}
+										<div className="main-field">
+											<div
+												className="main-content"
+												style={
+													hideDisplay.hideMainContainerStyle
+														? { padding: 0 }
+														: {}
+												}
+											>
+												{fetchStatus.fetched ? (
+													<LinkTree />
+												) : (
+													<Error
+														errorCode="503"
+														message="Server Unreachable"
+													/>
+												)}
+											</div>
+											{fetchStatus.loggedIn ===
+												LoginState.LOGGED &&
+												!hideDisplay.hideSidebar && (
+													<HSocialField />
+												)}{' '}
+											{/* CHAT AND FRIEND THING */}
+										</div>
 									</div>
-								</div>
-							)}
-							{!fetchStatus && <LoadingContent />}
-						</BlockedProvider>
+								)}
+								{!fetchStatus && <LoadingContent />}
+							</BlockedProvider>
+						</FriendListProvider>
 					</ModalContext.Provider>
 				</NotificationContext.Provider>
 			</LoginContext.Provider>
