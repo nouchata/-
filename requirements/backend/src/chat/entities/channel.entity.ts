@@ -56,7 +56,7 @@ export class Channel {
 		return this.users.some((u) => u.id === user.id);
 	}
 
-	toDto(): ChannelDto {
+	toDto(blockedUsers: User[]): ChannelDto {
 		const channelDto: ChannelDto = {
 			id: this.id,
 			name: this.name,
@@ -64,7 +64,16 @@ export class Channel {
 			owner: this.owner.toDto(),
 			users: this.users.map((user) => user.toDto()),
 			admins: this.admins.map((u) => u.toDto()),
-			messages: this.messages.map((m) => m.toDto()),
+			messages: this.messages
+				.filter((message) => {
+					return !blockedUsers.find((user) => {
+						return user.id === message.user?.id;
+					});
+				})
+				.sort((a, b) => {
+					return a.createdAt > b.createdAt ? 1 : -1;
+				})
+				.map((m) => m.toDto()),
 		};
 		return channelDto;
 	}

@@ -10,6 +10,7 @@ import * as crypto from 'crypto';
 import { JoinChannelDto } from '../dtos/join-channel.dto';
 import { ChannelDto } from '../dtos/user-channels.dto';
 import { Message } from '../entities/message.entity';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class ChannelService {
@@ -18,7 +19,8 @@ export class ChannelService {
 		private channelRepository: Repository<Channel>,
 		@InjectRepository(Message)
 		private messageRepository: Repository<Message>,
-		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway
+		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
+		private userService: UserService
 	) {}
 
 	async createMessage(
@@ -39,11 +41,11 @@ export class ChannelService {
 		return newMessage;
 	}
 
-	async sendMessage(message: Message): Promise<Channel> {
-		const channel: Channel = message.channel;
-		this.chatGateway.sendMessageToChannel(channel.id, message.toDto());
-		channel.messages.push(message);
-		return channel;
+	async sendMessage(message: Message) {
+		this.chatGateway.sendMessageToChannel(
+			message.channel.id,
+			message.toDto()
+		);
 	}
 
 	async createChannel(
@@ -90,7 +92,9 @@ export class ChannelService {
 			)
 		);
 
-		return newChannel.toDto();
+		return newChannel.toDto(
+			await this.userService.getBlockedUsers(channel.owner)
+		);
 	}
 
 	async getChannel(channelId: number) {
@@ -121,8 +125,14 @@ export class ChannelService {
 		channel: JoinChannelDto,
 		user: User
 	): Promise<ChannelDto> {
-		let channelToJoin = await this.channelRepository.findOne(channel.id, {
-			relations: ['users', 'owner', 'admins', 'messages'],
+		const channelToJoin = await this.channelRepository.findOne(channel.id, {
+			relations: [
+				'users',
+				'owner',
+				'admins',
+				'messages',
+				'messages.user',
+			],
 		});
 
 		if (!channelToJoin) {
@@ -159,19 +169,21 @@ export class ChannelService {
 		}
 
 		channelToJoin.users.push(user);
-		channelToJoin = await this.sendMessage(
-			await this.createMessage(
-				channelToJoin,
-				'system',
-				`${user.displayName} joined the channel`
-			)
+		const msg = await this.createMessage(
+			channelToJoin,
+			'system',
+			`${user.displayName} joined the channel`
 		);
-		return (await this.channelRepository.save(channelToJoin)).toDto();
+		await this.sendMessage(msg);
+		channelToJoin.messages.push(msg);
+		return (await this.channelRepository.save(channelToJoin)).toDto(
+			await this.userService.getBlockedUsers(user)
+		);
 	}
 
 	async leaveChannel(channelId: number, user: User) {
-		let channelToLeave = await this.channelRepository.findOne(channelId, {
-			relations: ['users', 'admins', 'messages'],
+		const channelToLeave = await this.channelRepository.findOne(channelId, {
+			relations: ['users', 'owner', 'admins', 'messages'],
 		});
 		if (!channelToLeave) {
 			throw new HttpException('Channel not found', 404);
@@ -183,13 +195,20 @@ export class ChannelService {
 			(u) => u.id !== user.id
 		);
 		// add info message
-		channelToLeave = await this.sendMessage(
+		/*await this.sendMessage(
 			await this.createMessage(
 				channelToLeave,
 				'system',
 				`${user.displayName} left the channel`
 			)
+		);*/
+		const msg = await this.createMessage(
+			channelToLeave,
+			'system',
+			`${user.displayName} left the channel`
 		);
+		await this.sendMessage(msg);
+		channelToLeave.messages.push(msg);
 		this.chatGateway.removeUserChannel(channelToLeave.id, user);
 
 		// check if channel is empty
@@ -210,13 +229,13 @@ export class ChannelService {
 				} else {
 					channelToLeave.owner = channelToLeave.users[0];
 				}
-				channelToLeave = await this.sendMessage(
-					await this.createMessage(
-						channelToLeave,
-						'system',
-						`${channelToLeave.owner.displayName} is now the owner of the channel`
-					)
+				const message = await this.createMessage(
+					channelToLeave,
+					'system',
+					`${channelToLeave.owner.displayName} is now the owner of the channel`
 				);
+				await this.sendMessage(message);
+				channelToLeave.messages.push(message);
 			}
 			this.channelRepository.save(channelToLeave);
 		}

@@ -53,20 +53,35 @@ export class ChatGateway {
 	}
 
 	async addNewUser(channelId: number, user: User) {
-		Object.values(this.userSockets)
-			.filter(({ channels }) => channels.includes(channelId))
-			.forEach(({ socket }) => {
-				socket.emit('newUser', { ...user, channelId: channelId });
-			});
+		for (const userId of Object.keys(this.userSockets)) {
+			if (this.userSockets[+userId].channels.includes(channelId)) {
+				this.userSockets[+userId].socket.emit('newUser', {
+					...user,
+					channelId: channelId,
+				});
+			}
+		}
 	}
 
 	async removeUserChannel(channelId: number, user: User) {
 		// remove user from room
-		Object.values(this.userSockets)
+		/*Object.values(this.userSockets)
 			.filter(({ channels }) => channels.includes(channelId))
 			.forEach(({ socket }) => {
 				socket.emit('removeUser', { ...user, channelId: channelId });
 			});
+		if (!this.userSockets[user.id]) return;
+		this.userSockets[user.id].channels = this.userSockets[
+			user.id
+		].channels.filter((c) => c !== channelId);*/
+		for (const userId of Object.keys(this.userSockets)) {
+			if (this.userSockets[+userId].channels.includes(channelId)) {
+				this.userSockets[+userId].socket.emit('removeUser', {
+					...user,
+					channelId: channelId,
+				});
+			}
+		}
 		if (!this.userSockets[user.id]) return;
 		this.userSockets[user.id].channels = this.userSockets[
 			user.id

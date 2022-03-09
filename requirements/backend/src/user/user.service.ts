@@ -156,19 +156,7 @@ export class UserService {
 
 		if (!channels) return [];
 		const blockedUsers = await this.getBlockedUsers(user);
-		// sort messages by date
-		channels.forEach((channel) => {
-			channel.messages = channel.messages.filter((message) => {
-				return !blockedUsers.find((user) => {
-					return user.id === message.user?.id;
-				});
-			});
-			channel.messages.sort((a, b) => {
-				return a.createdAt > b.createdAt ? 1 : -1;
-			});
-		});
-
-		return channels.map((channel) => channel.toDto());
+		return channels.map((channel) => channel.toDto(blockedUsers));
 	}
 
 	async blockUser(user: User, blockedUser: User) {
