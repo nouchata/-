@@ -112,7 +112,6 @@ export class UserService {
 				matchInfo.id = match.id;
 				matchInfo.score[0] = match.winScore;
 				matchInfo.score[1] = match.loseScore;
-				matchInfo.duration = match.duration;
 				matchInfo.date = match.date;
 
 				return matchInfo;
@@ -121,7 +120,7 @@ export class UserService {
 
 		// sort matches by date
 		dto.history.sort((a, b) => {
-			if (a.date < b.date) {
+			if (a.date > b.date) {
 				return -1;
 			} else {
 				return 1;

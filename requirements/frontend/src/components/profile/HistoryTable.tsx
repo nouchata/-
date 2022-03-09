@@ -13,7 +13,6 @@ const HistoryTable = (props: IProps) => {
                 <th key='head-winner'>WINNER</th>
                 <th key='head-score'>SCORE</th>
                 <th key='head-loser'>LOSER</th>
-                <th key='head-duration'>DURATION</th>
                 <th key='head-date'>DATE</th>
             </tr>
         );
@@ -30,7 +29,6 @@ const HistoryTable = (props: IProps) => {
                     <td>{match.winner}</td>
                     <td>{`${match.score[0]} - ${match.score[1]}`}</td>
                     <td>{match.loser}</td>
-                    <td>{match.duration}</td>
                     <td>{formatDate(match.date)}</td>
                 </tr>
             );
