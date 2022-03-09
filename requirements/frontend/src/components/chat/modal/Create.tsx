@@ -56,7 +56,7 @@ const Create = ({ socket }: { socket: ChatSocket }) => {
 		return () => {
 			if (timeoutToClean) clearTimeout(timeoutToClean);
 		};
-	}, []);
+	}, [timeoutToClean]);
 
 	return (
 		<div className="create">
