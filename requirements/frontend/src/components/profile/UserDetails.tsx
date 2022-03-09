@@ -4,15 +4,7 @@ import ProgressBar from '../utils/ProgressBar';
 import editAsset from '../../assets/profile/edit-solid.svg';
 import { Link } from 'react-router-dom';
 import UserStatus from '../utils/StatusDisplay';
-import Button from '../chat/Options/Button';
-import { useBlocked } from '../chat/utils/BlockedHook';
-import {
-	faBan,
-	faUserMinus,
-	faUserPlus,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useFriendList } from '../friends/utils/FriendListHook';
+import { BlockButton, FriendButton } from '../chat/Options/SocialButtons';
 
 interface IProps {
 	data: FetchUserData;
@@ -46,9 +38,6 @@ export const getVictoryRatio = (victories: number, loses: number) => {
 };
 
 const UserDetails = (props: IProps) => {
-	const blockedHook = useBlocked();
-	const friendList = useFriendList();
-
 	// get the winrate of the user in percentage
 	let ratio = getVictoryRatio(
 		props.data.ranking.vdRatio[0],
@@ -68,45 +57,12 @@ const UserDetails = (props: IProps) => {
 			<Link to="/homepage" className="return-button">
 				Return to homepage
 			</Link>
-			<div className="social-option">
-				<Button
-					onClick={() => {
-						blockedHook.isBlocked(props.data.id)
-							? blockedHook.removeBlocked(props.data.id)
-							: blockedHook.addBlocked(props.data.id);
-					}}
-					className="block-button"
-				>
-					<FontAwesomeIcon icon={faBan} className="icon" />
-					{blockedHook.isBlocked(props.data.id) ? 'Unblock' : 'Block'}
-				</Button>
-				<Button
-					onClick={() => {
-						friendList.isFriend(props.data.id)
-							? friendList.removeFriend(props.data.id)
-							: friendList.addFriend(props.data.id);
-					}}
-					className="friend-button"
-				>
-					{friendList.isFriend(props.data.id) ? (
-						<>
-							<FontAwesomeIcon
-								icon={faUserMinus}
-								className="icon"
-							/>
-							Remove friend
-						</>
-					) : (
-						<>
-							<FontAwesomeIcon
-								icon={faUserPlus}
-								className="icon"
-							/>
-							Add friend
-						</>
-					)}
-				</Button>
-			</div>
+			{!props.data.isEditable && (
+				<div className="social-option">
+					<BlockButton userId={props.data.id} />
+					<FriendButton userId={props.data.id} />
+				</div>
+			)}
 
 			<div className="general-info">
 				<img
