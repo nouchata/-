@@ -13,7 +13,6 @@ const saveBtnText : Array<string> = [
 
 const PomGeneralPanel = (props: {
 	fetchStatus: FetchStatusData,
-	setFetchStatus: (fetchStatus: FetchStatusData) => void
 }) : JSX.Element => {
 	const [ editAvatarBtnState, setEditAvatarBtnState ] = useState<boolean>(false);
 	const [ uploadedAvatarBlob, setUploadedAvatarBlob ] = useState<string>('');

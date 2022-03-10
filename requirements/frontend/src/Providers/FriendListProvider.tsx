@@ -6,8 +6,8 @@ import {
 	useEffect,
 	useState,
 } from 'react';
-import { FetchFriendsList } from '../../../types/FetchFriendsList';
-import { RequestWrapper } from '../../../utils/RequestWrapper';
+import { FetchFriendsList } from '../types/FetchFriendsList';
+import { RequestWrapper } from '../utils/RequestWrapper';
 
 interface IFriendList {
 	addFriend: (id: number) => void;

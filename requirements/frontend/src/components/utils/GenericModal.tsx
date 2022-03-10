@@ -1,7 +1,6 @@
 import '../../styles/generic_modal.scss';
 import CloseAsset from '../../assets/profile/close.png';
-import { useContext } from 'react';
-import ModalContext from '../../contexts/ModalContext';
+import { useModal } from '../../Providers/ModalProvider';
 
 type GenericModalProps = {
 	show: boolean;
@@ -13,22 +12,26 @@ type GenericModalProps = {
 	maxWidth?: string;
 };
 
-const GenericModal = (props: GenericModalProps): JSX.Element | null => {
-	const { setModalProps } = useContext(ModalContext);
+const GenericModal = ({
+	modalOptions,
+}: {
+	modalOptions?: GenericModalProps;
+}): JSX.Element | null => {
+	const { setModalProps } = useModal();
 
-	if (props.show)
+	if (modalOptions && modalOptions.show)
 		return (
 			<div className="bg-modal">
 				<div
 					className="modal"
 					style={{
-						height: props.height,
-						flex: `0 1 ${props.width}`,
-						maxHeight: props.maxHeight,
-						maxWidth: props.maxWidth,
+						height: modalOptions.height,
+						flex: `0 1 ${modalOptions.width}`,
+						maxHeight: modalOptions.maxHeight,
+						maxWidth: modalOptions.maxWidth,
 					}}
 				>
-					{!props.cantBeClosed && (
+					{!modalOptions.cantBeClosed && (
 						<button
 							onClick={() =>
 								setModalProps({
@@ -43,11 +46,11 @@ const GenericModal = (props: GenericModalProps): JSX.Element | null => {
 							<img src={CloseAsset} alt="close modal" />
 						</button>
 					)}
-					{props.content}
+					{modalOptions.content}
 				</div>
 			</div>
 		);
-	else return null;
+	else return <></>;
 };
 
 export default GenericModal;
