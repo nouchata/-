@@ -1,8 +1,7 @@
-import { useContext } from 'react';
 import { BrowserRouter as Router, Route, Link, Switch, Redirect } from 'react-router-dom';
 import socketIOClient, { Socket } from "socket.io-client"; // eslint-disable-line
-import LoginContext from '../contexts/LoginContext';
-import { FetchStatusData, LoginState } from '../types/FetchStatusData';
+import { useLogin } from '../Providers/LoginProvider';
+import { LoginState } from '../types/FetchStatusData';
 import Game from './game/Game';
 import Homepage from './homepage/Homepage';
 import Login from './Login';
@@ -10,14 +9,11 @@ import Profile from './profile/Profile';
 
 
 const LinkTree = () : JSX.Element => {
-	const fetchStatusValue: {
-		fetchStatus: FetchStatusData,
-		setFetchStatus: (fetchStatus: FetchStatusData) => void
-	} = useContext(LoginContext);
+	const { loginStatus } = useLogin();
 
 	return (
 		<Router>
-			{fetchStatusValue.fetchStatus.loggedIn === LoginState.LOGGED ?
+			{loginStatus.loggedIn === LoginState.LOGGED ?
 				<Switch>
 					<Route path="/profile/:id"><Profile /></Route>
 					<Route path="/homepage"><Homepage /></Route>

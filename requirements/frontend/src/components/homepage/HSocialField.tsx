@@ -1,6 +1,4 @@
-import { useState, useContext, useEffect, useCallback, useMemo } from 'react';
-import LoginContext from '../../contexts/LoginContext';
-import ModalContext from '../../contexts/ModalContext';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 import CloseAsset from '../../assets/chat/close.png';
 import MinusAsset from '../../assets/chat/minus.png';
@@ -14,16 +12,17 @@ import './styles/Chat.scss';
 import { RequestWrapper } from '../../utils/RequestWrapper';
 import { ChannelDto, MessageDto } from '../chat/types/user-channels.dto';
 import { ChatSocket } from '../chat/utils/ChatSocket';
-import { FetchStatusData } from '../../types/FetchStatusData';
 import InputChat from '../chat/InputChat';
 import MessageArea from '../chat/MessageArea';
-import NotificationContext from '../../contexts/NotificationContext';
 import { GenericModalProps } from '../utils/GenericModal';
 import FriendsList from '../friends/FriendsList';
 import JoinCreateModal from '../chat/modal/JoinCreateModal';
 import ChatOption from '../chat/Options/ChatOption';
 import AddFriendModal from '../friends/modal/AddFriendModal';
-import { useFriendList } from '../friends/utils/FriendListHook';
+import { useModal } from '../../Providers/ModalProvider';
+import { useLogin } from '../../Providers/LoginProvider';
+import { useFriendList } from '../../Providers/FriendListProvider';
+import { useNotificationHandler } from '../../Providers/NotificationProvider';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
@@ -37,15 +36,12 @@ const HSocialField = () => {
 	});
 	const [isSocialFieldShowed, setIsSocialFieldShowed] =
 		useState<boolean>(true);
-	const { setModalProps } = useContext(ModalContext);
+	const { setModalProps } = useModal();
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
-	const fetchStatusValue: {
-		fetchStatus: FetchStatusData;
-		setFetchStatus: (fetchStatus: FetchStatusData) => void;
-	} = useContext(LoginContext);
-	let notificationHandler = useContext(NotificationContext);
+	const { loginStatus } = useLogin();
 	const friendList = useFriendList();
+	const notificationHandler = useNotificationHandler();
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -85,13 +81,13 @@ const HSocialField = () => {
 							setChatSocket,
 							onMessage,
 						},
-						fetchStatusValue.fetchStatus.user
+						loginStatus.user
 					)
 				);
 		};
 		fetchChannels();
 		// eslint-disable-next-line
-	}, [fetchStatusValue.fetchStatus.user]);
+	}, [loginStatus.user]);
 
 	useEffect(() => {
 		if (chatSocket) {

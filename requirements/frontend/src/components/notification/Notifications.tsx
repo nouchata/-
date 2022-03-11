@@ -1,11 +1,10 @@
-import { useContext } from "react";
-import NotificationContext from "../../contexts/NotificationContext";
 import './Notifications.scss';
 import close from '../../assets/chat/close.png';
 import NotificationCenter from "./NotificationCenter";
+import { useNotificationHandler } from "../../Providers/NotificationProvider";
 
 const Notifications = () => {
-	const notificationHandler = useContext(NotificationContext);
+	const notificationHandler = useNotificationHandler();
 
 	const new_notif = notificationHandler?.notifications[0]
 	return (

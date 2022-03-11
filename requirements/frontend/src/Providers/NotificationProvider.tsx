@@ -1,8 +1,8 @@
-import { createContext } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 type CallBacks = {
 	setNotificationHandler: (socket: NotificationHandler) => void;
-}
+};
 
 export type NotificationNHOptions = {
 	name: string;
@@ -10,7 +10,7 @@ export type NotificationNHOptions = {
 	context: string;
 	image?: string;
 	openAction?: () => void;
-}
+};
 
 export class NotificationNH {
 	private _name: string;
@@ -19,7 +19,6 @@ export class NotificationNH {
 	private _uuid?: string;
 	private _image?: string;
 	private _openAction?: () => void;
-
 
 	constructor(options: NotificationNHOptions) {
 		this._name = options.name;
@@ -48,9 +47,7 @@ export class NotificationNH {
 	public get uuid(): string {
 		if (this._uuid) {
 			return this._uuid;
-		}
-		else
-			throw new Error('uuid is not set');
+		} else throw new Error('uuid is not set');
 	}
 
 	public set uuid(uuid: string) {
@@ -62,7 +59,6 @@ export class NotificationNH {
 	}
 }
 
-
 export class NotificationHandler {
 	private _callbacks: CallBacks;
 	private _notifications: NotificationNH[];
@@ -70,7 +66,12 @@ export class NotificationHandler {
 	private _show_new_notification_timeout?: NodeJS.Timeout;
 
 	private _updateNotificationHandler() {
-		const notificationHandler = new NotificationHandler(this._callbacks, this._notifications, this._show_new_notification, this._show_new_notification_timeout);
+		const notificationHandler = new NotificationHandler(
+			this._callbacks,
+			this._notifications,
+			this._show_new_notification,
+			this._show_new_notification_timeout
+		);
 		this._callbacks.setNotificationHandler(notificationHandler);
 	}
 
@@ -89,8 +90,21 @@ export class NotificationHandler {
 		}
 	}
 
+	private static randomString(size: number) {
+		const chars =
+			'0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		let result = '';
+		for (let i = size; i > 0; --i)
+			result += chars[Math.floor(Math.random() * chars.length)];
+		return result;
+	}
 
-	constructor(callbacks: CallBacks, notifications?: NotificationNH[], show_new_notification?: boolean, show_new_notification_timeout?: NodeJS.Timeout) {
+	constructor(
+		callbacks: CallBacks,
+		notifications?: NotificationNH[],
+		show_new_notification?: boolean,
+		show_new_notification_timeout?: NodeJS.Timeout
+	) {
 		this._callbacks = callbacks;
 		this._notifications = notifications || [];
 		this._show_new_notification = show_new_notification || false;
@@ -98,27 +112,38 @@ export class NotificationHandler {
 	}
 
 	/*
-	** add a notification and return the uuid created
-	*/
+	 ** add a notification and return the uuid created
+	 */
 	public addNotification(notificationOption: NotificationNHOptions): string {
 		const notification = new NotificationNH(notificationOption);
-		// generate unique uuid 
-		let uuid = randomString(10);
+		// generate unique uuid
+		let uuid = NotificationHandler.randomString(10);
 		// eslint-disable-next-line
-		while (this._notifications.find(notification => notification.uuid === uuid)) {
-			uuid = randomString(10);
-			
+		while (
+			this._notifications.find(
+				// eslint-disable-next-line no-loop-func
+				(notification) => notification.uuid === uuid
+			)
+		) {
+			uuid = NotificationHandler.randomString(10);
 		}
 
 		notification.uuid = uuid;
 
 		// if there is 4 notification of the same context, remove the oldest one
-		let notifications_same_context = this._notifications.filter(n => n.context === notification.context);
+		let notifications_same_context = this._notifications.filter(
+			(n) => n.context === notification.context
+		);
 		if (notifications_same_context.length > 3) {
 			// get the uuid of the oldest notification (oldest = last)
-			let oldest_notification_uuid = notifications_same_context[notifications_same_context.length - 1].uuid;
+			let oldest_notification_uuid =
+				notifications_same_context[
+					notifications_same_context.length - 1
+				].uuid;
 			// remove the oldest notification
-			this._notifications = this._notifications.filter(n => n.uuid !== oldest_notification_uuid);
+			this._notifications = this._notifications.filter(
+				(n) => n.uuid !== oldest_notification_uuid
+			);
 		}
 		// push front
 		this._notifications.unshift(notification);
@@ -128,27 +153,31 @@ export class NotificationHandler {
 	}
 
 	/*
-	** remove a notification
-	*/
+	 ** remove a notification
+	 */
 	public removeNotification(uuid: string): void {
-		this._notifications = this._notifications.filter(n => n.uuid !== uuid);
+		this._notifications = this._notifications.filter(
+			(n) => n.uuid !== uuid
+		);
 		this._updateNewNotification(false);
 		this._updateNotificationHandler();
 	}
 
 	/*
-	** remove all notifications matching the context
-	*/
+	 ** remove all notifications matching the context
+	 */
 
 	public removeNotificationContext(context: string): void {
-		this._notifications = this._notifications.filter(n => n.context !== context);
+		this._notifications = this._notifications.filter(
+			(n) => n.context !== context
+		);
 		this._updateNewNotification(false);
 		this._updateNotificationHandler();
 	}
 
 	/*
-	** remove all notifications
-	*/
+	 ** remove all notifications
+	 */
 	public removeAllNotifications(): void {
 		this._notifications = [];
 		this._updateNewNotification(false);
@@ -156,31 +185,31 @@ export class NotificationHandler {
 	}
 
 	/*
-	** get all notifications
-	*/
+	 ** get all notifications
+	 */
 	public get notifications() {
 		return this._notifications;
 	}
 
 	/*
-	** get a notification
-	*/
+	 ** get a notification
+	 */
 	public getNotification(uuid: string): NotificationNH | undefined {
-		return this._notifications.find(n => n.uuid === uuid);
+		return this._notifications.find((n) => n.uuid === uuid);
 	}
 
 	/*
-	** get the number of notifications
-	*/
+	 ** get the number of notifications
+	 */
 	public get numberOfNotifications(): number {
 		return this._notifications.length;
 	}
 
 	/*
-	** get the number of notifications for a context
-	*/
+	 ** get the number of notifications for a context
+	 */
 	public getNumberOfNotificationsForContext(context: string): number {
-		return this._notifications.filter(n => n.context === context).length;
+		return this._notifications.filter((n) => n.context === context).length;
 	}
 
 	public get show_new_notification(): boolean {
@@ -191,16 +220,36 @@ export class NotificationHandler {
 		this._updateNewNotification(show_new_notification);
 		this._updateNotificationHandler();
 	}
-
 }
 
-const NotificationContext = createContext<NotificationHandler | undefined>(undefined);
+const NotificationContext = createContext<NotificationHandler | undefined>(
+	undefined
+);
 
-export default NotificationContext;
-function randomString(size: number) {
-	const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	let result = '';
-	for (let i = size; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
-	return result;
-}
+const useNotificationHandler = () => {
+	const notificationHandler = useContext(NotificationContext);
+	if (!notificationHandler) {
+		throw new Error(
+			'useNotificationHandler must be used within a NotificationProvider'
+		);
+	}
+	return notificationHandler;
+};
 
+const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
+	const [notificationHandler, setNotificationHandler] =
+		useState<NotificationHandler>();
+	useEffect(() => {
+		const notificationHandler = new NotificationHandler({
+			setNotificationHandler: setNotificationHandler,
+		});
+		setNotificationHandler(notificationHandler);
+	}, []);
+	return (
+		<NotificationContext.Provider value={notificationHandler}>
+			{children}
+		</NotificationContext.Provider>
+	);
+};
+
+export { NotificationProvider, useNotificationHandler };

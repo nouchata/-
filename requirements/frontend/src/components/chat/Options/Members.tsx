@@ -1,17 +1,14 @@
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useContext } from 'react';
-import LoginContext from '../../../contexts/LoginContext';
-import ModalContext from '../../../contexts/ModalContext';
-import { FetchStatusData } from '../../../types/FetchStatusData';
+import { useLogin } from '../../../Providers/LoginProvider';
+import { useModal } from '../../../Providers/ModalProvider';
 import { ChannelDto, User } from '../types/user-channels.dto';
 import Button from './Button';
 import { BlockButton, FriendButton } from './SocialButtons';
 
 const Member = ({ user }: { user: User }) => {
-	const { setModalProps } = useContext(ModalContext);
-	const fetchStatusValue: { fetchStatus: FetchStatusData } =
-		useContext(LoginContext);
+	const { setModalProps } = useModal();
+	const { loginStatus } = useLogin();
 	return (
 		<div className="member" key={user.id}>
 			<div className="user-infos">
@@ -28,14 +25,14 @@ const Member = ({ user }: { user: User }) => {
 				<div>
 					<div className="member-name">{user.displayName}</div>
 					<div className="member-status">
-						{fetchStatusValue.fetchStatus.user?.id !== user.id
+						{loginStatus.user?.id !== user.id
 							? user.status
 							: 'you'}
 					</div>
 				</div>
 			</div>
 
-			{fetchStatusValue.fetchStatus.user?.id !== user.id && (
+			{loginStatus.user?.id !== user.id && (
 				<div className="buttons">
 					<Button
 						onClick={() => {

@@ -6,14 +6,13 @@ import {
 	IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useContext, useState } from 'react';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import './ChatOption.scss';
 import { ChannelDto } from '../types/user-channels.dto';
-import LoginContext from '../../../contexts/LoginContext';
-import { FetchStatusData } from '../../../types/FetchStatusData';
-import ModalContext from '../../../contexts/ModalContext';
 import Members from './Members';
+import { useLogin } from '../../../Providers/LoginProvider';
+import { useModal } from '../../../Providers/ModalProvider';
+import { useState } from 'react';
 
 const Option = ({
 	children,
@@ -44,9 +43,8 @@ const Option = ({
 
 const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	const [isToggled, setIsToggled] = useState(false);
-	const userContext =
-		useContext<{ fetchStatus: FetchStatusData }>(LoginContext);
-	const { setModalProps } = useContext(ModalContext);
+	const { loginStatus } = useLogin();
+	const { setModalProps } = useModal();
 
 	const options: {
 		icon: IconDefinition;
@@ -66,7 +64,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			icon: faGear,
 			text: 'Admin',
 			callback: () => {
-				console.log(userContext.fetchStatus.user?.id);
+				console.log(loginStatus.user?.id);
 			},
 		},
 		{
@@ -77,7 +75,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 					show: true,
 					content: (
 						<Members
-							userId={userContext.fetchStatus.user?.id || 0}
+							userId={loginStatus.user?.id || 0}
 							channel={channel}
 						/>
 					),

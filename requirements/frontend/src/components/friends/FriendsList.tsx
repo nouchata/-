@@ -3,8 +3,8 @@ import ConfirmRemoveModal from "./modal/ConfirmRemoveModal";
 
 import '../../styles/friends_list.scss';
 import '../../styles/social_field.scss';
-import { useFriendList } from "./utils/FriendListHook";
 import { FetchFriendsList } from "../../types/FetchFriendsList";
+import { useFriendList } from "../../Providers/FriendListProvider";
 
 interface IProps {
     setModal: any
