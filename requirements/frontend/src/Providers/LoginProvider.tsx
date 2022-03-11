@@ -29,38 +29,37 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 		loggedIn: LoginState.NOT_LOGGED,
 		fetched: false,
 	});
-	const [intervalLogin, setIntervalLogin] = useState<NodeJS.Timeout>();
 
 	useEffect(() => {
-		intervalLogin === undefined &&
-			setIntervalLogin(
-				setInterval(async () => {
-					let status_data: FetchStatusData = {
-						loggedIn: LoginState.NOT_LOGGED,
-						fetched: false,
-					};
-					const res = await RequestWrapper.get<FetchStatusData>(
-						'/auth/status'
-					);
-					if (res) {
-						status_data = res;
-						res.fetched = true;
-					}
-					if (
-						!loginStatus ||
-						(loginStatus &&
-							status_data &&
-							!fetchStatusCompare(loginStatus, status_data))
-					) {
-						setLoginStatus(status_data);
-						if (intervalLogin) {
-							clearInterval(intervalLogin);
-							setIntervalLogin(undefined);
-						}
-					}
-				}, 1500)
-			);
-	}, [intervalLogin, loginStatus]);
+		(async () => {
+			while (true) {
+				/* 1.5s cyclic fetching of user data & backend server uptime */
+				let status_data: FetchStatusData = {
+					loggedIn: LoginState.NOT_LOGGED,
+					fetched: false,
+				};
+				const res = await RequestWrapper.get<FetchStatusData>(
+					'/auth/status'
+				);
+				if (res) {
+					status_data = res;
+					res.fetched = true;
+				}
+				if (
+					!loginStatus ||
+					(loginStatus &&
+						status_data &&
+						!fetchStatusCompare(loginStatus, status_data))
+				) {
+					setLoginStatus(status_data);
+					break;
+				}
+				await new Promise((resolve) =>
+					setTimeout(() => resolve(0), 1500)
+				);
+			}
+		})();
+	}, [loginStatus]);
 
 	return (
 		<LoginContext.Provider
