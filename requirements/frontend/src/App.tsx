@@ -17,12 +17,13 @@ import Notifications from './components/notification/Notifications';
 import LinkTree from './components/LinkTree';
 import { LoginState } from './types/FetchStatusData';
 import HSocialField from './components/homepage/HSocialField';
+import Compose from './utils/Compose';
 
-const Trans = () => {
+const TransApp = () => {
 	const { loginStatus } = useLogin();
 	const { displayData } = useDisplay();
 	const { modalProps } = useModal();
-	
+
 	return (
 		<>
 			{loginStatus.loggedIn === LoginState.LOGGED && (
@@ -63,29 +64,38 @@ const Trans = () => {
 					</div>
 					{loginStatus.loggedIn === LoginState.LOGGED &&
 						!displayData.hideSidebar && <HSocialField />}{' '}
-					{/* CHAT AND FRIEND THING */}
 				</div>
 			</div>
 		</>
 	);
 };
 
+const ContextLoader = () => {
+	const { loginStatus } = useLogin();
+
+	if (loginStatus.loggedIn === LoginState.LOGGED) {
+		return (
+			<Compose components={[FriendListProvider, BlockedProvider]}>
+				<TransApp />
+			</Compose>
+		);
+	} else {
+		return <TransApp />;
+	}
+};
+
 const App = (): JSX.Element => {
-	
 	return (
-		<DisplayProvider>
-			<LoginProvider>
-				<NotificationProvider>
-					<ModalProvider>
-						<FriendListProvider>
-							<BlockedProvider>
-								<Trans />
-							</BlockedProvider>
-						</FriendListProvider>
-					</ModalProvider>
-				</NotificationProvider>
-			</LoginProvider>
-		</DisplayProvider>
+		<Compose
+			components={[
+				DisplayProvider,
+				LoginProvider,
+				NotificationProvider,
+				ModalProvider,
+			]}
+		>
+			<ContextLoader />
+		</Compose>
 	);
 };
 
