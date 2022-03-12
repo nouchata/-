@@ -1,30 +1,31 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-import CloseAsset from '../../assets/chat/close.png';
-import MinusAsset from '../../assets/chat/minus.png';
-import ContainMaxAsset from '../../assets/chat/contain-max.png';
-import HashAsset from '../../assets/social/hashtag.png';
-import chatImage from '../../assets/homepage/chat.png';
+import CloseAsset from '../../../assets/chat/close.png';
+import MinusAsset from '../../../assets/chat/minus.png';
+import ContainMaxAsset from '../../../assets/chat/contain-max.png';
+import chatImage from '../../../assets/homepage/chat.png';
 
-import '../../styles/social_field.scss';
-import './styles/Chat.scss';
+import '../../../styles/social_field.scss';
+import '../styles/Chat.scss';
 
-import { RequestWrapper } from '../../utils/RequestWrapper';
-import { ChannelDto, MessageDto } from '../chat/types/user-channels.dto';
-import { ChatSocket } from '../chat/utils/ChatSocket';
-import InputChat from '../chat/InputChat';
-import MessageArea from '../chat/MessageArea';
-import { GenericModalProps } from '../utils/GenericModal';
-import FriendsList from '../friends/FriendsList';
-import JoinCreateModal from '../chat/modal/JoinCreateModal';
-import ChatOption from '../chat/Options/ChatOption';
-import AddFriendModal from '../friends/modal/AddFriendModal';
-import { useModal } from '../../Providers/ModalProvider';
-import { useLogin } from '../../Providers/LoginProvider';
-import { useFriendList } from '../../Providers/FriendListProvider';
-import { useNotificationHandler } from '../../Providers/NotificationProvider';
+import { RequestWrapper } from '../../../utils/RequestWrapper';
+import { ChannelDto, MessageDto } from '../../chat/types/user-channels.dto';
+import { ChatSocket } from '../../chat/utils/ChatSocket';
+import InputChat from '../../chat/InputChat';
+import MessageArea from '../../chat/MessageArea';
+import FriendsList from '../../friends/FriendsList';
+import ChatOption from '../../chat/Options/ChatOption';
+import AddFriendModal from '../../friends/modal/AddFriendModal';
+import { useModal } from '../../../Providers/ModalProvider';
+import { useLogin } from '../../../Providers/LoginProvider';
+import { useFriendList } from '../../../Providers/FriendListProvider';
+import {
+	useNotificationHandler,
+} from '../../../Providers/NotificationProvider';
+import ChannelList from './ChannelList';
+import NewConv from './NewConv';
 
-type ChatState = {
+export type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
 };
 
@@ -63,11 +64,6 @@ const HSocialField = () => {
 		[notificationHandler]
 	);
 
-	const existingChannels = useMemo(() => {
-		if (!chatSocket) return [];
-		return chatSocket?.channels.map((channel) => channel.id);
-	}, [chatSocket]);
-
 	useEffect(() => {
 		const fetchChannels = async () => {
 			const channels = await RequestWrapper.get<ChannelDto[]>(
@@ -96,23 +92,6 @@ const HSocialField = () => {
 	}, [notificationHandler, chatSocket, onMessage]);
 
 	const AddFriend = async (name: string) => {
-		/*const data = await RequestWrapper.post<FetchFriendsList>(
-			'/user/friends/add',
-			{ username: name },
-			(e) => {
-				let errinfo: string;
-				if (e.response) {
-					errinfo = e.response.data.message;
-				} else {
-					errinfo = 'Unexpected Error :(';
-				}
-				setModalProps({ show: true, content: <AddFriendModal cb={AddFriend} info={errinfo} /> })
-		});
-		if (data) {
-			friends.push(data);
-			setFriends(friends);
-			setModalProps({ show: false });
-		}*/
 		try {
 			await friendList.addFriendByName(name);
 		} catch (e: any) {
@@ -132,12 +111,6 @@ const HSocialField = () => {
 		}
 	};
 
-	const friendModalSettings: GenericModalProps = {
-		show: true,
-		content: <AddFriendModal cb={AddFriend} />,
-		width: '25%',
-	};
-
 	return (
 		<div className="social-field">
 			<button
@@ -153,53 +126,20 @@ const HSocialField = () => {
 			>
 				{isSocialFieldShowed ? '<' : '>'}
 			</button>
-			<div className="hsf-tab-selector">
-				<button
-					className={isFriendTabSelected ? 'hsf-btn-selected' : ''}
-					onClick={() =>
-						!isFriendTabSelected && setIsFriendTabSelected(true)
-					}
-				>
-					Friends
-				</button>
-				<button
-					className={!isFriendTabSelected ? 'hsf-btn-selected' : ''}
-					onClick={() =>
-						isFriendTabSelected && setIsFriendTabSelected(false)
-					}
-				>
-					Channels
-				</button>
-			</div>
+			<TabSelector
+				isFriendTabSelected={isFriendTabSelected}
+				setIsFriendTabSelected={setIsFriendTabSelected}
+			/>
 			<div className="hsf-content">
 				{isFriendTabSelected ? (
 					<FriendsList setModal={setModalProps} />
 				) : (
-					<ul>
-						{chatSocket?.channels.map((channel, index) => {
-							return (
-								<li
-									key={index}
-									onClick={() => {
-										setSelectChannelIndex(index);
-										notificationHandler?.removeNotificationContext(
-											'chat'
-										);
-										setChatStatus({ state: 'OPENED' });
-									}}
-								>
-									<figure>
-										<img
-											src={HashAsset}
-											alt="Message Tab"
-											className="hsf-content-channel-img"
-										/>
-										<figcaption>{channel.name}</figcaption>
-									</figure>
-								</li>
-							);
-						})}
-					</ul>
+					<ChannelList
+						chatSocket={chatSocket}
+						setSelectChannelIndex={setSelectChannelIndex}
+						notificationHandler={notificationHandler}
+						setChatStatus={setChatStatus}
+					/>
 				)}
 			</div>
 			{chatSocket?.channels[selectChannelIndex] && (
@@ -250,36 +190,11 @@ const HSocialField = () => {
 					</div>
 				</div>
 			)}
-			<div className="hsf-btn-new">
-				<button
-					onClick={() => {
-						if (!chatSocket) return;
-						setModalProps(
-							isFriendTabSelected
-								? friendModalSettings
-								: {
-										show: true,
-										content: (
-											<JoinCreateModal
-												socket={chatSocket}
-												existingChannels={
-													existingChannels
-												}
-											/>
-										),
-										height: '50%',
-										width: '85%',
-										maxWidth: '500px',
-								  }
-						);
-					}}
-				>
-					+{' '}
-					{isFriendTabSelected
-						? 'Add a new friend'
-						: 'Create a new discussion'}
-				</button>
-			</div>
+			<NewConv
+				chatSocket={chatSocket}
+				isFriendTabSelected={isFriendTabSelected}
+				AddFriend={AddFriend}
+			/>
 		</div>
 	);
 };
@@ -314,3 +229,33 @@ function socialToggleCSS(isShowed: boolean): void {
 }
 
 export default HSocialField;
+
+function TabSelector({
+	isFriendTabSelected,
+	setIsFriendTabSelected,
+}: {
+	isFriendTabSelected: boolean;
+	setIsFriendTabSelected: (isFriendTabSelected: boolean) => void;
+}) {
+	return (
+		<div className="hsf-tab-selector">
+			<button
+				className={isFriendTabSelected ? 'hsf-btn-selected' : ''}
+				onClick={() =>
+					!isFriendTabSelected && setIsFriendTabSelected(true)
+				}
+			>
+				Friends
+			</button>
+			<button
+				className={!isFriendTabSelected ? 'hsf-btn-selected' : ''}
+				onClick={() =>
+					isFriendTabSelected && setIsFriendTabSelected(false)
+				}
+			>
+				Channels
+			</button>
+		</div>
+	);
+}
+

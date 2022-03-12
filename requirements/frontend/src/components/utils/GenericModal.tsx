@@ -2,7 +2,7 @@ import '../../styles/generic_modal.scss';
 import CloseAsset from '../../assets/profile/close.png';
 import { useModal } from '../../Providers/ModalProvider';
 
-type GenericModalProps = {
+export type GenericModalProps = {
 	show: boolean;
 	content: JSX.Element;
 	cantBeClosed?: boolean;
@@ -54,4 +54,3 @@ const GenericModal = ({
 };
 
 export default GenericModal;
-export type { GenericModalProps };
