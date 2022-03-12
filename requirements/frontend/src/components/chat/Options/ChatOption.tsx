@@ -9,10 +9,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import './ChatOption.scss';
 import { ChannelDto } from '../types/user-channels.dto';
-import Members from './Members';
-import { useLogin } from '../../../Providers/LoginProvider';
 import { useModal } from '../../../Providers/ModalProvider';
 import { useState } from 'react';
+import Admin from './Admin';
+import { Members } from './Members';
 
 const Option = ({
 	children,
@@ -43,7 +43,6 @@ const Option = ({
 
 const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	const [isToggled, setIsToggled] = useState(false);
-	const { loginStatus } = useLogin();
 	const { setModalProps } = useModal();
 
 	const options: {
@@ -64,7 +63,12 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			icon: faGear,
 			text: 'Admin',
 			callback: () => {
-				console.log(loginStatus.user?.id);
+				setModalProps({
+					show: true,
+					content: <Admin channel={channel} />,
+					width: '80%',
+					height: '80%',
+				});
 			},
 		},
 		{
@@ -73,12 +77,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			callback: () => {
 				setModalProps({
 					show: true,
-					content: (
-						<Members
-							userId={loginStatus.user?.id || 0}
-							channel={channel}
-						/>
-					),
+					content: <Members channel={channel} />,
 					width: '80%',
 					height: '80%',
 				});

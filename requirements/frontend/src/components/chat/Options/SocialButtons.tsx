@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useBlocked } from '../../../Providers/BlockedProvider';
 import { useFriendList } from '../../../Providers/FriendListProvider';
 import Button from './Button';
+import './SocialButtons.scss';
 
 const BlockButton = ({ userId }: { userId: number }) => {
 	const blockedHook = useBlocked();

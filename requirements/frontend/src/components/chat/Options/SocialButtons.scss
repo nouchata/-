@@ -1,0 +1,28 @@
+.friend-button {
+    background-color: rgb(43, 185, 50);
+    &:hover {
+        background-color: rgb(31, 131, 36);
+    }
+}
+
+.block-button,
+.ban-button {
+    background-color: rgb(255, 0, 0);
+    &:hover {
+        background-color: rgb(200, 0, 0);
+    }
+}
+
+.kick-button {
+    background-color: rgb(255, 196, 0);
+    &:hover {
+        background-color: rgb(200, 150, 0);
+    }
+}
+
+.mute-button {
+    background-color: rgb(241, 133, 10);
+    &:hover {
+        background-color: rgb(200, 100, 0);
+    }
+}
