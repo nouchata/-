@@ -176,6 +176,7 @@ export class ChannelService {
 		);
 		await this.sendMessage(msg);
 		channelToJoin.messages.push(msg);
+		await this.chatGateway.addNewUser(channelToJoin.id, user);
 		return (await this.channelRepository.save(channelToJoin)).toDto(
 			await this.userService.getBlockedUsers(user)
 		);
