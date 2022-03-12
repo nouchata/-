@@ -195,14 +195,6 @@ export class ChannelService {
 		channelToLeave.users = channelToLeave.users.filter(
 			(u) => u.id !== user.id
 		);
-		// add info message
-		/*await this.sendMessage(
-			await this.createMessage(
-				channelToLeave,
-				'system',
-				`${user.displayName} left the channel`
-			)
-		);*/
 		const msg = await this.createMessage(
 			channelToLeave,
 			'system',
