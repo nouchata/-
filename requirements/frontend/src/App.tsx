@@ -1,9 +1,6 @@
 import Error from './components/utils/Error';
 import GenericModal from './components/utils/GenericModal';
 
-import ChatAsset from './assets/homepage/chat.png';
-import JoyAsset from './assets/homepage/joystick.png';
-
 import './styles/global.scss';
 import './styles/main_layout.scss';
 import './styles/profile_overview.scss';
@@ -19,6 +16,7 @@ import { LoginState } from './types/FetchStatusData';
 import HSocialField from './components/homepage/HSocialField';
 import Compose from './utils/Compose';
 import { BrowserRouter as Router } from "react-router-dom";
+import MaterialLikeBtns from './components/homepage/MaterialLikeBtns';
 
 const TransApp = () => {
 	const { loginStatus } = useLogin();
@@ -35,16 +33,7 @@ const TransApp = () => {
 			)}
 			<div className="App">
 				{loginStatus.loggedIn === LoginState.LOGGED &&
-					!displayData.hideButtons /* PLAY AND CHAT BUTTONS */ && (
-						<div className="material-like-fab">
-							<button>
-								<img src={ChatAsset} alt="Chats" />
-							</button>
-							<button>
-								<img src={JoyAsset} alt="Play" />
-							</button>
-						</div>
-					)}
+					!displayData.hideButtons && <MaterialLikeBtns />}
 				<div className="main-field">
 					<div
 						className="main-content"

@@ -9,7 +9,7 @@ export type NotificationNHOptions = {
 	content: string;
 	context: string;
 	image?: string;
-	openAction?: () => void;
+	openAction?: (windowWidth?: number) => void;
 };
 
 export class NotificationNH {
@@ -18,7 +18,7 @@ export class NotificationNH {
 	private _context: string;
 	private _uuid?: string;
 	private _image?: string;
-	private _openAction?: () => void;
+	private _openAction?: (windowWidth?: number) => void;
 
 	constructor(options: NotificationNHOptions) {
 		this._name = options.name;
@@ -54,7 +54,7 @@ export class NotificationNH {
 		this._uuid = uuid;
 	}
 
-	public get openAction(): (() => void) | undefined {
+	public get openAction(): ((windowWidth?: number) => void) | undefined {
 		return this._openAction;
 	}
 }

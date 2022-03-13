@@ -23,6 +23,8 @@ import { useModal } from '../../Providers/ModalProvider';
 import { useLogin } from '../../Providers/LoginProvider';
 import { useFriendList } from '../../Providers/FriendListProvider';
 import { useNotificationHandler } from '../../Providers/NotificationProvider';
+import { useQuery } from '../../utils/useQuery';
+import { useNavigate } from 'react-router-dom';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
@@ -42,6 +44,8 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	const { loginStatus } = useLogin();
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
+	const queryIndex = useQuery().get('id');
+	const navigate = useNavigate();
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -55,12 +59,15 @@ const HSocialField = (props: { standalone?: boolean }) => {
 				}`,
 				image: chatImage,
 				context: 'chat',
-				openAction: () => {
-					setChatStatus({ state: 'OPENED' });
+				openAction: (windowWidth?: number) => {
+					if (windowWidth && windowWidth < 800)
+						navigate(`/social?id=${channel.id}`);
+					else
+						setChatStatus({ state: 'OPENED' });
 				},
 			});
 		},
-		[notificationHandler]
+		[notificationHandler] // eslint-disable-line
 	);
 
 	const existingChannels = useMemo(() => {
@@ -73,7 +80,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 			const channels = await RequestWrapper.get<ChannelDto[]>(
 				'/user/channels/list'
 			);
-			channels &&
+			if (channels) {
 				setChatSocket(
 					new ChatSocket(
 						channels,
@@ -84,6 +91,15 @@ const HSocialField = (props: { standalone?: boolean }) => {
 						loginStatus.user
 					)
 				);
+				if (queryIndex && props.standalone) {
+					for (let i = 0 ; i < channels.length ; i++) {
+						if (channels[i].id === Number(queryIndex)) {
+							setSelectChannelIndex(i);
+							setChatStatus({ state: 'OPENED' });
+						}
+					}
+				}
+			}
 		};
 		fetchChannels();
 		// eslint-disable-next-line
