@@ -8,17 +8,9 @@ import { GameOptions } from "./types/GameOptions";
 @Controller('game')
 export class GameController {
 	constructor(
-		@InjectRepository(User) private userRepo: Repository<User>,
 		@Inject(GameService) private gameService: GameService
 	) {}
 
-	@Post('test')
-	@HttpCode(HttpStatus.OK)
- 	testNormalStartMatchmaking(@Body() body: TestUser) {
-		return this.gameService.matchmakingAddPlayer(body);
-	}
-
-	// guard
 	@Post('join')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
@@ -46,5 +38,17 @@ export class GameController {
 		throw new InternalServerErrorException("We can't match you with another player for now, try again later");
 	}
 
+	@Post('create')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: "Create a private match with the parameters specified in the body"
+	})
+	createPrivateMatch(@Body() body: {
+		ids: [number, number],
+		options: Partial<GameOptions>
+	}) {
+		return this.gameService.createMatch(body.ids, body.options);
 	}
+
 }
