@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import CloseAsset from '../../assets/chat/close.png';
-import MinusAsset from '../../assets/chat/minus.png';
-import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
 import chatImage from '../../assets/homepage/chat.png';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	faMinimize,
+	faMaximize,
+	faClose
+} from '@fortawesome/free-solid-svg-icons';
 
 import '../../styles/social_field.scss';
 import './styles/Chat.scss';
@@ -232,7 +236,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 									setChatStatus({ state: 'MINIMIZED' })
 								}
 							>
-								<img src={MinusAsset} alt="minimize" />
+								<FontAwesomeIcon icon={faMinimize} className="icon-options" />
 							</button>
 						) : (
 							<button
@@ -241,7 +245,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 									setChatStatus({ state: 'OPENED' })
 								}
 							>
-								<img src={ContainMaxAsset} alt="maximize-in" />
+								<FontAwesomeIcon icon={faMaximize} className="icon-options" />
 							</button>
 						)}
 
@@ -249,7 +253,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 							title="Close"
 							onClick={() => setChatStatus({ state: 'CLOSED' })}
 						>
-							<img src={CloseAsset} alt="close" />
+							<FontAwesomeIcon icon={faClose} className="icon-options" />
 						</button>
 					</div>
 					<div className="hsf-chat-container">

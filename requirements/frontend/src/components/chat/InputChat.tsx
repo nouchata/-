@@ -1,3 +1,7 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+	faMessage
+} from '@fortawesome/free-solid-svg-icons';
 import { useState } from "react";
 
 const InputChat = ({
@@ -26,13 +30,14 @@ const InputChat = ({
 			/>
 			<button
 			className="input-button"
+			disabled={!msgInput.length}
 			onClick={
 				() => {
 					sendMessage(msgInput, selectChannelIndex);
 					setMsgInput('');
 				}
 			}
-			>Send</button>
+			><FontAwesomeIcon icon={faMessage} /></button>
 		</div>
 	)
 };

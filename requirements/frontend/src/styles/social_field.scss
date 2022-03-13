@@ -1,6 +1,7 @@
 @use 'theme';
 $hsf-content-pp-size: 35px;
 $hsf-chat-window-min-size: 50px;
+
 .social-field {
     flex-flow: column nowrap;
     justify-content: center;
@@ -165,11 +166,11 @@ $hsf-chat-window-min-size: 50px;
     flex-flow: row nowrap;
     align-items: center;
     >* {
-        flex: 0 0 10%;
+        flex: 0 0 auto;
     }
     h2 {
         box-sizing: border-box;
-        flex: 1 0 70%;
+        flex: 1;
         margin: 0;
         overflow: hidden;
         font-size: 1rem;
@@ -179,17 +180,14 @@ $hsf-chat-window-min-size: 50px;
     }
     button {
         height: 100%;
+        box-sizing: border-box;
+        padding: 0 10px 0 10px;
         border: 0;
         background-color: transparent;
         display: flex;
         flex-flow: row wrap;
         justify-content: center;
         align-items: center;
-        >img {
-            flex: 0 0 100%;
-            width: 100%;
-            filter: invert(100%);
-        }
     }
     button:hover {
         cursor: pointer;
@@ -199,9 +197,9 @@ $hsf-chat-window-min-size: 50px;
 .hsf-chat-container {
     background-color: theme.$darker-color;
     height: calc($hsf-chat-window-min-size * 5);
-    width: 0;
     overflow-x: hidden;
-    //display: none;
+    display: flex;
+    flex-flow: column nowrap;
 }
 
 .hsf-btn-new {
