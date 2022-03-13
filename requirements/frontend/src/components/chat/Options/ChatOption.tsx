@@ -10,7 +10,7 @@ import { RequestWrapper } from '../../../utils/RequestWrapper';
 import './ChatOption.scss';
 import { ChannelDto } from '../types/user-channels.dto';
 import { useModal } from '../../../Providers/ModalProvider';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Admin from './Admin';
 import { Members } from './Members';
 
@@ -44,6 +44,19 @@ const Option = ({
 const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	const [isToggled, setIsToggled] = useState(false);
 	const { setModalProps } = useModal();
+	const [adminModalOpen, setAdminModalOpen] = useState(false);
+
+	useEffect(() => {
+		if (adminModalOpen) {
+			setModalProps({
+				show: true,
+				content: <Admin channel={channel} />,
+				width: '80%',
+				height: '80%',
+				onClose: () => setAdminModalOpen(false),
+			});
+		}
+	}, [adminModalOpen, channel, setModalProps]);
 
 	const options: {
 		icon: IconDefinition;
@@ -63,12 +76,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			icon: faGear,
 			text: 'Admin',
 			callback: () => {
-				setModalProps({
-					show: true,
-					content: <Admin channel={channel} />,
-					width: '80%',
-					height: '80%',
-				});
+				setAdminModalOpen(true);
 			},
 		},
 		{
