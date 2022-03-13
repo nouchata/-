@@ -27,7 +27,7 @@ export class GameService {
 
     async matchWaitingPlayers() {
         while (true) {
-            await new Promise(resolve => setTimeout(() => { resolve(true) }, 2000));
+            await new Promise(resolve => setTimeout(() => { resolve(true) }, 1000));
 
             let i = 1;
             while (i < this.list.waiting.length) {
