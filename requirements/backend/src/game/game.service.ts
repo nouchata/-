@@ -123,7 +123,7 @@ export class GameService {
         // players[0] is the winner
         players.sort((a: User, b: User) => {
             return a.id === winner.id ? -1 : 1;
-        });body
+        });
 
         // compute new elo
         const updatedElo = this.computeNewEloScore(players[0].elo, players[1].elo);

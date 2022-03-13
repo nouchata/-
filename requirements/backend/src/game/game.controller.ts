@@ -21,7 +21,7 @@ export class GameController {
 		return this.gameService.matchmakingAddPlayer(req.user);
 	}
 
-	@Get('matchmaking/:id')
+	@Get('matchmaking')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 200,
@@ -31,8 +31,8 @@ export class GameController {
 		status: 500,
 		description: "Error while trying to create a new match"
 	})
-	getMatchmakingState(@Param('id', ParseIntPipe) id: number) {
-		const matchId: number = this.gameService.matchmakingCheckMatch(id);
+	getMatchmakingState(@Req() req: { user: User }) {
+		const matchId: number = this.gameService.matchmakingCheckMatch(req.user.id);
 		if (matchId != -1)
 			return matchId;
 		throw new InternalServerErrorException("We can't match you with another player for now, try again later");
