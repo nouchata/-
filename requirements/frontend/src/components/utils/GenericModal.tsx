@@ -10,6 +10,7 @@ export type GenericModalProps = {
 	width?: string;
 	maxHeight?: string;
 	maxWidth?: string;
+	onClose?: () => void;
 };
 
 const GenericModal = ({
@@ -33,15 +34,10 @@ const GenericModal = ({
 				>
 					{!modalOptions.cantBeClosed && (
 						<button
-							onClick={() =>
-								setModalProps({
-									show: false,
-									content: <div />,
-									cantBeClosed: undefined,
-									height: undefined,
-									width: undefined,
-								})
-							}
+							onClick={() => {
+								modalOptions.onClose?.();
+								setModalProps(undefined);
+							}}
 						>
 							<img src={CloseAsset} alt="close modal" />
 						</button>

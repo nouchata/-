@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import { useModal } from "../../../Providers/ModalProvider";
-import JoinCreateModal from "../../chat/modal/JoinCreateModal";
-import { ChatSocket } from "../../chat/utils/ChatSocket";
-import AddFriendModal from "../../friends/modal/AddFriendModal";
-import { GenericModalProps } from "../../utils/GenericModal";
+import { useEffect, useMemo, useState } from 'react';
+import { useModal } from '../../../Providers/ModalProvider';
+import JoinCreateModal from '../../chat/modal/JoinCreateModal';
+import { ChatSocket } from '../../chat/utils/ChatSocket';
+import AddFriendModal from '../../friends/modal/AddFriendModal';
+import { GenericModalProps } from '../../utils/GenericModal';
 
 const NewConv = ({
 	chatSocket,
@@ -14,7 +14,8 @@ const NewConv = ({
 	isFriendTabSelected: boolean;
 	AddFriend: (name: string) => Promise<void>;
 }) => {
-	const { setModalProps } = useModal()
+	const { setModalProps } = useModal();
+	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const friendModalSettings: GenericModalProps = {
 		show: true,
@@ -26,27 +27,33 @@ const NewConv = ({
 		if (!chatSocket) return [];
 		return chatSocket?.channels.map((channel) => channel.id);
 	}, [chatSocket]);
+
+	useEffect(() => {
+		if (isModalOpen && chatSocket) {
+			setModalProps({
+				show: true,
+				content: (
+					<JoinCreateModal
+						socket={chatSocket}
+						existingChannels={existingChannels}
+					/>
+				),
+				height: '50%',
+				width: '85%',
+				maxWidth: '500px',
+				onClose: () => setIsModalOpen(false),
+			});
+		}
+	}, [isModalOpen, chatSocket, existingChannels, setModalProps]);
+
 	return (
 		<div className="hsf-btn-new">
 			<button
 				onClick={() => {
 					if (!chatSocket) return;
-					setModalProps(
-						isFriendTabSelected
-							? friendModalSettings
-							: {
-									show: true,
-									content: (
-										<JoinCreateModal
-											socket={chatSocket}
-											existingChannels={existingChannels}
-										/>
-									),
-									height: '50%',
-									width: '85%',
-									maxWidth: '500px',
-							  }
-					);
+					isFriendTabSelected
+						? setModalProps(friendModalSettings)
+						: setIsModalOpen(true);
 				}}
 			>
 				+{' '}
@@ -56,6 +63,6 @@ const NewConv = ({
 			</button>
 		</div>
 	);
-}
+};
 
 export default NewConv;
