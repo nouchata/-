@@ -4,20 +4,33 @@ import { MatchHistory } from "src/user/entities/match-history.entity";
 import { User } from "src/user/entities/user.entity";
 import { Repository } from "typeorm";
 import { PlayerState } from "./types/PlayerState";
-import { TestUser, MatchmakingList } from "./types/Matchmaking"
+import { MatchmakingList } from "./types/Matchmaking"
+import { GameGateway } from "./game.gateway";
+import { GameOptions } from "./types/GameOptions";
 
 @Injectable()
 export class GameService {
 
     private list: MatchmakingList;
+    public gatewayPtr: GameGateway | undefined = undefined;
+
+    createMatch(ids: [number, number], options?: Partial<GameOptions>) {
+        if (this.gatewayPtr) {
+            try { // create a new game instance for the players
+                return this.gatewayPtr.createInstance(ids[0], ids[1], options);
+            } catch (e) {
+                return -1;
+            }
+        }
+        return 0;
+    }
 
     async matchWaitingPlayers() {
         while (true) {
-            await new Promise(resolve => setTimeout(() => { resolve(true) }, 1000));
+            await new Promise(resolve => setTimeout(() => { resolve(true) }, 2000));
 
             let i = 1;
             while (i < this.list.waiting.length) {
-    
                 // compute elo gap between the two players
                 const actualDiff = this.list.waiting[i - 1].user.elo - this.list.waiting[i].user.elo;
                 // every 15s the allowed elo gap is bigger by 250 elo
@@ -25,16 +38,25 @@ export class GameService {
     
                 // if the players have a fairly close level
                 if (actualDiff <= allowedDiff) { // it's a match !
-                    this.list.finished.push([this.list.waiting[i - 1].user, this.list.waiting[i].user])
-                    this.list.waiting.splice(i - 1, 2); // remove them from waiting list
+                    
+                    this.list.finished.push({
+                        playerOne: [this.list.waiting[i - 1].user, false],
+                        playerTwo: [this.list.waiting[i].user, false],
+                        id: 0
+                    });
+
+                    const last = this.list.finished.slice(-1)[0]; // get last match created
+                    last.id = this.createMatch([last.playerOne[0].id, last.playerTwo[0].id]);
+                    if (last.id > 0) { // if a new match has been created successfully
+                        this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
+                    }
                 }
-    
                 i++;
             }
         }
     }
 
-    matchmakingAddPlayer(player: TestUser) {
+    matchmakingAddPlayer(player: User) {
 
         let i = 0;
         while (i < this.list.waiting.length && this.list.waiting[i].user.elo > player.elo) {
@@ -46,19 +68,29 @@ export class GameService {
             user: player,
             time: Date.now()
         });
-        return this.list;
     }
 
-    matchmakingCheckMatch(playerId: number) {
-        const match = this.list.finished.find(match => {
-            return (match[0].id === playerId || match[1].id === playerId);
+    matchmakingCheckMatch(playerId: number) : number {
+        const matchIndex = this.list.finished.findIndex(match => {
+            return (match.playerOne[0].id === playerId || match.playerTwo[0].id === playerId);
         });
-
-        if (!match)
-            return null;
+        const match = this.list.finished[matchIndex];
 
         // create a new match instance
-        // return its id
+        if (this.gatewayPtr && match) {
+
+            // set the player as ready
+            match.playerOne[0].id === playerId ?
+                match.playerOne[1] = true:
+                match.playerTwo[1] = true;
+
+            if (match.playerOne[1] && match.playerTwo[1]) {
+                this.list.finished.splice(matchIndex, 1); // both players are ready, matchmaking is over
+            }
+
+            return match.id; // -1 is a fail, > 0 is a success
+        }
+        return (0);
     }
 
     async saveMatchResult(
@@ -91,7 +123,7 @@ export class GameService {
         // players[0] is the winner
         players.sort((a: User, b: User) => {
             return a.id === winner.id ? -1 : 1;
-        });
+        });body
 
         // compute new elo
         const updatedElo = this.computeNewEloScore(players[0].elo, players[1].elo);

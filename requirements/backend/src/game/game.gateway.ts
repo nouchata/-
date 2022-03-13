@@ -29,6 +29,10 @@ export class GameGateway {
 	/* relie les joueurs à l'id de leur instance */
 	private associatedPlayers : { [userId: number]: number | undefined } = {};
 
+	afterInit(server: Server) {
+		this.gameService.gatewayPtr = this;
+	}
+
 	handleConnection() {}
 
 	handleDisconnect(client: Socket & { request: { user: User } }) {
