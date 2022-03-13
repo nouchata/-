@@ -18,6 +18,7 @@ import LinkTree from './components/LinkTree';
 import { LoginState } from './types/FetchStatusData';
 import HSocialField from './components/homepage/HSocialField';
 import Compose from './utils/Compose';
+import { BrowserRouter as Router } from "react-router-dom";
 
 const TransApp = () => {
 	const { loginStatus } = useLogin();
@@ -25,7 +26,7 @@ const TransApp = () => {
 	const { modalProps } = useModal();
 
 	return (
-		<>
+		<Router>
 			{loginStatus.loggedIn === LoginState.LOGGED && (
 				<>
 					<GenericModal modalOptions={modalProps} />
@@ -66,7 +67,7 @@ const TransApp = () => {
 						!displayData.hideSidebar && <HSocialField />}{' '}
 				</div>
 			</div>
-		</>
+		</Router>
 	);
 };
 

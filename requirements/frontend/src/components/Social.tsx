@@ -1,19 +1,18 @@
-import { useContext, useEffect } from "react";
-import HideDisplayContext from "../contexts/HideDisplayContext";
-import { HideDisplayData } from "../types/HideDisplayData";
+import { useEffect } from "react";
+import { useDisplay } from "../Providers/DisplayProvider";
 import HSocialField from "./homepage/HSocialField";
 
 const Social = () : JSX.Element => {
-	const [, setHideDisplay] = useContext(HideDisplayContext) as [HideDisplayData, Function];
+	const displayContext = useDisplay();
 
 	useEffect(() => {
-		setHideDisplay({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true } as HideDisplayData);
+		displayContext.setDisplayData({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true });
 		
 
-		return function cleanup() {
-			setHideDisplay({});
+		return function cleanup() { 
+			displayContext.setDisplayData({});
 		};
-	}, []);
+	}, []); // eslint-disable-line
 
 	return (
 		<>

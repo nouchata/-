@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Route, Link, Switch, Redirect } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import socketIOClient, { Socket } from "socket.io-client"; // eslint-disable-line
 import { useLogin } from '../Providers/LoginProvider';
 import { LoginState } from '../types/FetchStatusData';
@@ -13,22 +13,24 @@ const LinkTree = () : JSX.Element => {
 	const { loginStatus } = useLogin();
 
 	return (
-		<Router>
+		<>
 			{loginStatus.loggedIn === LoginState.LOGGED ?
-				<Switch>
-					<Route path="/profile/:id"><Profile /></Route>
-					<Route path="/homepage"><Homepage /></Route>
-					<Route path="/game"><Game /></Route>
-					<Route path="/social"><Social /></Route>
-					<Route path="/"><Redirect to='/homepage' /></Route>
-				</Switch>
+				<Routes>
+					<Route path="profile">
+						<Route path=":id" element={<Profile />}></Route>
+					</Route>
+					<Route path="homepage" element={<Homepage />}></Route>
+					<Route path="game" element={<Game />}></Route>
+					<Route path="social" element={<Social />}></Route>
+					<Route path="*" element={<Navigate to='homepage' />}></Route>
+				</Routes>
 			:
-				<Switch>
-					<Route path="/login"><Login /></Route>
-					<Route path="/"><Redirect to='/login' /></Route>
-				</Switch>
+				<Routes>
+					<Route path="login" element={<Login />}></Route>
+					<Route path="*" element={<Navigate to='login' />}></Route>
+				</Routes>
 			}
-		</Router>
+		</>
 	);
 }
 
