@@ -60,7 +60,7 @@ export class UserController {
 	@Get(':id')
 	@UseGuards(GroupGuard)
 	async getUserById(
-		@Req() req: any,
+		@Req() req: { user: User },
 		@Param('id', ParseIntPipe) id: number
 	): Promise<FindUserDTO> {
 		const userDB = await this.userService.findUserById(id);
