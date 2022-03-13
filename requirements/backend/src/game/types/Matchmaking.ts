@@ -1,12 +1,14 @@
-interface TestUser {
+import { User } from "src/user/entities/user.entity";
+
+interface Match {
+	playerOne: [User, boolean],
+	playerTwo: [User, boolean],
 	id: number
-	displayName: string
-	elo: number
 }
 
 type MatchmakingList = {
-    waiting: { user: TestUser, time: number }[]
-    finished: [TestUser, TestUser][];
+    waiting: { user: User, time: number }[]
+    finished: Match[];
 }
 
-export { TestUser, MatchmakingList };
+export { MatchmakingList };
