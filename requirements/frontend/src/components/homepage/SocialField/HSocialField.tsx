@@ -1,8 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import CloseAsset from '../../../assets/chat/close.png';
-import MinusAsset from '../../../assets/chat/minus.png';
-import ContainMaxAsset from '../../../assets/chat/contain-max.png';
 import chatImage from '../../../assets/homepage/chat.png';
 
 import '../../../styles/social_field.scss';
@@ -11,19 +8,15 @@ import '../styles/Chat.scss';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { ChannelDto, MessageDto } from '../../chat/types/user-channels.dto';
 import { ChatSocket } from '../../chat/utils/ChatSocket';
-import InputChat from '../../chat/InputChat';
-import MessageArea from '../../chat/MessageArea';
 import FriendsList from '../../friends/FriendsList';
-import ChatOption from '../../chat/Options/ChatOption';
 import AddFriendModal from '../../friends/modal/AddFriendModal';
 import { useModal } from '../../../Providers/ModalProvider';
 import { useLogin } from '../../../Providers/LoginProvider';
 import { useFriendList } from '../../../Providers/FriendListProvider';
-import {
-	useNotificationHandler,
-} from '../../../Providers/NotificationProvider';
+import { useNotificationHandler } from '../../../Providers/NotificationProvider';
 import ChannelList from './ChannelList';
 import NewConv from './NewConv';
+import ChatBox from './ChatBox';
 
 export type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
@@ -143,52 +136,12 @@ const HSocialField = () => {
 				)}
 			</div>
 			{chatSocket?.channels[selectChannelIndex] && (
-				<div className={chatToggleCSS(chatStatus)}>
-					<div className="hsf-chat-controls">
-						<h2>{chatSocket?.channels[selectChannelIndex].name}</h2>
-						<ChatOption
-							channel={chatSocket.channels[selectChannelIndex]}
-						/>
-						{chatStatus.state === 'OPENED' ? (
-							<button
-								title="Minimize"
-								onClick={() =>
-									setChatStatus({ state: 'MINIMIZED' })
-								}
-							>
-								<img src={MinusAsset} alt="minimize" />
-							</button>
-						) : (
-							<button
-								title="Maximize"
-								onClick={() =>
-									setChatStatus({ state: 'OPENED' })
-								}
-							>
-								<img src={ContainMaxAsset} alt="maximize-in" />
-							</button>
-						)}
-
-						<button
-							title="Close"
-							onClick={() => setChatStatus({ state: 'CLOSED' })}
-						>
-							<img src={CloseAsset} alt="close" />
-						</button>
-					</div>
-					<div className="hsf-chat-container">
-						<MessageArea
-							index={selectChannelIndex}
-							chatSocket={chatSocket}
-						/>
-						<InputChat
-							selectChannelIndex={selectChannelIndex}
-							sendMessage={(text, channelIndex) =>
-								chatSocket?.sendMessage(text, channelIndex)
-							}
-						/>
-					</div>
-				</div>
+				<ChatBox
+					chatStatus={chatStatus}
+					chatSocket={chatSocket}
+					selectChannelIndex={selectChannelIndex}
+					setChatStatus={setChatStatus}
+				/>
 			)}
 			<NewConv
 				chatSocket={chatSocket}
@@ -198,19 +151,6 @@ const HSocialField = () => {
 		</div>
 	);
 };
-
-function chatToggleCSS(cs: ChatState): string {
-	let ret: string = 'hsf-chat';
-	switch (cs.state) {
-		case 'MINIMIZED':
-			ret += ' minimize-state';
-			break;
-		case 'CLOSED':
-			ret += ' closed-state';
-			break;
-	}
-	return ret;
-}
 
 function socialToggleCSS(isShowed: boolean): void {
 	let elem: Element | null = document.querySelector('.main-content');
