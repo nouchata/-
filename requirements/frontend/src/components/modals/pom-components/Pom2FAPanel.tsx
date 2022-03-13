@@ -56,7 +56,6 @@ const tfaBtnHandler = async(
 
 const Pom2FAPanel = (props: {
 	fetchStatus: FetchStatusData,
-	setFetchStatus: (fetchStatus: FetchStatusData) => void
 }) : JSX.Element => {
 	const [ authCodeStatus, setAuthCodeStatus ] = useState<TCIState>(TCIState.INITIAL);
 	const [ tfaStartProcedure, setTfaStartProcedure ] = useState<boolean>(false);

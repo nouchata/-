@@ -6,6 +6,8 @@ import { ResponseState, RUNSTATE } from "../types/ResponseState";
 import { GameAction, GA_KEY } from "../types/GameAction";
 import { cloneDeep } from "lodash";
 import { BallState } from "../types/BallState";
+import { GameService } from "../game.service";
+import { Inject } from "@nestjs/common";
 
 const samplePlayer : PlayerState = {
 	id: 0,
@@ -76,8 +78,8 @@ class GameInstance {
 
 	private responseState : ResponseState;
 
-
 	constructor(
+		@Inject(GameService) private gameService: GameService,
 		instanceSettings : InstanceSettings,
 		givenGameOptions? : Partial<GameOptions>
 	) {
@@ -199,14 +201,18 @@ class GameInstance {
 
 	private scoreRegister() {
 		let players : Array<PlayerState> = [this.playerOne, this.playerTwo];
-		players[this.ballState.pos.x < 50 ? 1 : 0].score++;
+		let winner: number = this.ballState.pos.x < 50 ? 1 : 0; // round winner index
+
+		players[winner].score++;
 		this.ballState.flags.rainbow = false;
 		this.ballState.flags.smash = false;
 		this.ballState.speedPPS = this.gameOptions.ballSpeedPPS;
 
-		if (players[this.ballState.pos.x < 50 ? 1 : 0].score >= 6) {
+		if (players[winner].score >= 6) { // a player won
 			this.forceGlobalFreeze = true;
 			this.runState = RUNSTATE.AFTER_GAME;
+
+			this.gameService.saveMatchResult(players[winner], players[Math.abs(winner - 1)]);
 		}
 
 		this.globalFreezeSetter({ resetBallPos: true, resetPlayerPos: true });

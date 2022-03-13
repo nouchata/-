@@ -47,15 +47,6 @@ export class MatchHistory {
 	loseScore: number;
 
 	@ApiProperty({
-		description: 'The duration of the match in seconds',
-		example: 300,
-	})
-	@Column({
-		update: false,
-	})
-	duration: number;
-
-	@ApiProperty({
 		description: 'The date when the match began',
 		example: '2021-12-01T17:45:40.162Z',
 	})

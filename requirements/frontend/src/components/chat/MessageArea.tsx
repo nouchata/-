@@ -1,13 +1,12 @@
-import { useContext, useEffect, useRef } from "react";
-import LoginContext from "../../contexts/LoginContext";
-import { FetchStatusData } from "../../types/FetchStatusData";
+import { useEffect, useRef } from "react";
+import { useLogin } from "../../Providers/LoginProvider";
 import { MessageDto, User } from "./types/user-channels.dto";
 import { ChatSocket } from "./utils/ChatSocket";
 
 
 const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSocket | undefined }) => {
 
-	let fetchStatusValue: { fetchStatus: FetchStatusData; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
+	const { loginStatus } = useLogin();
 	const messagesEndRef = useRef<HTMLDivElement>(null)
 
 	const scrollToBottom = () => {
@@ -45,7 +44,7 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSoc
 									{message.text}
 								</div>
 								:
-								fetchStatusValue.fetchStatus.user?.id === message.userId ?
+								loginStatus.user?.id === message.userId ?
 									<div className="message-self">
 										<div className='bubble-self'>
 											{

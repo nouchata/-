@@ -1,10 +1,10 @@
-import { useContext, useState } from "react";
-import NotificationContext from "../../contexts/NotificationContext";
+import { useState } from "react";
 import close from '../../assets/chat/close.png';
 import bell from './assets/bell.svg';
+import { useNotificationHandler } from "../../Providers/NotificationProvider";
 
 const NotificationCenter = () => {
-	const notificationHandler = useContext(NotificationContext);
+	const notificationHandler = useNotificationHandler();
 	const [open, setOpen] = useState(false);
 
 	return (

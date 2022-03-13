@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+	ConflictException,
+	HttpException,
+	HttpStatus,
+	Injectable,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -107,7 +112,6 @@ export class UserService {
 				matchInfo.id = match.id;
 				matchInfo.score[0] = match.winScore;
 				matchInfo.score[1] = match.loseScore;
-				matchInfo.duration = match.duration;
 				matchInfo.date = match.date;
 
 				return matchInfo;
@@ -116,7 +120,7 @@ export class UserService {
 
 		// sort matches by date
 		dto.history.sort((a, b) => {
-			if (a.date < b.date) {
+			if (a.date > b.date) {
 				return -1;
 			} else {
 				return 1;
@@ -152,19 +156,7 @@ export class UserService {
 
 		if (!channels) return [];
 		const blockedUsers = await this.getBlockedUsers(user);
-		// sort messages by date
-		channels.forEach((channel) => {
-			channel.messages = channel.messages.filter((message) => {
-				return !blockedUsers.find((user) => {
-					return user.id === message.user?.id;
-				});
-			});
-			channel.messages.sort((a, b) => {
-				return a.createdAt > b.createdAt ? 1 : -1;
-			});
-		});
-
-		return channels.map((channel) => channel.toDto());
+		return channels.map((channel) => channel.toDto(blockedUsers));
 	}
 
 	async blockUser(user: User, blockedUser: User) {
@@ -232,5 +224,39 @@ export class UserService {
 		this.userRepo.save(user); // save new relation
 
 		return FriendDTO.fromEntity(friend);
+	}
+
+	async addFriend(user: User, friend: User) {
+		return this.editFriendship(
+			user,
+			friend,
+			(user: User, friend: User, index: number) => {
+				if (index !== -1) {
+					throw new ConflictException(
+						`"${friend.displayName}" and you are already friends.`
+					);
+				} else if (user.id === friend.id) {
+					throw new ConflictException(`You cannot add yourself !`);
+				}
+				user.friends.push(friend);
+				return user;
+			}
+		);
+	}
+
+	async deleteFriend(user: User, friend: User) {
+		this.editFriendship(
+			user,
+			friend,
+			(user: User, friend: User, index: number) => {
+				if (index === -1) {
+					throw new ConflictException(
+						`${friend.displayName} is not your friend.`
+					);
+				}
+				user.friends.splice(index, 1);
+				return user;
+			}
+		);
 	}
 }

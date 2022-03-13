@@ -7,9 +7,8 @@ import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
 import { GenericModalProps } from '../utils/GenericModal';
 import ProfileOptionsModal from '../modals/ProfileOptionsModal';
-import { useContext } from 'react';
-import ModalContext from '../../contexts/ModalContext';
 import { RequestWrapper } from '../../utils/RequestWrapper';
+import { useModal } from '../../Providers/ModalProvider';
 
 //import '../../styles/profile_overview.scss';
 
@@ -20,8 +19,8 @@ const profileOptsModal : GenericModalProps = {
 	width: '80%'
 }
 
-const ProfileOverview = (fetchStatus: FetchStatusData) : JSX.Element => {
-	const { setModalProps } = useContext(ModalContext);
+const ProfileOverview = ({fetchStatus}: {fetchStatus: FetchStatusData}) : JSX.Element => {
+	const { setModalProps } = useModal();
 
 	return (
 		<div className='profile-overview'>

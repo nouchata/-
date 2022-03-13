@@ -1,6 +1,5 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import LoginContext from '../contexts/LoginContext';
 import { FetchStatusData, LoginState } from '../types/FetchStatusData';
 import { LoginDataSet } from '../types/LoginDataSet';
 // not-package-related importation
@@ -11,15 +10,16 @@ import GoogleAsset from '../assets/login/google.png';
 import { RequestWrapper } from '../utils/RequestWrapper';
 import TFACodeInput, { TCIState } from './utils/TFACodeInput';
 import { useQuery } from '../utils/useQuery';
+import { useLogin } from '../Providers/LoginProvider';
 
 const Login = () => {
 	const [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
 	const queryCode = useQuery().get('code');
 	const history = useHistory();
-	const fetchStatusValue: { fetchStatus: FetchStatusData | undefined; setFetchStatus: (fetchStatus: FetchStatusData) => void } = useContext(LoginContext);
+	const { loginStatus } = useLogin();
 
 	useEffect(() => {
-		if (!fetchStatusValue.fetchStatus?.loggedIn && !queryCode) {
+		if (!loginStatus.loggedIn && !queryCode) {
 			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string +
 				'/auth/login', 'Login 42', 'scrollbars=no,resizable=no,' +
 			'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
@@ -28,7 +28,7 @@ const Login = () => {
 				p: 'The login occurs in a popup.',
 				img: resetAsset
 			});
-		} else if (!fetchStatusValue.fetchStatus?.loggedIn && queryCode) {
+		} else if (!loginStatus.loggedIn && queryCode) {
 			setDataSet({
 				h1: 'Logging In ...',
 				p: 'Please wait a moment, this window will automatically close.',
@@ -57,7 +57,7 @@ const Login = () => {
 					window.close();
 				}
 			})();
-		} else if (fetchStatusValue.fetchStatus?.loggedIn === LoginState.LOGGED) {
+		} else if (loginStatus.loggedIn === LoginState.LOGGED) {
 			setDataSet({
 				h1: 'You are logged in !',
 				p: 'Please wait a moment, you\'ll be redirected to your last location.',
@@ -67,10 +67,10 @@ const Login = () => {
 				setTimeout(() => history.goBack(), 1000);
 			})();
 		}
-	}, [fetchStatusValue.fetchStatus]); // eslint-disable-line
+	}, [loginStatus]); // eslint-disable-line
 
 	return (
-		fetchStatusValue.fetchStatus?.loggedIn === LoginState.PARTIAL && !queryCode ?
+		loginStatus.loggedIn === LoginState.PARTIAL && !queryCode ?
 			<div className="tfa-login-stuff">
 				<img src={GoogleAsset} className="onthespot" alt="google auth logo" />
 				<div className="login-2fa-container">
