@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 
-import CloseAsset from '../../assets/chat/close.png';
-import MinusAsset from '../../assets/chat/minus.png';
-import ContainMaxAsset from '../../assets/chat/contain-max.png';
 import HashAsset from '../../assets/social/hashtag.png';
 import chatImage from '../../assets/homepage/chat.png';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+	faMinimize,
+	faMaximize,
+	faClose
+} from '@fortawesome/free-solid-svg-icons';
 
 import '../../styles/social_field.scss';
 import './styles/Chat.scss';
@@ -23,12 +27,14 @@ import { useModal } from '../../Providers/ModalProvider';
 import { useLogin } from '../../Providers/LoginProvider';
 import { useFriendList } from '../../Providers/FriendListProvider';
 import { useNotificationHandler } from '../../Providers/NotificationProvider';
+import { useQuery } from '../../utils/useQuery';
+import { useNavigate } from 'react-router-dom';
 
 type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
 };
 
-const HSocialField = () => {
+const HSocialField = (props: { standalone?: boolean }) => {
 	const [isFriendTabSelected, setIsFriendTabSelected] =
 		useState<boolean>(false);
 	const [chatStatus, setChatStatus] = useState<ChatState>({
@@ -42,6 +48,8 @@ const HSocialField = () => {
 	const { loginStatus } = useLogin();
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
+	const queryIndex = useQuery().get('id');
+	const navigate = useNavigate();
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -55,12 +63,15 @@ const HSocialField = () => {
 				}`,
 				image: chatImage,
 				context: 'chat',
-				openAction: () => {
-					setChatStatus({ state: 'OPENED' });
+				openAction: (windowWidth?: number) => {
+					if (windowWidth && windowWidth < 800)
+						navigate(`/social?id=${channel.id}`);
+					else
+						setChatStatus({ state: 'OPENED' });
 				},
 			});
 		},
-		[notificationHandler]
+		[notificationHandler] // eslint-disable-line
 	);
 
 	const existingChannels = useMemo(() => {
@@ -73,7 +84,7 @@ const HSocialField = () => {
 			const channels = await RequestWrapper.get<ChannelDto[]>(
 				'/user/channels/list'
 			);
-			channels &&
+			if (channels) {
 				setChatSocket(
 					new ChatSocket(
 						channels,
@@ -84,6 +95,15 @@ const HSocialField = () => {
 						loginStatus.user
 					)
 				);
+				if (queryIndex && props.standalone) {
+					for (let i = 0 ; i < channels.length ; i++) {
+						if (channels[i].id === Number(queryIndex)) {
+							setSelectChannelIndex(i);
+							setChatStatus({ state: 'OPENED' });
+						}
+					}
+				}
+			}
 		};
 		fetchChannels();
 		// eslint-disable-next-line
@@ -139,8 +159,8 @@ const HSocialField = () => {
 	};
 
 	return (
-		<div className="social-field">
-			<button
+		<div className="social-field" style={{ height: props.standalone ? "100%" : "inherit" }}>
+			{!props.standalone && <button
 				title={
 					isSocialFieldShowed
 						? 'Hide social panel'
@@ -152,7 +172,7 @@ const HSocialField = () => {
 				}}
 			>
 				{isSocialFieldShowed ? '<' : '>'}
-			</button>
+			</button>}
 			<div className="hsf-tab-selector">
 				<button
 					className={isFriendTabSelected ? 'hsf-btn-selected' : ''}
@@ -216,7 +236,7 @@ const HSocialField = () => {
 									setChatStatus({ state: 'MINIMIZED' })
 								}
 							>
-								<img src={MinusAsset} alt="minimize" />
+								<FontAwesomeIcon icon={faMinimize} className="icon-options" />
 							</button>
 						) : (
 							<button
@@ -225,7 +245,7 @@ const HSocialField = () => {
 									setChatStatus({ state: 'OPENED' })
 								}
 							>
-								<img src={ContainMaxAsset} alt="maximize-in" />
+								<FontAwesomeIcon icon={faMaximize} className="icon-options" />
 							</button>
 						)}
 
@@ -233,7 +253,7 @@ const HSocialField = () => {
 							title="Close"
 							onClick={() => setChatStatus({ state: 'CLOSED' })}
 						>
-							<img src={CloseAsset} alt="close" />
+							<FontAwesomeIcon icon={faClose} className="icon-options" />
 						</button>
 					</div>
 					<div className="hsf-chat-container">
@@ -298,15 +318,17 @@ function chatToggleCSS(cs: ChatState): string {
 }
 
 function socialToggleCSS(isShowed: boolean): void {
-	let elem: Element | null = document.querySelector('.main-content');
-	(elem as HTMLElement).style.animation = 'none';
+	let elem: HTMLElement | null = document.querySelector('.main-content');
+	if (!elem)
+		return ;
+	elem.style.animation = 'none';
 	setTimeout(() => {
 		if (elem) {
 			if (isShowed) {
-				(elem as HTMLElement).style.animation =
+				elem.style.animation =
 					'1s ease-in-out 0s 1 normal both running hsf-slide';
 			} else {
-				(elem as HTMLElement).style.animation =
+				elem.style.animation =
 					'1s ease-in-out 0s 1 reverse both running hsf-slide';
 			}
 		}

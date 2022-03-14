@@ -2,10 +2,12 @@ import { useState } from "react";
 import close from '../../assets/chat/close.png';
 import bell from './assets/bell.svg';
 import { useNotificationHandler } from "../../Providers/NotificationProvider";
+import useWindowDimensions from "../utils/useWindowDimensions";
 
 const NotificationCenter = () => {
 	const notificationHandler = useNotificationHandler();
 	const [open, setOpen] = useState(false);
+	const windowDim = useWindowDimensions();
 
 	return (
 		<div className={`notification-center ${open ? 'open' : ''}`}>
@@ -36,7 +38,7 @@ const NotificationCenter = () => {
 									<div
 										className='notification-open-action'
 										onClick={() => {
-											notification.openAction && notification.openAction();
+											notification.openAction && notification.openAction(windowDim.width);
 											notificationHandler?.removeNotificationContext('chat');
 										}}
 									>

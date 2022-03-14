@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FetchStatusData, LoginState } from '../types/FetchStatusData';
 import { LoginDataSet } from '../types/LoginDataSet';
-// not-package-related importation
 import '../styles/login.scss';
 import resetAsset from '../assets/login/reset.png';
 import tickAsset from '../assets/login/tick.png';
@@ -15,7 +14,7 @@ import { useLogin } from '../Providers/LoginProvider';
 const Login = () => {
 	const [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
 	const queryCode = useQuery().get('code');
-	const history = useHistory();
+	const history = useNavigate();
 	const { loginStatus } = useLogin();
 
 	useEffect(() => {
@@ -64,7 +63,7 @@ const Login = () => {
 				img: tickAsset
 			});
 			(async () => {
-				setTimeout(() => history.goBack(), 1000);
+				setTimeout(() => history("/"), 1000);
 			})();
 		}
 	}, [loginStatus]); // eslint-disable-line

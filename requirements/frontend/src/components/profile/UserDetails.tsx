@@ -1,7 +1,6 @@
 import { FetchUserData } from '../../types/FetchUserData';
 import HistoryTable from './HistoryTable';
 import ProgressBar from '../utils/ProgressBar';
-import editAsset from '../../assets/profile/edit-solid.svg';
 import { Link } from 'react-router-dom';
 import UserStatus from '../utils/StatusDisplay';
 import { BlockButton, FriendButton } from '../chat/Options/SocialButtons';
@@ -72,14 +71,6 @@ const UserDetails = (props: IProps) => {
 
 				<h1>
 					{props.data.general.role} {props.data.general.name}
-					{props.data.isEditable ? (
-						<button onClick={props.onClick} className="edit-button">
-							<span className="edit-icon">
-								<img src={editAsset} alt="edition icon" />
-							</span>
-							edit
-						</button>
-					) : null}
 				</h1>
 
 				<p>created on {formatDate(props.data.general.creation)}</p>

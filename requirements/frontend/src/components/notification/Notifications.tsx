@@ -2,9 +2,11 @@ import './Notifications.scss';
 import close from '../../assets/chat/close.png';
 import NotificationCenter from "./NotificationCenter";
 import { useNotificationHandler } from "../../Providers/NotificationProvider";
+import useWindowDimensions from '../utils/useWindowDimensions';
 
 const Notifications = () => {
 	const notificationHandler = useNotificationHandler();
+	const windowDim = useWindowDimensions();
 
 	const new_notif = notificationHandler?.notifications[0]
 	return (
@@ -30,7 +32,7 @@ const Notifications = () => {
 								<div
 									className='notification-open-action'
 									onClick={() => {
-										new_notif.openAction && new_notif.openAction();
+										new_notif.openAction && new_notif.openAction(windowDim.width);
 										notificationHandler?.removeNotificationContext('chat');
 									}}
 								>
