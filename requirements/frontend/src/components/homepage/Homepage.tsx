@@ -10,7 +10,7 @@ const Homepage = () : JSX.Element => {
 	const { loginStatus } = useLogin();
 
 	return (
-		<div>
+		<>
 			<div className='homepage-header'>
 				<h1>Welcome back, <br /><span>{loginStatus.user?.displayName}</span> !</h1>
 				<ProfileOverview fetchStatus={loginStatus} />
@@ -22,7 +22,7 @@ const Homepage = () : JSX.Element => {
 					</div>
 					
 			</div>
-		</div>
+		</>
 	);
 }
 

@@ -1,104 +1,59 @@
-import React from "react";
-import { RouteComponentProps, withRouter } from "react-router";
+import React, { useEffect, useState } from "react";
 import { FetchUserData } from "../../types/FetchUserData";
 import UserDetails from "./UserDetails";
-import UserEdition from "./UserEdition";
 import { RequestWrapper } from "../../utils/RequestWrapper";
 import '../../styles/profile.scss';
+import { useParams } from "react-router-dom";
 
-interface ProfileRouterProps {
-    id: string;
-}
-
-interface IProps extends RouteComponentProps<ProfileRouterProps> {
-    // in case we need to add more props later
-}
-
-interface IState {
-    user: FetchUserData | undefined;
-    edition: boolean;
-    isLoaded: boolean;
-    error: {
+interface ProfileComponentData {
+    user?: FetchUserData;
+    edition?: boolean;
+    isLoaded?: boolean;
+    error?: {
         info: string,
         message: string
-    } | null;
-}
-
-class Profile extends React.Component<IProps, IState> {
-
-    constructor(props: IProps) {
-        super(props);
-
-        this.state = {
-            user: undefined,
-            edition: false,
-            isLoaded: false,
-            error: null
-        }
-    }
-
-    loadUserInfo = async () => {
-		const fetchUserData = await RequestWrapper.get<FetchUserData>(
-			`/user/${this.props.match.params.id}`,
-			{},
-			(e) => {
-				if (e.response) {
-					this.setState({ error: {
-						info: e.response.data.error,
-						message: e.response.data.message
-					}});
-				}
-				else {
-					this.setState({ error: {
-						info: '',
-						message: 'Unexpected Error !'
-					}});
-				}
-			}
-		);
-		this.setState({ user: fetchUserData, isLoaded: true });	
     };
-
-    componentDidMount() {
-        this.loadUserInfo();
-    }
-    
-    handleClick = () => {
-        if (this.state.edition) {
-            this.loadUserInfo();
-        }
-        this.setState({ edition: !this.state.edition });
-    }
-
-    render() {
-
-        if (this.state.error) {
-            return (
-                <div className='profile'>
-                    <h1>Sorry ! :(</h1>
-                    <p>
-                        {
-                            this.state.error.info
-                            ? this.state.error.info + ': ' + this.state.error.message
-                            : this.state.error.message
-                        }
-                    </p>
-                </div> 
-            );
-        } else if (!this.state.isLoaded) {
-            return (
-                <h1>Loading user data...</h1>
-            );
-        } else {
-            const user = this.state.user as FetchUserData; // user is not undefined anymore
-
-            if (!this.state.edition) {
-                return <UserDetails data={user} onClick={this.handleClick} />
-            } else {
-                return <UserEdition data={user} changeState={this.handleClick} />
-            }
-        }
-    }
 }
 
-export default withRouter(Profile);
+const Profile = () : JSX.Element => {
+    const urlData = useParams();
+    const [ profileCompData, setProfileCompData ] = useState<ProfileComponentData>();
+
+    useEffect(() => {
+        (async() => {
+            const fetchUserData = await RequestWrapper.get<FetchUserData>(
+                `/user/${urlData.id}`,
+                {},
+                (e) => setProfileCompData({...profileCompData, error: {
+                        info: e.response.data.error || '',
+                        message: e.response.data.message || ''
+                }})
+            );
+            setProfileCompData({...profileCompData, user: fetchUserData, isLoaded: true});
+        })();
+    }, []); // eslint-disable-line
+
+    if (profileCompData?.error) {
+        return (
+            <div className='profile'>
+                <h1>Sorry ! :(</h1>
+                <p>
+                    {
+                        profileCompData.error.info
+                        ? profileCompData.error.info + ': ' + profileCompData.error.message
+                        : profileCompData.error.message
+                    }
+                </p>
+            </div> 
+        );
+    } else if (!profileCompData?.isLoaded) {
+        return (
+            <h1>Loading user data...</h1>
+        );
+    } else {
+        const user = profileCompData.user as FetchUserData; // user is not undefined anymore
+        return <UserDetails data={user} onClick={() => {}} />
+    }
+};
+
+export default Profile;

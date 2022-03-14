@@ -1,22 +1,54 @@
-import { Body, Controller, Inject, Post } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
+import { Body, Controller, Get, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
+import { ApiResponse } from "@nestjs/swagger";
+import { GroupGuard } from "src/auth/guards/group.guard";
 import { User } from "src/user/entities/user.entity";
-import { Repository } from "typeorm";
 import { GameService } from "./game.service";
-import { PlayerState } from "./types/PlayerState";
+import { GameOptions } from "./types/GameOptions";
 
 @Controller('game')
 export class GameController {
 	constructor(
-		@InjectRepository(User) private userRepo: Repository<User>,
 		@Inject(GameService) private gameService: GameService
 	) {}
 
-	@Post('match')
-	createMatch(@Body() body: {
-		winner: PlayerState,
-		loser: PlayerState
-	}) {
-		return this.gameService.saveMatchResult(body.winner, body.loser);;
+	@Post('join')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: "Add the player to the matchmaking queue"
+	})
+ 	startMatchmaking(@Req() req: { user: User }) {
+		return this.gameService.matchmakingAddPlayer(req.user);
 	}
+
+	@Get('matchmaking')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 200,
+		description: "Returns the match id if any, 0 otherwise"
+	})
+	@ApiResponse({
+		status: 500,
+		description: "Error while trying to create a new match"
+	})
+	getMatchmakingState(@Req() req: { user: User }) {
+		const matchId: number = this.gameService.matchmakingCheckMatch(req.user.id);
+		if (matchId != -1)
+			return matchId;
+		throw new InternalServerErrorException("We can't match you with another player for now, try again later");
+	}
+
+	@Post('create')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: "Create a private match with the parameters specified in the body"
+	})
+	createPrivateMatch(@Body() body: {
+		ids: [number, number],
+		options: Partial<GameOptions>
+	}) {
+		return this.gameService.createMatch(body.ids, body.options);
+	}
+
 }
