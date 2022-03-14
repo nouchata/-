@@ -43,5 +43,5 @@ export class CreatePunishmentDto {
 	@ApiProperty({
 		description: 'the date of the punishment',
 	})
-	duration?: Date;
+	expiration?: Date;
 }

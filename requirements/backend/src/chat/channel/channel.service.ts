@@ -103,7 +103,7 @@ export class ChannelService {
 
 	async getChannel(channelId: number) {
 		return this.channelRepository.findOne(channelId, {
-			relations: ['users', 'owner', 'admins', 'messages'],
+			relations: ['users', 'owner', 'admins', 'messages', 'punishments'],
 		});
 	}
 
@@ -136,6 +136,7 @@ export class ChannelService {
 				'admins',
 				'messages',
 				'messages.user',
+				'punishments',
 			],
 		});
 
@@ -188,7 +189,7 @@ export class ChannelService {
 
 	async leaveChannel(channelId: number, user: User) {
 		const channelToLeave = await this.channelRepository.findOne(channelId, {
-			relations: ['users', 'owner', 'admins', 'messages'],
+			relations: ['users', 'owner', 'admins', 'messages', 'punishments'],
 		});
 		if (!channelToLeave) {
 			throw new HttpException('Channel not found', 404);
@@ -282,7 +283,7 @@ export class ChannelService {
 			channel,
 			reason: createPunishmentDto.reason,
 			type: createPunishmentDto.type,
-			duration: createPunishmentDto.duration,
+			expiration: createPunishmentDto.expiration,
 		});
 		const savedPunishment = await this.punishmentRepository.save(
 			punishment

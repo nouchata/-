@@ -57,7 +57,38 @@ export class Channel {
 	createdAt: Date;
 
 	canUserAccess(user: User): boolean {
-		return this.users.some((u) => u.id === user.id);
+		if (!this.users.some((u) => u.id === user.id)) return false;
+
+		if (
+			this.punishments.some((punish) => {
+				return (
+					punish.user.id === user.id &&
+					punish.type === 'ban' &&
+					(!punish.expiration || punish.expiration < new Date())
+				);
+			})
+		) {
+			return false;
+		}
+
+		return true;
+	}
+
+	canUserTalk(user: User): boolean {
+		if (!this.canUserAccess(user)) return false;
+
+		if (
+			this.punishments.some((punish) => {
+				return (
+					punish.user.id === user.id &&
+					punish.type === 'mute' &&
+					(!punish.expiration || punish.expiration < new Date())
+				);
+			})
+		) {
+			return false;
+		}
+		return true;
 	}
 
 	toDto(blockedUsers: User[]): ChannelDto {

@@ -2,7 +2,13 @@ import { ApiProperty } from '@nestjs/swagger';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Channel } from 'src/chat/entities/channel.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+	Column,
+	CreateDateColumn,
+	Entity,
+	ManyToOne,
+	PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export type PunishmentType = 'ban' | 'mute';
 
@@ -38,10 +44,10 @@ export class PunishmentDto {
 	type: PunishmentType;
 
 	@ApiProperty({
-		description: 'the date of the punishment',
+		description: 'the date of the expiration',
 		example: '2020-01-01T00:00:00.000Z',
 	})
-	duration?: Date;
+	expiration?: Date;
 
 	@ApiProperty({
 		description: 'the date of the punishment',
@@ -67,10 +73,13 @@ export class Punishment {
 	@Column()
 	type: PunishmentType;
 
-	@Column({ nullable: true })
-	duration?: Date;
+	@Column({
+		nullable: true,
+		type: 'timestamp',
+	})
+	expiration?: Date;
 
-	@Column()
+	@CreateDateColumn()
 	createdAt: Date;
 
 	toDto(): PunishmentDto {
@@ -80,7 +89,7 @@ export class Punishment {
 			user: this.user,
 			reason: this.reason,
 			type: this.type,
-			duration: this.duration,
+			expiration: this.expiration,
 			createdAt: this.createdAt,
 		};
 	}
