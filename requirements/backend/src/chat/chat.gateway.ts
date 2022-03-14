@@ -115,7 +115,7 @@ export class ChatGateway {
 		const channelFound = await this.channelService.getChannel(channelId);
 
 		if (channelFound) {
-			if (channelFound.canUserAccess(client.request.user)) {
+			if (channelFound.canUserTalk(client.request.user)) {
 				const message = await this.channelService.createMessage(
 					channelFound,
 					'user',

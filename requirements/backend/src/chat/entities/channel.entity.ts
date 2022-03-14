@@ -115,7 +115,7 @@ export class Channel {
 				return (
 					punish.user.id === user.id &&
 					punish.type === 'mute' &&
-					(!punish.expiration || punish.expiration < new Date())
+					(!punish.expiration || punish.expiration > new Date())
 				);
 			})
 		) {
