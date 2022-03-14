@@ -1,58 +1,76 @@
-.message-area {
-    overflow-y: scroll;
-    overflow-x: hidden;
-    flex: 1;
+@use '../../../styles/theme';
 
-    .message-system {
-        width: 100%;
-        text-align: center;
-        color: #2e2d2d;
-        font-size: 0.8em;
-        margin-top: 10px;
+$bubble-color: white;
+$self-bubble-color: black;
+
+.message-area {
+    flex: 1;
+    overflow-y: scroll;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 10px;
+
+    p {
+        margin: 0;
     }
-    // the bubble is alligned to the right
-    .message-self {
-        position: relative;
-        width: 100%;
-        border-radius: 10px;
-        float: right;
-        .bubble-self {
-            position: relative;
-            max-width: 40%;
-            border-radius: 10px;
-            margin: 10px;
-            float: right;
-            word-wrap: break-word;
-            padding: 5px;
-            background-color: rgb(113, 139, 245);
-            color: white;
-            padding: 6px;
-        }
-    }
+
     .message {
-        position: relative;
-        width: 100%;
-        border-radius: 10px;
-        float: left;
-        .bubble {
-            position: relative;
-            max-width: 40%;
-            border-radius: 10px;
-            margin: 10px;
-            float: left;
-            word-wrap: break-word;
-            padding: 5px;
-            background-color: rgb(213, 213, 213);
-            color: rgb(22, 22, 22);
-            padding: 6px;
+        word-wrap: break-word;
+        word-break: break-all;
+        max-width: 70%;
+        font-size: 0.8em;
+    }
+
+    .author {
+        flex: 0 0 100%;
+        font-size: 0.6em;
+    }
+
+    > * {
+        flex: 0 0 auto;
+        width: calc(100% - 20px);
+        display: flex;
+        flex-flow: row wrap;
+    }
+    > *:first-child {
+        padding-top: 10px;
+    }
+    > *:last-child {
+        padding-bottom: 10px;
+    }
+
+    .system {
+        justify-content: center;
+        text-align: center;
+        align-items: flex-start;
+        align-content: flex-start;
+
+        .message {
+            max-width: 90%;
+            color: rgba(theme.$primary-text-color, 0.5);
         }
     }
-    .message-text {
-        margin: 0;
+
+    .user > .message {
+            padding: 8px;
+            font-weight: bolder;
+            border-radius: 5px 15px 15px 15px;
+            background-color: theme.$darkest-color;
+            color: theme.$darker-color;
+            border: 2px solid theme.$darkest-color;
     }
-    .message-display-name {
-        margin: 0;
-        font-weight: bold;
+
+    .self {
+        flex-flow: row-reverse wrap-reverse;
+        text-align: right;
+
+        .message {
+            border-radius: 15px 15px 5px 15px;
+            background-color: transparent;
+            border-color: theme.$darkest-color;
+            color: black;
+        }
     }
 }
 
