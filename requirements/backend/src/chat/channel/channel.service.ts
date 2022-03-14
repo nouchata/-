@@ -103,7 +103,14 @@ export class ChannelService {
 
 	async getChannel(channelId: number) {
 		return this.channelRepository.findOne(channelId, {
-			relations: ['users', 'owner', 'admins', 'messages', 'punishments'],
+			relations: [
+				'users',
+				'owner',
+				'admins',
+				'messages',
+				'punishments',
+				'punishments.user',
+			],
 		});
 	}
 
@@ -137,6 +144,7 @@ export class ChannelService {
 				'messages',
 				'messages.user',
 				'punishments',
+				'punishments.user',
 			],
 		});
 
@@ -171,6 +179,24 @@ export class ChannelService {
 
 		if (channelToJoin.users.some((u) => u.id === user.id)) {
 			throw new HttpException('User already in channel', 400);
+		}
+
+		if (channelToJoin.isUserBanned(user)) {
+			const punishment = channelToJoin.getActivePunishment(user);
+			if (!punishment) {
+				throw new HttpException('User is banned', 403);
+			}
+			const expirationDate = punishment.expiration;
+
+			if (expirationDate) {
+				throw new HttpException(
+					'User banned until ' +
+						expirationDate.toLocaleString('fr-FR'),
+					403
+				);
+			}
+
+			throw new HttpException('User banned', 403);
 		}
 
 		channelToJoin.users.push(user);
@@ -246,11 +272,24 @@ export class ChannelService {
 		const channel = await this.channelRepository.findOne(
 			createPunishmentDto.channelId,
 			{
-				relations: ['users', 'owner', 'admins', 'punishments'],
+				relations: [
+					'users',
+					'owner',
+					'admins',
+					'punishments',
+					'punishments.user',
+				],
 			}
 		);
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
+		}
+
+		if (
+			!channel.admins.some((u) => u.id === punisher.id) &&
+			channel.owner.id !== punisher.id
+		) {
+			throw new HttpException('User is not an admin', 403);
 		}
 
 		const user = await this.userService.findUserById(
@@ -262,13 +301,6 @@ export class ChannelService {
 
 		if (!channel.users.some((u) => u.id === user.id)) {
 			throw new HttpException('User not in channel', 400);
-		}
-
-		if (
-			!channel.admins.some((u) => u.id === punisher.id) &&
-			channel.owner.id !== punisher.id
-		) {
-			throw new HttpException('User is not an admin', 403);
 		}
 
 		if (

@@ -56,20 +56,53 @@ export class Channel {
 	@CreateDateColumn()
 	createdAt: Date;
 
-	canUserAccess(user: User): boolean {
-		if (!this.users.some((u) => u.id === user.id)) return false;
-
+	isUserBanned(user: User): boolean {
 		if (
 			this.punishments.some((punish) => {
 				return (
 					punish.user.id === user.id &&
 					punish.type === 'ban' &&
-					(!punish.expiration || punish.expiration < new Date())
+					(!punish.expiration || punish.expiration > new Date())
 				);
 			})
 		) {
-			return false;
+			return true;
 		}
+		return false;
+	}
+
+	isUserMuted(user: User): boolean {
+		if (
+			this.punishments.some((punish) => {
+				return (
+					punish.user.id === user.id &&
+					punish.type === 'mute' &&
+					(!punish.expiration || punish.expiration > new Date())
+				);
+			})
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	getActivePunishment(user: User) {
+		return this.punishments.find((punishment) => {
+			return (
+				punishment.user.id === user.id &&
+				(!punishment.expiration || punishment.expiration > new Date())
+			);
+		});
+	}
+
+	isUserAdmin(user: User): boolean {
+		return this.admins.some((u) => u.id === user.id);
+	}
+
+	canUserAccess(user: User): boolean {
+		if (!this.users.some((u) => u.id === user.id)) return false;
+
+		if (this.isUserBanned(user)) return false;
 
 		return true;
 	}

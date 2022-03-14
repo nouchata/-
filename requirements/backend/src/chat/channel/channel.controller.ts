@@ -95,9 +95,10 @@ export class ChannelController {
 		@Req() req: { user: User },
 		@Body() createPunishmentDto: CreatePunishmentDto
 	) {
-		return this.channelService.createPunishment(
+		await this.channelService.createPunishment(
 			req.user,
 			createPunishmentDto
 		);
+		return { status: 'ok', message: 'Punishment created' };
 	}
 }
