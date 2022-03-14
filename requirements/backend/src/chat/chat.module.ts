@@ -8,9 +8,13 @@ import { Message } from './entities/message.entity';
 import { ChannelController } from './channel/channel.controller';
 import { ChannelService } from './channel/channel.service';
 import { ChatGateway } from './chat.gateway';
+import { Punishment } from './entities/punishment.entity';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([Message, Channel, User]), UserModule],
+	imports: [
+		TypeOrmModule.forFeature([Message, Channel, User, Punishment]),
+		UserModule,
+	],
 	controllers: [ChatController, ChannelController],
 	providers: [ChannelService, ChatGateway],
 })
