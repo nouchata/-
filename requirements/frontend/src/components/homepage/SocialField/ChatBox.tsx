@@ -1,12 +1,11 @@
+import { faClose, faMaximize, faMinimize } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import InputChat from '../../chat/InputChat';
 import MessageArea from '../../chat/MessageArea';
 import ChatOption from '../../chat/Options/ChatOption';
 import { ChatSocket } from '../../chat/utils/ChatSocket';
 import { ChatState } from './HSocialField';
 
-import CloseAsset from '../../../assets/chat/close.png';
-import MinusAsset from '../../../assets/chat/minus.png';
-import ContainMaxAsset from '../../../assets/chat/contain-max.png';
 
 
 const ChatControl = ({
@@ -33,7 +32,7 @@ const ChatControl = ({
 						})
 					}
 				>
-					<img src={MinusAsset} alt="minimize" />
+					<FontAwesomeIcon icon={faMinimize} className="icon-options" />
 				</button>
 			) : (
 				<button
@@ -44,7 +43,7 @@ const ChatControl = ({
 						})
 					}
 				>
-					<img src={ContainMaxAsset} alt="maximize-in" />
+					<FontAwesomeIcon icon={faMaximize} className="icon-options" />
 				</button>
 			)}
 
@@ -56,7 +55,7 @@ const ChatControl = ({
 					})
 				}
 			>
-				<img src={CloseAsset} alt="close" />
+				<FontAwesomeIcon icon={faClose} className="icon-options" />
 			</button>
 		</div>
 	);

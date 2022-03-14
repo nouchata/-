@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 
-import chatImage from '../../../assets/homepage/chat.png';
 
 import '../../../styles/social_field.scss';
 import '../styles/Chat.scss';
+
+import chatImage from '../../../assets/homepage/chat.png';
 
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { ChannelDto, MessageDto } from '../../chat/types/user-channels.dto';
@@ -17,12 +18,14 @@ import { useNotificationHandler } from '../../../Providers/NotificationProvider'
 import ChannelList from './ChannelList';
 import NewConv from './NewConv';
 import ChatBox from './ChatBox';
+import { useNavigate } from 'react-router-dom';
+
 
 export type ChatState = {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
 };
 
-const HSocialField = () => {
+const HSocialField = (props: { standalone?: boolean }) => {
 	const [isFriendTabSelected, setIsFriendTabSelected] =
 		useState<boolean>(false);
 	const [chatStatus, setChatStatus] = useState<ChatState>({
@@ -36,6 +39,8 @@ const HSocialField = () => {
 	const { loginStatus } = useLogin();
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
+	const navigate = useNavigate();
+
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -49,12 +54,15 @@ const HSocialField = () => {
 				}`,
 				image: chatImage,
 				context: 'chat',
-				openAction: () => {
-					setChatStatus({ state: 'OPENED' });
+				openAction: (windowWidth?: number) => {
+					if (windowWidth && windowWidth < 800)
+						navigate(`/social?id=${channel.id}`);
+					else
+						setChatStatus({ state: 'OPENED' });
 				},
 			});
 		},
-		[notificationHandler]
+		[notificationHandler] // eslint-disable-line
 	);
 
 	useEffect(() => {
@@ -105,8 +113,8 @@ const HSocialField = () => {
 	};
 
 	return (
-		<div className="social-field">
-			<button
+		<div className="social-field" style={{ height: props.standalone ? "100%" : "inherit" }}>
+			{!props.standalone && <button
 				title={
 					isSocialFieldShowed
 						? 'Hide social panel'
@@ -118,7 +126,7 @@ const HSocialField = () => {
 				}}
 			>
 				{isSocialFieldShowed ? '<' : '>'}
-			</button>
+			</button>}
 			<TabSelector
 				isFriendTabSelected={isFriendTabSelected}
 				setIsFriendTabSelected={setIsFriendTabSelected}
@@ -153,15 +161,17 @@ const HSocialField = () => {
 };
 
 function socialToggleCSS(isShowed: boolean): void {
-	let elem: Element | null = document.querySelector('.main-content');
-	(elem as HTMLElement).style.animation = 'none';
+	let elem: HTMLElement | null = document.querySelector('.main-content');
+	if (!elem)
+		return ;
+	elem.style.animation = 'none';
 	setTimeout(() => {
 		if (elem) {
 			if (isShowed) {
-				(elem as HTMLElement).style.animation =
+				elem.style.animation =
 					'1s ease-in-out 0s 1 normal both running hsf-slide';
 			} else {
-				(elem as HTMLElement).style.animation =
+				elem.style.animation =
 					'1s ease-in-out 0s 1 reverse both running hsf-slide';
 			}
 		}
@@ -198,4 +208,3 @@ function TabSelector({
 		</div>
 	);
 }
-
