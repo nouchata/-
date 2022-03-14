@@ -31,10 +31,7 @@ body {
 
 button {
 	background-color: theme.$darker-color;
-
-	:hover {
-		cursor: pointer;
-	}
+	cursor: pointer;
 }
 
 @keyframes moving-bg {
