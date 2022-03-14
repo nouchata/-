@@ -13,6 +13,7 @@ import { Message } from '../entities/message.entity';
 import { UserService } from 'src/user/user.service';
 import { CreatePunishmentDto } from '../dtos/create-punishment.dto';
 import { Punishment } from '../entities/punishment.entity';
+import FormatDate from 'src/utils/FormatDate';
 
 @Injectable()
 export class ChannelService {
@@ -190,8 +191,7 @@ export class ChannelService {
 
 			if (expirationDate) {
 				throw new HttpException(
-					'User banned until ' +
-						expirationDate.toLocaleString('fr-FR'),
+					`User banned until ${FormatDate(expirationDate)}`,
 					403
 				);
 			}
@@ -276,6 +276,7 @@ export class ChannelService {
 					'users',
 					'owner',
 					'admins',
+					'messages',
 					'punishments',
 					'punishments.user',
 				],
@@ -322,6 +323,25 @@ export class ChannelService {
 		);
 
 		channel.punishments.push(savedPunishment);
+
+		// info message
+		const msg = await this.createMessage(
+			channel,
+			'system',
+			`${user.displayName} is ${
+				createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
+			} until ${
+				savedPunishment.expiration
+					? FormatDate(savedPunishment.expiration)
+					: 'forever'
+			}`
+		);
+		await this.sendMessage(msg);
+		channel.messages.push(msg);
+		if (createPunishmentDto.type === 'ban') {
+			await this.chatGateway.removeUserChannel(channel.id, user);
+			channel.users = channel.users.filter((u) => u.id !== user.id);
+		}
 		await this.channelRepository.save(channel);
 	}
 }

@@ -1,4 +1,4 @@
-import { faMinimize, faMaximize, faClose } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faAngleDoubleDown, faAngleDoubleUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ChatOption from "../../chat/Options/ChatOption";
 import { ChatSocket } from "../../chat/utils/ChatSocket";
@@ -28,7 +28,7 @@ const ChatControl = ({
 						})
 					}
 				>
-					<FontAwesomeIcon icon={faMinimize} className="icon-options" />
+					<FontAwesomeIcon icon={faAngleDoubleDown} className="icon-options" />
 				</button>
 			) : (
 				<button
@@ -39,7 +39,7 @@ const ChatControl = ({
 						})
 					}
 				>
-					<FontAwesomeIcon icon={faMaximize} className="icon-options" />
+					<FontAwesomeIcon icon={faAngleDoubleUp} className="icon-options" />
 				</button>
 			)}
 

@@ -45,7 +45,9 @@ export class Channel {
 	})
 	users: User[];
 
-	@OneToMany((type) => Punishment, (punishment) => punishment.channel)
+	@OneToMany((type) => Punishment, (punishment) => punishment.channel, {
+		onDelete: 'CASCADE',
+	})
 	punishments: Punishment[];
 
 	@OneToMany((type) => Message, (message) => message.channel, {

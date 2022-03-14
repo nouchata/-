@@ -64,7 +64,9 @@ export class Punishment {
 	@ManyToOne((type) => User)
 	user: User;
 
-	@ManyToOne((type) => Channel)
+	@ManyToOne((type) => Channel, {
+		onDelete: 'CASCADE',
+	})
 	channel: Channel;
 
 	@Column({ nullable: true })
