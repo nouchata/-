@@ -11,6 +11,8 @@ import { JoinChannelDto } from '../dtos/join-channel.dto';
 import { ChannelDto } from '../dtos/user-channels.dto';
 import { Message } from '../entities/message.entity';
 import { UserService } from 'src/user/user.service';
+import { CreatePunishmentDto } from '../dtos/create-punishment.dto';
+import { Punishment } from '../entities/punishment.entity';
 
 @Injectable()
 export class ChannelService {
@@ -19,6 +21,8 @@ export class ChannelService {
 		private channelRepository: Repository<Channel>,
 		@InjectRepository(Message)
 		private messageRepository: Repository<Message>,
+		@InjectRepository(Punishment)
+		private punishmentRepository: Repository<Punishment>,
 		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
 		private userService: UserService
 	) {}
@@ -176,6 +180,7 @@ export class ChannelService {
 		);
 		await this.sendMessage(msg);
 		channelToJoin.messages.push(msg);
+		await this.chatGateway.addNewUser(channelToJoin.id, user);
 		return (await this.channelRepository.save(channelToJoin)).toDto(
 			await this.userService.getBlockedUsers(user)
 		);
@@ -194,14 +199,6 @@ export class ChannelService {
 		channelToLeave.users = channelToLeave.users.filter(
 			(u) => u.id !== user.id
 		);
-		// add info message
-		/*await this.sendMessage(
-			await this.createMessage(
-				channelToLeave,
-				'system',
-				`${user.displayName} left the channel`
-			)
-		);*/
 		const msg = await this.createMessage(
 			channelToLeave,
 			'system',
@@ -239,5 +236,59 @@ export class ChannelService {
 			}
 			this.channelRepository.save(channelToLeave);
 		}
+	}
+
+	async createPunishment(
+		punisher: { id: number },
+		createPunishmentDto: CreatePunishmentDto
+	) {
+		const channel = await this.channelRepository.findOne(
+			createPunishmentDto.channelId,
+			{
+				relations: ['users', 'owner', 'admins', 'punishments'],
+			}
+		);
+		if (!channel) {
+			throw new HttpException('Channel not found', 404);
+		}
+
+		const user = await this.userService.findUserById(
+			createPunishmentDto.userId
+		);
+		if (!user) {
+			throw new HttpException('User not found', 404);
+		}
+
+		if (!channel.users.some((u) => u.id === user.id)) {
+			throw new HttpException('User not in channel', 400);
+		}
+
+		if (
+			!channel.admins.some((u) => u.id === punisher.id) &&
+			channel.owner.id !== punisher.id
+		) {
+			throw new HttpException('User is not an admin', 403);
+		}
+
+		if (
+			channel.admins.some((u) => u.id === createPunishmentDto.userId) ||
+			channel.owner.id === createPunishmentDto.userId
+		) {
+			throw new HttpException('User is an admin', 403);
+		}
+
+		const punishment = this.punishmentRepository.create({
+			user,
+			channel,
+			reason: createPunishmentDto.reason,
+			type: createPunishmentDto.type,
+			duration: createPunishmentDto.duration,
+		});
+		const savedPunishment = await this.punishmentRepository.save(
+			punishment
+		);
+
+		channel.punishments.push(savedPunishment);
+		await this.channelRepository.save(channel);
 	}
 }

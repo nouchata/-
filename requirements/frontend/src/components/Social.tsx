@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDisplay } from "../Providers/DisplayProvider";
-import HSocialField from "./homepage/HSocialField";
+import HSocialField from "./homepage/SocialField/HSocialField";
 
 const Social = () : JSX.Element => {
 	const displayContext = useDisplay();

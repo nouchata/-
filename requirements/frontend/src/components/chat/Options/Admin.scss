@@ -1,0 +1,30 @@
+.admin-panel-chat {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    h1 {
+        margin: 0;
+    }
+    .user-list {
+        position: relative;
+        flex-grow: 1;
+        overflow-y: scroll;
+        background-color: #fafafa;
+        border-radius: 5px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        overflow: scroll;
+        .member {
+            width: 100%;
+            background-color: #e6e6e6;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+    }
+}

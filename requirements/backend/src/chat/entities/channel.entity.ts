@@ -13,6 +13,7 @@ import {
 import { ChannelType } from '../dtos/create-channel.dto';
 import { ChannelDto, MessageDto } from '../dtos/user-channels.dto';
 import { Message } from './message.entity';
+import { Punishment } from './punishment.entity';
 
 @Entity({ name: 'channels' })
 export class Channel {
@@ -43,6 +44,9 @@ export class Channel {
 		onDelete: 'CASCADE',
 	})
 	users: User[];
+
+	@OneToMany((type) => Punishment, (punishment) => punishment.channel)
+	punishments: Punishment[];
 
 	@OneToMany((type) => Message, (message) => message.channel, {
 		onDelete: 'CASCADE',

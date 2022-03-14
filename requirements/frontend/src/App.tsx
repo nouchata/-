@@ -13,7 +13,7 @@ import { BlockedProvider } from './Providers/BlockedProvider';
 import Notifications from './components/notification/Notifications';
 import LinkTree from './components/LinkTree';
 import { LoginState } from './types/FetchStatusData';
-import HSocialField from './components/homepage/HSocialField';
+import HSocialField from './components/homepage/SocialField/HSocialField';
 import Compose from './utils/Compose';
 import { BrowserRouter as Router } from "react-router-dom";
 import MaterialLikeBtns from './components/homepage/MaterialLikeBtns';

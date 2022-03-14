@@ -1,3 +1,4 @@
+import { CreatePunishmentDto } from './../dtos/create-punishment.dto';
 import { GetChannelDto } from './../dtos/get-channel.dto';
 import { ChannelDto } from './../dtos/user-channels.dto';
 import { LeaveChannelDto } from './../dtos/leave-channel.dto';
@@ -85,6 +86,18 @@ export class ChannelController {
 				};
 				return getChannelDto;
 			}
+		);
+	}
+
+	@Post('punish')
+	@UseGuards(GroupGuard)
+	async createPunishment(
+		@Req() req: { user: User },
+		@Body() createPunishmentDto: CreatePunishmentDto
+	) {
+		return this.channelService.createPunishment(
+			req.user,
+			createPunishmentDto
 		);
 	}
 }
