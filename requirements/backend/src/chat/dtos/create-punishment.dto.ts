@@ -1,5 +1,11 @@
 import { PunishmentType } from '../entities/punishment.entity';
-import { IsNumber, IsString, IsOptional, IsIn, IsDate } from 'class-validator';
+import {
+	IsNumber,
+	IsString,
+	IsOptional,
+	IsIn,
+	IsDateString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePunishmentDto {
@@ -33,7 +39,7 @@ export class CreatePunishmentDto {
 	type: PunishmentType;
 
 	@IsOptional()
-	@IsDate()
+	@IsDateString()
 	@ApiProperty({
 		description: 'the date of the punishment',
 	})

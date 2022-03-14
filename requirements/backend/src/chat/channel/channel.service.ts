@@ -245,7 +245,7 @@ export class ChannelService {
 		const channel = await this.channelRepository.findOne(
 			createPunishmentDto.channelId,
 			{
-				relations: ['users', 'owner', 'admins', 'punishements'],
+				relations: ['users', 'owner', 'admins', 'punishments'],
 			}
 		);
 		if (!channel) {
