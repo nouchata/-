@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Channel } from 'src/chat/entities/channel.entity';
-import { User } from 'src/user/entities/user.entity';
+import { User, UserDto } from 'src/user/entities/user.entity';
 import {
 	Column,
 	CreateDateColumn,
@@ -27,9 +27,9 @@ export class PunishmentDto {
 
 	@ApiProperty({
 		description: 'the punished user',
-		type: User,
+		type: () => UserDto,
 	})
-	user: User;
+	user: UserDto;
 
 	@ApiProperty({
 		description: 'the reason of the punishment',
@@ -88,7 +88,7 @@ export class Punishment {
 		return {
 			id: this.id,
 			channelId: this.channel.id,
-			user: this.user,
+			user: this.user.toDto(),
 			reason: this.reason,
 			type: this.type,
 			expiration: this.expiration,
