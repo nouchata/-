@@ -1,7 +1,6 @@
 import {
 	faBan,
 	faChevronLeft,
-	faUser,
 	faVolumeXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -17,7 +16,7 @@ const SanctionModal = ({
 	channel,
 	user,
 	punishmentsUtil,
-	back
+	back,
 }: {
 	punishmentType: PunishmentType;
 	channel: ChannelDto;
@@ -29,7 +28,11 @@ const SanctionModal = ({
 
 	return (
 		<div className="sanction-modal">
-			<FontAwesomeIcon icon={faChevronLeft} className="button-icon" onClick={back}/>
+			<FontAwesomeIcon
+				icon={faChevronLeft}
+				className="button-icon"
+				onClick={back}
+			/>
 			<h1>Select time to {punishmentType}</h1>
 			<div className="user-info">
 				<img
@@ -49,7 +52,14 @@ const SanctionModal = ({
 				className="date-picker"
 			/>
 			<Button
-				onClick={() => {}}
+				onClick={() => {
+					punishmentsUtil.addPunishment({
+						userId: user.id,
+						channelId: channel.id,
+						type: punishmentType,
+						expiration: date.toISOString(),
+					});
+				}}
 				className={`confirm ${punishmentType}-button`}
 			>
 				{punishmentType === 'mute' ? (

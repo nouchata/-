@@ -1,10 +1,11 @@
+import { CreatePunishmentDto } from './../types/create-punishment.dto';
 import { RequestWrapper } from './../../../utils/RequestWrapper';
 import { useEffect, useState } from 'react';
 import { PunishmentDto, PunishmentType } from '../types/punishment.dto';
 
 export interface IUsePunishment {
 	punishments: PunishmentDto[] | undefined;
-	addPunishment: (punishment: PunishmentDto & {id?: number}) => void;
+	addPunishment: (punishment: CreatePunishmentDto) => void;
 	getActivePunishement: (
 		userId: number,
 		type: PunishmentType
@@ -38,9 +39,9 @@ const usePunishment = (channelId: number): IUsePunishment => {
 		fetchPunishments();
 	}, [channelId]);
 
-	const addPunishment = async (punishment: PunishmentDto & {id?: number}) => {
+	const addPunishment = async (punishment: CreatePunishmentDto) => {
 		const p = await RequestWrapper.post<PunishmentDto>(
-			`/channel/punishment/${channelId}`,
+			'/channel/punishment',
 			punishment,
 			(e: any) => {
 				alert(e.message);
