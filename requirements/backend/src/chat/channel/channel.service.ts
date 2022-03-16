@@ -13,7 +13,6 @@ import { Message } from '../entities/message.entity';
 import { UserService } from 'src/user/user.service';
 import { CreatePunishmentDto } from '../dtos/create-punishment.dto';
 import { Punishment } from '../entities/punishment.entity';
-import FormatDate from 'src/utils/FormatDate';
 
 @Injectable()
 export class ChannelService {
@@ -191,7 +190,9 @@ export class ChannelService {
 
 			if (expirationDate) {
 				throw new HttpException(
-					`User banned until ${FormatDate(expirationDate)}`,
+					`User banned until ${expirationDate.toLocaleString(
+						'fr-FR'
+					)}`,
 					403
 				);
 			}
@@ -332,7 +333,7 @@ export class ChannelService {
 				createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
 			} until ${
 				savedPunishment.expiration
-					? FormatDate(savedPunishment.expiration)
+					? savedPunishment.expiration.toLocaleString('fr-FR')
 					: 'forever'
 			}`
 		);

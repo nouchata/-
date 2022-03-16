@@ -79,7 +79,6 @@ export class Punishment {
 	createdAt: Date;
 
 	toDto(): PunishmentDto {
-		console.log(this);
 		return {
 			id: this.id,
 			user: this.user.toDto(),
