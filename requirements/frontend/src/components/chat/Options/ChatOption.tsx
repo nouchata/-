@@ -10,9 +10,10 @@ import { RequestWrapper } from '../../../utils/RequestWrapper';
 import './ChatOption.scss';
 import { ChannelDto } from '../types/user-channels.dto';
 import { useModal } from '../../../Providers/ModalProvider';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Admin from './Admin';
 import { Members } from './Members';
+import { useLogin } from '../../../Providers/LoginProvider';
 
 const Option = ({
 	children,
@@ -45,6 +46,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	const [isToggled, setIsToggled] = useState(false);
 	const { setModalProps } = useModal();
 	const [adminModalOpen, setAdminModalOpen] = useState(false);
+	const { loginStatus } = useLogin();
 
 	useEffect(() => {
 		if (adminModalOpen) {
@@ -58,45 +60,52 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 		}
 	}, [adminModalOpen, channel, setModalProps]);
 
-	const options: {
-		icon: IconDefinition;
-		text: string;
-		callback: () => void;
-	}[] = [
-		{
-			icon: faDoorOpen,
-			text: 'Leave',
-			callback: () => {
-				RequestWrapper.post('/channel/leave', {
-					id: channel.id,
-				});
+	const options = useMemo(() => {
+		const opts: {
+			icon: IconDefinition;
+			text: string;
+			callback: () => void;
+		}[] = [
+			{
+				icon: faDoorOpen,
+				text: 'Leave',
+				callback: () => {
+					RequestWrapper.post('/channel/leave', {
+						id: channel.id,
+					});
+				},
 			},
-		},
-		{
-			icon: faGear,
-			text: 'Admin',
-			callback: () => {
-				setAdminModalOpen(true);
+			{
+				icon: faPerson,
+				text: 'Members',
+				callback: () => {
+					setModalProps({
+						show: true,
+						content: <Members channel={channel} />,
+						width: '80%',
+						height: '80%',
+					});
+				},
 			},
-		},
-		{
-			icon: faPerson,
-			text: 'Members',
-			callback: () => {
-				setModalProps({
-					show: true,
-					content: <Members channel={channel} />,
-					width: '80%',
-					height: '80%',
-				});
+			{
+				icon: faUserPlus,
+				text: 'Invite',
+				callback: () => {},
 			},
-		},
-		{
-			icon: faUserPlus,
-			text: 'Invite',
-			callback: () => {},
-		},
-	];
+		];
+
+		if (
+			channel.admins.some((admin) => admin.id === loginStatus.user?.id) ||
+			loginStatus.user?.id === channel.owner.id
+		) {
+			opts.push({
+				icon: faGear,
+				text: 'Admin',
+				callback: () => setAdminModalOpen(true),
+			});
+		}
+		return opts;
+	}, [channel, loginStatus.user?.id, setModalProps]);
 
 	return (
 		<button title="Channels options">

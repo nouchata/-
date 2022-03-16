@@ -23,11 +23,11 @@ export interface MessageDto
 }
 
 export interface ChannelDto {
-
 	id: number;
 	name: string;
 	channelType: ChannelType;
 	owner: User;
 	users: User[];
+	admins: User[];
 	messages: MessageDto[];
 }

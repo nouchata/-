@@ -20,12 +20,6 @@ export class PunishmentDto {
 	id: number;
 
 	@ApiProperty({
-		description: 'the id of the channel',
-		example: 1,
-	})
-	channelId: number;
-
-	@ApiProperty({
 		description: 'the punished user',
 		type: () => UserDto,
 	})
@@ -85,9 +79,9 @@ export class Punishment {
 	createdAt: Date;
 
 	toDto(): PunishmentDto {
+		console.log(this);
 		return {
 			id: this.id,
-			channelId: this.channel.id,
 			user: this.user.toDto(),
 			reason: this.reason,
 			type: this.type,

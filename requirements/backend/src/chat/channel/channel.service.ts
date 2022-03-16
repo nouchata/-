@@ -343,18 +343,12 @@ export class ChannelService {
 			channel.users = channel.users.filter((u) => u.id !== user.id);
 		}
 		await this.channelRepository.save(channel);
+		return savedPunishment.toDto();
 	}
 
-	async getPunishments(channelId: number, userId: number, user: User) {
+	async getChannelPunishments(channelId: number, user: User) {
 		const channel = await this.channelRepository.findOne(channelId, {
-			relations: [
-				'users',
-				'owner',
-				'admins',
-				'messages',
-				'punishments',
-				'punishments.user',
-			],
+			relations: ['punishments', 'punishments.user', 'admins', 'owner'],
 		});
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
@@ -365,8 +359,6 @@ export class ChannelService {
 		) {
 			throw new HttpException('User is not an admin', 403);
 		}
-		return channel.punishments
-			.filter((p) => p.user.id === userId)
-			.map((p) => p.toDto());
+		return channel.punishments.map((p) => p.toDto());
 	}
 }

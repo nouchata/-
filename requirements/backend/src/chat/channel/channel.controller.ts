@@ -128,19 +128,19 @@ export class ChannelController {
 	@ApiResponse({
 		status: 201,
 		description: 'create a punishment',
+		type: PunishmentDto,
 	})
 	async createPunishment(
 		@Req() req: { user: User },
 		@Body() createPunishmentDto: CreatePunishmentDto
 	) {
-		await this.channelService.createPunishment(
+		return await this.channelService.createPunishment(
 			req.user,
 			createPunishmentDto
 		);
-		return { status: 'ok', message: 'Punishment created' };
 	}
 
-	@Get('punishment/:channelId/:userId')
+	@Get('punishment/:channelId')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 201,
@@ -149,12 +149,10 @@ export class ChannelController {
 	})
 	async getPunishments(
 		@Req() req: { user: User },
-		@Param('channelId') channelId: number,
-		@Param('userId') userId: number
+		@Param('channelId') channelId: number
 	) {
-		return await this.channelService.getPunishments(
+		return await this.channelService.getChannelPunishments(
 			channelId,
-			userId,
 			req.user
 		);
 	}
