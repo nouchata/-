@@ -4,7 +4,7 @@ import { PunishmentDto, PunishmentType } from '../types/punishment.dto';
 
 export interface IUsePunishment {
 	punishments: PunishmentDto[] | undefined;
-	addPunishment: (punishment: Partial<PunishmentDto>) => void;
+	addPunishment: (punishment: PunishmentDto & {id?: number}) => void;
 	getActivePunishement: (
 		userId: number,
 		type: PunishmentType
@@ -38,7 +38,7 @@ const usePunishment = (channelId: number): IUsePunishment => {
 		fetchPunishments();
 	}, [channelId]);
 
-	const addPunishment = async (punishment: Partial<PunishmentDto>) => {
+	const addPunishment = async (punishment: PunishmentDto & {id?: number}) => {
 		const p = await RequestWrapper.post<PunishmentDto>(
 			`/channel/punishment/${channelId}`,
 			punishment,
