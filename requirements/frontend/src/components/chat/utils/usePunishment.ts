@@ -3,6 +3,7 @@ import { RequestWrapper } from './../../../utils/RequestWrapper';
 import { useEffect, useState } from 'react';
 import { PunishmentDto, PunishmentType } from '../types/punishment.dto';
 import axios from 'axios';
+import { useNotificationHandler } from '../../../Providers/NotificationProvider';
 
 export interface IUsePunishment {
 	punishments: PunishmentDto[] | undefined;
@@ -12,10 +13,16 @@ export interface IUsePunishment {
 		type: PunishmentType
 	) => PunishmentDto | undefined;
 	getUserPunishments: (userId: number) => PunishmentDto[];
+	expirePunishementType: (
+		userId: number,
+		channelId: number,
+		type: PunishmentType
+	) => Promise<void>;
 }
 
 const usePunishment = (channelId: number): IUsePunishment => {
 	const [punishments, setPunishments] = useState<PunishmentDto[]>();
+	const notificationHandler = useNotificationHandler();
 
 	useEffect(() => {
 		const fetchPunishments = async () => {
@@ -74,11 +81,40 @@ const usePunishment = (channelId: number): IUsePunishment => {
 		return punishments.filter((p) => p.user.id === userId);
 	};
 
+	const expirePunishementType = async (
+		userId: number,
+		channelId: number,
+		type: PunishmentType
+	) => {
+		if (!punishments)
+			throw new Error('No punishments, did you wait for fetch ?');
+		// DELETE /punishment/:channelId/:userId/:punishmentType
+		await RequestWrapper.delete(
+			`/channel/punishment/${channelId}/${userId}/${type}`,
+			(e: any) => {
+				notificationHandler.addNotification({
+					name: 'Error',
+					content: e.response?.data?.message || 'Unknown error',
+					context: 'error',
+				});
+			}
+		);
+		setPunishments(
+			punishments.map((p) => {
+				if (p.user.id === userId && p.type === type) {
+					p.expiration = new Date();
+				}
+				return p;
+			})
+		);
+	};
+
 	return {
 		punishments,
 		addPunishment,
 		getActivePunishement,
 		getUserPunishments,
+		expirePunishementType,
 	};
 };
 

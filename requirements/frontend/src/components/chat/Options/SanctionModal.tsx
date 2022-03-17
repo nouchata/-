@@ -95,7 +95,7 @@ const SanctionModal = ({
 						setModalOpen(false);
 					} catch (e) {
 						setError(
-							(e as any).response.data?.message || 'Unknown error'
+							(e as any).response?.data?.message || 'Unknown error'
 						);
 						setIsLoading(false);
 					}

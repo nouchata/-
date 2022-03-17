@@ -34,12 +34,20 @@ const MuteButton = ({
 		<>
 			<Button
 				onClick={() => {
-					setModalOpen(true);
+					punishmentsUtil.getActivePunishement(user.id, 'mute')
+						? punishmentsUtil.expirePunishementType(
+								user.id,
+								channel.id,
+								'mute'
+						  )
+						: setModalOpen(true);
 				}}
 				className="mute-button"
 			>
 				<FontAwesomeIcon icon={faVolumeXmark} className="icon" />
-				Mute
+				{punishmentsUtil.getActivePunishement(user.id, 'mute')
+					? 'Unmute'
+					: 'Mute'}
 			</Button>
 			{modalOpen && (
 				<SanctionModal
