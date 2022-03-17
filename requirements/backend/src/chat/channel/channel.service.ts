@@ -313,46 +313,70 @@ export class ChannelService {
 			throw new HttpException('User is an admin', 403);
 		}
 
+		const expiration = createPunishmentDto.expiration
+			? new Date(createPunishmentDto.expiration)
+			: undefined;
+
+		if (expiration && expiration < new Date()) {
+			throw new HttpException('Expiration date is in the past', 400);
+		}
+
+		console.log(createPunishmentDto);
+		console.log(new Date());
 		const punishment = this.punishmentRepository.create({
 			user,
 			channel,
 			reason: createPunishmentDto.reason,
 			type: createPunishmentDto.type,
-			expiration: createPunishmentDto.expiration
-				? new Date(createPunishmentDto.expiration)
-				: undefined,
+			expiration:
+				createPunishmentDto.type !== 'kick' ? expiration : new Date(),
 			admin: punisher.displayName,
 		});
 
-		if (punishment.expiration && punishment.expiration < new Date()) {
-			throw new HttpException('Expiration date is in the past', 400);
-		}
-
+		console.log(punishment.expiration);
 		const savedPunishment = await this.punishmentRepository.save(
 			punishment
 		);
 
 		channel.punishments.push(savedPunishment);
 
+		let msg: Message;
+
+		if (createPunishmentDto.type === 'kick') {
+			msg = await this.createMessage(
+				channel,
+				'system',
+				`${user.displayName} is kicked ${
+					createPunishmentDto.reason
+						? `for ${createPunishmentDto.reason}`
+						: ''
+				}`
+			);
+		} else {
+			msg = await this.createMessage(
+				channel,
+				'system',
+				`${user.displayName} is ${
+					createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
+				} ${
+					createPunishmentDto.reason
+						? `for ${createPunishmentDto.reason}`
+						: ''
+				} until ${
+					savedPunishment.expiration
+						? savedPunishment.expiration.toLocaleString('fr-FR')
+						: 'forever'
+				}`
+			);
+		}
+
 		// info message
-		const msg = await this.createMessage(
-			channel,
-			'system',
-			`${user.displayName} is ${
-				createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
-			} ${
-				createPunishmentDto.reason
-					? `for ${createPunishmentDto.reason}`
-					: ''
-			} until ${
-				savedPunishment.expiration
-					? savedPunishment.expiration.toLocaleString('fr-FR')
-					: 'forever'
-			}`
-		);
 		await this.sendMessage(msg);
 		channel.messages.push(msg);
-		if (createPunishmentDto.type === 'ban') {
+		if (
+			createPunishmentDto.type === 'ban' ||
+			createPunishmentDto.type === 'kick'
+		) {
 			await this.chatGateway.removeUserChannel(channel.id, user);
 			channel.users = channel.users.filter((u) => u.id !== user.id);
 		}

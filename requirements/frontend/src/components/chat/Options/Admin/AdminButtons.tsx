@@ -11,12 +11,40 @@ import Button from '../utils/Button';
 import SanctionModal from './SanctionModal';
 import SanctionLog from './SanctionsLog';
 
-const KickButton = ({ channel, user }: { channel: ChannelDto; user: User }) => {
+const KickButton = ({
+	channel,
+	user,
+	punishmentsUtil,
+}: {
+	channel: ChannelDto;
+	user: User;
+	punishmentsUtil: IUsePunishment;
+}) => {
+	const [modalOpen, setModalOpen] = useState(false);
+
 	return (
-		<Button onClick={() => {}} className="kick-button">
-			<FontAwesomeIcon icon={faUserSlash} className="icon" />
-			Kick
-		</Button>
+		<>
+			<Button
+				onClick={() => {
+					setModalOpen(true);
+				}}
+				className="kick-button"
+			>
+				<FontAwesomeIcon icon={faUserSlash} className="icon" />
+				Kick
+			</Button>
+			{modalOpen && (
+				<SanctionModal
+					punishmentType="kick"
+					channel={channel}
+					user={user}
+					punishmentsUtil={punishmentsUtil}
+					back={() => {
+						setModalOpen(false);
+					}}
+				/>
+			)}
+		</>
 	);
 };
 
@@ -142,7 +170,11 @@ const AdminButtons = ({
 }) => {
 	return (
 		<>
-			<KickButton channel={channel} user={user} />
+			<KickButton
+				channel={channel}
+				user={user}
+				punishmentsUtil={punishmentsUtil}
+			/>
 			<MuteButton
 				channel={channel}
 				user={user}

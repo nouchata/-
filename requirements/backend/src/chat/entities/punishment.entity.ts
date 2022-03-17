@@ -10,7 +10,7 @@ import {
 	PrimaryGeneratedColumn,
 } from 'typeorm';
 
-export type PunishmentType = 'ban' | 'mute';
+export type PunishmentType = 'ban' | 'mute' | 'kick';
 
 export class PunishmentDto {
 	@ApiProperty({

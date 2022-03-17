@@ -31,7 +31,7 @@ export class CreatePunishmentDto {
 	})
 	reason?: string;
 
-	@IsIn(['ban', 'mute'])
+	@IsIn(['ban', 'mute', 'kick'])
 	@ApiProperty({
 		description: 'the type of the punishment',
 		example: 'ban',

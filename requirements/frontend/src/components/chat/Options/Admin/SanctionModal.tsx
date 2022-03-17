@@ -2,6 +2,7 @@ import {
 	faBan,
 	faChevronLeft,
 	faCircleNotch,
+	faUserSlash,
 	faVolumeXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,6 +12,36 @@ import { PunishmentType } from '../../types/punishment.dto';
 import { ChannelDto, User } from '../../types/user-channels.dto';
 import { IUsePunishment } from '../../utils/usePunishment';
 import Button from '../utils/Button';
+
+const SwitchButton = ({
+	punishmentType,
+}: {
+	punishmentType: PunishmentType;
+}) => {
+	switch (punishmentType) {
+		case 'mute':
+			return (
+				<>
+					<FontAwesomeIcon icon={faVolumeXmark} className="icon" />
+					Mute
+				</>
+			);
+		case 'ban':
+			return (
+				<>
+					<FontAwesomeIcon icon={faBan} className="icon" />
+					Ban
+				</>
+			);
+		default:
+			return (
+				<>
+					<FontAwesomeIcon icon={faUserSlash} className="icon" />
+					Kick
+				</>
+			);
+	}
+};
 
 const SanctionModal = ({
 	punishmentType,
@@ -38,7 +69,9 @@ const SanctionModal = ({
 				className="button-icon"
 				onClick={back}
 			/>
-			<h2>Select time to {punishmentType}</h2>
+			<h2>
+				Option {punishmentType} {user.displayName}
+			</h2>
 			<div className="user-info">
 				<img
 					src={
@@ -60,21 +93,23 @@ const SanctionModal = ({
 					onChange={(e) => setReason(e.target.value)}
 				/>
 			</div>
-			<div className="input-group">
-				<p>Temporary ban</p>
-				<input
-					type="checkbox"
-					checked={banTemp}
-					onChange={(e) => setBanTemp(e.target.checked)}
-				/>
-				{banTemp && (
-					<DateTimePicker
-						onChange={setDate}
-						value={date}
-						className="date-picker"
+			{punishmentType !== 'kick' && (
+				<div className="input-group">
+					<p>Temporary</p>
+					<input
+						type="checkbox"
+						checked={banTemp}
+						onChange={(e) => setBanTemp(e.target.checked)}
 					/>
-				)}
-			</div>
+					{banTemp && (
+						<DateTimePicker
+							onChange={setDate}
+							value={date}
+							className="date-picker"
+						/>
+					)}
+				</div>
+			)}
 
 			<p className="error">{error}</p>
 			<Button
@@ -93,7 +128,8 @@ const SanctionModal = ({
 						back();
 					} catch (e) {
 						setError(
-							(e as any).response?.data?.message || 'Unknown error'
+							(e as any).response?.data?.message ||
+								'Unknown error'
 						);
 						back();
 					}
@@ -101,20 +137,7 @@ const SanctionModal = ({
 				className={`confirm ${punishmentType}-button`}
 			>
 				{!isLoading ? (
-					punishmentType === 'mute' ? (
-						<>
-							<FontAwesomeIcon
-								icon={faVolumeXmark}
-								className="icon"
-							/>
-							Mute
-						</>
-					) : (
-						<>
-							<FontAwesomeIcon icon={faBan} className="icon" />
-							Ban
-						</>
-					)
+					<SwitchButton punishmentType={punishmentType} />
 				) : (
 					<FontAwesomeIcon
 						icon={faCircleNotch}
