@@ -317,7 +317,9 @@ export class ChannelService {
 			channel,
 			reason: createPunishmentDto.reason,
 			type: createPunishmentDto.type,
-			expiration: createPunishmentDto.expiration,
+			expiration: createPunishmentDto.expiration
+				? new Date(createPunishmentDto.expiration)
+				: undefined,
 		});
 		const savedPunishment = await this.punishmentRepository.save(
 			punishment
@@ -331,6 +333,10 @@ export class ChannelService {
 			'system',
 			`${user.displayName} is ${
 				createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
+			} ${
+				createPunishmentDto.reason
+					? `for ${createPunishmentDto.reason}`
+					: ''
 			} until ${
 				savedPunishment.expiration
 					? savedPunishment.expiration.toLocaleString('fr-FR')

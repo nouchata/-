@@ -2,10 +2,11 @@ import { CreatePunishmentDto } from './../types/create-punishment.dto';
 import { RequestWrapper } from './../../../utils/RequestWrapper';
 import { useEffect, useState } from 'react';
 import { PunishmentDto, PunishmentType } from '../types/punishment.dto';
+import axios from 'axios';
 
 export interface IUsePunishment {
 	punishments: PunishmentDto[] | undefined;
-	addPunishment: (punishment: CreatePunishmentDto) => void;
+	addPunishment: (punishment: CreatePunishmentDto) => Promise<void>;
 	getActivePunishement: (
 		userId: number,
 		type: PunishmentType
@@ -40,22 +41,20 @@ const usePunishment = (channelId: number): IUsePunishment => {
 	}, [channelId]);
 
 	const addPunishment = async (punishment: CreatePunishmentDto) => {
-		const p = await RequestWrapper.post<PunishmentDto>(
-			'/channel/punishment',
-			punishment,
-			(e: any) => {
-				alert(e.message);
-			}
-		);
-		if (p) {
-			const parsed = {
-				...p,
-				createdAt: new Date(p.createdAt),
-				expiration: p.expiration ? new Date(p.expiration) : undefined,
-			};
-			if (punishments) setPunishments([...punishments, parsed]);
-			else setPunishments([parsed]);
-		}
+		const p = (
+			await axios.post<PunishmentDto>(
+				process.env.REACT_APP_BACKEND_ADDRESS + '/channel/punishment',
+				punishment,
+				{ withCredentials: true }
+			)
+		).data;
+		const parsed = {
+			...p,
+			createdAt: new Date(p.createdAt),
+			expiration: p.expiration ? new Date(p.expiration) : undefined,
+		};
+		if (punishments) setPunishments([...punishments, parsed]);
+		else setPunishments([parsed]);
 	};
 
 	const getActivePunishement = (userId: number, type: PunishmentType) => {

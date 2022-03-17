@@ -63,13 +63,19 @@
             text-align: center;
         }
     }
+    .input-group {
+        margin-top: 20px;
+        p {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+    }
     .date-picker {
         position: relative;
         background-color: #fafafa;
         border-radius: 5px;
         box-sizing: border-box;
         margin: 10px;
-        margin-top: 100px;
     }
     .confirm {
         position: absolute;
@@ -78,6 +84,15 @@
         line-height: 35px;
         left: 50%;
         bottom: 30px;
+        transform: translateX(-50%);
+    }
+    .error {
+        position: absolute;
+        color: red;
+        font-size: 14px;
+        margin-top: 10px;
+        bottom: 80px;
+        left: 50%;
         transform: translateX(-50%);
     }
 }

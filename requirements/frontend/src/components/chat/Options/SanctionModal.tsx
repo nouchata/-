@@ -1,6 +1,7 @@
 import {
 	faBan,
 	faChevronLeft,
+	faCircleNotch,
 	faVolumeXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -17,14 +18,20 @@ const SanctionModal = ({
 	user,
 	punishmentsUtil,
 	back,
+	setModalOpen,
 }: {
 	punishmentType: PunishmentType;
 	channel: ChannelDto;
 	user: User;
 	punishmentsUtil: IUsePunishment;
 	back: () => void;
+	setModalOpen: (value: boolean) => void;
 }) => {
 	const [date, setDate] = useState(new Date());
+	const [reason, setReason] = useState('');
+	const [banTemp, setBanTemp] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string>();
 
 	return (
 		<div className="sanction-modal">
@@ -33,7 +40,7 @@ const SanctionModal = ({
 				className="button-icon"
 				onClick={back}
 			/>
-			<h1>Select time to {punishmentType}</h1>
+			<h2>Select time to {punishmentType}</h2>
 			<div className="user-info">
 				<img
 					src={
@@ -46,35 +53,76 @@ const SanctionModal = ({
 				/>
 				<p>{user.displayName}</p>
 			</div>
-			<DateTimePicker
-				onChange={setDate}
-				value={date}
-				className="date-picker"
-			/>
+			<div className="input-group">
+				<p>Reason (can be empty)</p>
+				<input
+					type="text"
+					placeholder="Reason"
+					value={reason}
+					onChange={(e) => setReason(e.target.value)}
+				/>
+			</div>
+			<div className="input-group">
+				<p>Temporary ban</p>
+				<input
+					type="checkbox"
+					checked={banTemp}
+					onChange={(e) => setBanTemp(e.target.checked)}
+				/>
+				{banTemp && (
+					<DateTimePicker
+						onChange={setDate}
+						value={date}
+						className="date-picker"
+					/>
+				)}
+			</div>
+
+			<p className="error">{error}</p>
 			<Button
-				onClick={() => {
-					punishmentsUtil.addPunishment({
-						userId: user.id,
-						channelId: channel.id,
-						type: punishmentType,
-						expiration: date.toISOString(),
-					});
+				onClick={async () => {
+					setIsLoading(true);
+					try {
+						await punishmentsUtil.addPunishment({
+							userId: user.id,
+							channelId: channel.id,
+							type: punishmentType,
+							expiration: banTemp
+								? date.toISOString()
+								: undefined,
+							reason,
+						});
+						setModalOpen(false);
+					} catch (e) {
+						setError(
+							(e as any).response.data?.message || 'Unknown error'
+						);
+						setIsLoading(false);
+					}
 				}}
 				className={`confirm ${punishmentType}-button`}
 			>
-				{punishmentType === 'mute' ? (
-					<>
-						<FontAwesomeIcon
-							icon={faVolumeXmark}
-							className="icon"
-						/>
-						Mute
-					</>
+				{!isLoading ? (
+					punishmentType === 'mute' ? (
+						<>
+							<FontAwesomeIcon
+								icon={faVolumeXmark}
+								className="icon"
+							/>
+							Mute
+						</>
+					) : (
+						<>
+							<FontAwesomeIcon icon={faBan} className="icon" />
+							Ban
+						</>
+					)
 				) : (
-					<>
-						<FontAwesomeIcon icon={faBan} className="icon" />
-						Ban
-					</>
+					<FontAwesomeIcon
+						icon={faCircleNotch}
+						className="icon"
+						spin
+					/>
 				)}
 			</Button>
 		</div>

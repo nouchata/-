@@ -50,6 +50,7 @@ const MuteButton = ({
 					back={() => {
 						setModalOpen(false);
 					}}
+					setModalOpen={setModalOpen}
 				/>
 			)}
 		</>
@@ -80,13 +81,14 @@ const BanButton = ({
 			</Button>
 			{modalOpen && (
 				<SanctionModal
-					punishmentType='ban'
+					punishmentType="ban"
 					channel={channel}
 					user={user}
 					punishmentsUtil={punishmentsUtil}
 					back={() => {
 						setModalOpen(false);
 					}}
+					setModalOpen={setModalOpen}
 				/>
 			)}
 		</>
