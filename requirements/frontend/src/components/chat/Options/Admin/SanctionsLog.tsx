@@ -34,8 +34,8 @@ const SanctionLog = ({
 								</p>
 							</div>
 							<div className="info-group">
-								<label>Login:</label>
-								<p className="info">{punishment.user.login}</p>
+								<label>Admin:</label>
+								<p className="info">{punishment.admin}</p>
 							</div>
 							<div className="info-group">
 								<label>Reason:</label>

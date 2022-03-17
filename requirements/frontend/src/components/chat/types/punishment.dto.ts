@@ -1,4 +1,4 @@
-import { User } from "../../../types/User";
+import { User } from '../../../types/User';
 
 export type PunishmentType = 'ban' | 'mute' | 'kick';
 
@@ -8,6 +8,8 @@ export interface PunishmentDto {
 	user: User;
 
 	reason?: string;
+
+	admin: string;
 
 	type: PunishmentType;
 
