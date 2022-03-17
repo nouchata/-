@@ -321,8 +321,6 @@ export class ChannelService {
 			throw new HttpException('Expiration date is in the past', 400);
 		}
 
-		console.log(createPunishmentDto);
-		console.log(new Date());
 		const punishment = this.punishmentRepository.create({
 			user,
 			channel,
@@ -333,7 +331,6 @@ export class ChannelService {
 			admin: punisher.displayName,
 		});
 
-		console.log(punishment.expiration);
 		const savedPunishment = await this.punishmentRepository.save(
 			punishment
 		);
@@ -346,7 +343,7 @@ export class ChannelService {
 			msg = await this.createMessage(
 				channel,
 				'system',
-				`${user.displayName} is kicked ${
+				`${user.displayName} is kicked by ${user.displayName} ${
 					createPunishmentDto.reason
 						? `for ${createPunishmentDto.reason}`
 						: ''
@@ -358,7 +355,7 @@ export class ChannelService {
 				'system',
 				`${user.displayName} is ${
 					createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
-				} ${
+				} by ${user.displayName} ${
 					createPunishmentDto.reason
 						? `for ${createPunishmentDto.reason}`
 						: ''
