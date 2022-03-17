@@ -389,9 +389,13 @@ export class ChannelService {
 			throw new HttpException('User is not an admin', 403);
 		}
 
-		channel.punishments = channel.punishments.filter(
-			(p) => !(p.type === punishmentType && p.user.id === userId)
-		);
+		channel.punishments = channel.punishments.map((p) => {
+			if (!(p.type === punishmentType && p.user.id === userId)) {
+				p.expiration = new Date();
+				return p;
+			}
+			return p;
+		});
 		await this.channelRepository.save(channel);
 		return channel.punishments.map((p) => p.toDto());
 	}
