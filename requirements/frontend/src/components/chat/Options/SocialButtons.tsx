@@ -2,8 +2,8 @@ import { faBan, faUserMinus, faUserPlus } from '@fortawesome/free-solid-svg-icon
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useBlocked } from '../../../Providers/BlockedProvider';
 import { useFriendList } from '../../../Providers/FriendListProvider';
-import Button from './Button';
 import './SocialButtons.scss';
+import Button from './utils/Button';
 
 const BlockButton = ({ userId }: { userId: number }) => {
 	const blockedHook = useBlocked();

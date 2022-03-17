@@ -1,10 +1,10 @@
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useLogin } from '../../../Providers/LoginProvider';
-import { useModal } from '../../../Providers/ModalProvider';
-import { ChannelDto, User } from '../types/user-channels.dto';
+import { useLogin } from '../../../../Providers/LoginProvider';
+import { useModal } from '../../../../Providers/ModalProvider';
+import { ChannelDto, User } from '../../types/user-channels.dto';
+import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
-import { BlockButton, FriendButton } from './SocialButtons';
 
 const Member = ({ user, children}: { user: User, children?: React.ReactNode }) => {
 	const { loginStatus } = useLogin();

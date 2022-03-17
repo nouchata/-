@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { ChannelDto } from '../types/user-channels.dto';
-import usePunishment from '../utils/usePunishment';
+import { ChannelDto } from '../../types/user-channels.dto';
+import usePunishment from '../../utils/usePunishment';
+import { Member } from '../utils/Members';
 import './Admin.scss';
 import AdminButtons, { UnBanButton } from './AdminButtons';
-import { Member } from './Members';
 
 const Admin = ({ channel }: { channel: ChannelDto }) => {
 	const punishmentsUtil = usePunishment(channel.id);

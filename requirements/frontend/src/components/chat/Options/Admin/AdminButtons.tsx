@@ -5,9 +5,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
-import { ChannelDto, User } from '../types/user-channels.dto';
-import { IUsePunishment } from '../utils/usePunishment';
-import Button from './Button';
+import { ChannelDto, User } from '../../types/user-channels.dto';
+import { IUsePunishment } from '../../utils/usePunishment';
+import Button from '../utils/Button';
 import SanctionModal from './SanctionModal';
 
 const KickButton = ({ channel, user }: { channel: ChannelDto; user: User }) => {

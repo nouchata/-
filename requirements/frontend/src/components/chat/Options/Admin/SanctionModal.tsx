@@ -7,10 +7,10 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState } from 'react';
 import DateTimePicker from 'react-datetime-picker';
-import { PunishmentType } from '../types/punishment.dto';
-import { ChannelDto, User } from '../types/user-channels.dto';
-import { IUsePunishment } from '../utils/usePunishment';
-import Button from './Button';
+import { PunishmentType } from '../../types/punishment.dto';
+import { ChannelDto, User } from '../../types/user-channels.dto';
+import { IUsePunishment } from '../../utils/usePunishment';
+import Button from '../utils/Button';
 
 const SanctionModal = ({
 	punishmentType,

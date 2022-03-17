@@ -11,9 +11,9 @@ import './ChatOption.scss';
 import { ChannelDto } from '../types/user-channels.dto';
 import { useModal } from '../../../Providers/ModalProvider';
 import { useEffect, useMemo, useState } from 'react';
-import Admin from './Admin';
-import { Members } from './Members';
+import Admin from './Admin/Admin';
 import { useLogin } from '../../../Providers/LoginProvider';
+import { Members } from './utils/Members';
 
 const Option = ({
 	children,
