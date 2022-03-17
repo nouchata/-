@@ -35,11 +35,7 @@ const MuteButton = ({
 			<Button
 				onClick={() => {
 					punishmentsUtil.getActivePunishement(user.id, 'mute')
-						? punishmentsUtil.expirePunishementType(
-								user.id,
-								channel.id,
-								'mute'
-						  )
+						? punishmentsUtil.expirePunishementType(user.id, 'mute')
 						: setModalOpen(true);
 				}}
 				className="mute-button"
@@ -104,7 +100,6 @@ const BanButton = ({
 };
 
 const SeeSanctionsButton = ({
-	channel,
 	user,
 	punishmentsUtil,
 }: {
@@ -154,6 +149,26 @@ const AdminButtons = ({
 					punishmentsUtil={punishmentsUtil}
 				/>
 			)}
+		</>
+	);
+};
+
+export const UnBanButton = ({
+	user,
+	punishmentsUtil,
+}: {
+	channel: ChannelDto;
+	user: User;
+	punishmentsUtil: IUsePunishment;
+}) => {
+	return (
+		<>
+			<Button onClick={() => {
+				punishmentsUtil.expirePunishementType(user.id, 'ban')
+			}} className="ban-button">
+				<FontAwesomeIcon icon={faBan} className="icon" />
+				Unban
+			</Button>
 		</>
 	);
 };

@@ -15,9 +15,9 @@ export interface IUsePunishment {
 	getUserPunishments: (userId: number) => PunishmentDto[];
 	expirePunishementType: (
 		userId: number,
-		channelId: number,
 		type: PunishmentType
 	) => Promise<void>;
+	getAllActivePunishmentsType: (type: PunishmentType) => PunishmentDto[];
 }
 
 const usePunishment = (channelId: number): IUsePunishment => {
@@ -83,7 +83,6 @@ const usePunishment = (channelId: number): IUsePunishment => {
 
 	const expirePunishementType = async (
 		userId: number,
-		channelId: number,
 		type: PunishmentType
 	) => {
 		if (!punishments)
@@ -109,12 +108,23 @@ const usePunishment = (channelId: number): IUsePunishment => {
 		);
 	};
 
+	const getAllActivePunishmentsType = (type: PunishmentType) => {
+		if (!punishments)
+			throw new Error('No punishments, did you wait for fetch ?');
+		return punishments.filter(
+			(p) =>
+				p.type === type && (!p.expiration || p.expiration > new Date())
+		);
+	}
+
+
 	return {
 		punishments,
 		addPunishment,
 		getActivePunishement,
 		getUserPunishments,
 		expirePunishementType,
+		getAllActivePunishmentsType
 	};
 };
 

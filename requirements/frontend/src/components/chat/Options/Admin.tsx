@@ -1,11 +1,19 @@
+import { useMemo } from 'react';
 import { ChannelDto } from '../types/user-channels.dto';
 import usePunishment from '../utils/usePunishment';
 import './Admin.scss';
-import AdminButtons from './AdminButtons';
+import AdminButtons, { UnBanButton } from './AdminButtons';
 import { Member } from './Members';
 
 const Admin = ({ channel }: { channel: ChannelDto }) => {
 	const punishmentsUtil = usePunishment(channel.id);
+
+	const bannedUser = useMemo(() => {
+		if (!punishmentsUtil.punishments) return [];
+		return punishmentsUtil
+			.getAllActivePunishmentsType('ban')
+			.map((p) => p.user);
+	}, [punishmentsUtil]);
 
 	if (!punishmentsUtil.punishments) return <h1>Loading...</h1>;
 
@@ -24,6 +32,22 @@ const Admin = ({ channel }: { channel: ChannelDto }) => {
 					</Member>
 				))}
 			</div>
+			{bannedUser.length > 0 && (
+				<>
+					<h2>Banned users</h2>
+					<div className="user-list">
+						{bannedUser.map((user, index) => (
+							<Member key={index} user={user}>
+								<UnBanButton
+									channel={channel}
+									user={user}
+									punishmentsUtil={punishmentsUtil}
+								/>
+							</Member>
+						))}
+					</div>
+				</>
+			)}
 		</div>
 	);
 };
