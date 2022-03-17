@@ -3,7 +3,7 @@ import { ChannelDto } from '../../types/user-channels.dto';
 import usePunishment from '../../utils/usePunishment';
 import { Member } from '../utils/Members';
 import './Admin.scss';
-import AdminButtons, { UnBanButton } from './AdminButtons';
+import AdminButtons, { SeeSanctionsButton, UnBanButton } from './AdminButtons';
 
 const Admin = ({ channel }: { channel: ChannelDto }) => {
 	const punishmentsUtil = usePunishment(channel.id);
@@ -39,6 +39,11 @@ const Admin = ({ channel }: { channel: ChannelDto }) => {
 						{bannedUser.map((user, index) => (
 							<Member key={index} user={user}>
 								<UnBanButton
+									channel={channel}
+									user={user}
+									punishmentsUtil={punishmentsUtil}
+								/>
+								<SeeSanctionsButton
 									channel={channel}
 									user={user}
 									punishmentsUtil={punishmentsUtil}

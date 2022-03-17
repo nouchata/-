@@ -98,7 +98,16 @@ const usePunishment = (channelId: number): IUsePunishment => {
 				});
 			}
 		);
-		setPunishments(newPunishments);
+		if (!newPunishments) return;
+		const parsed = newPunishments?.map((p) => {
+			p.createdAt = new Date(p.createdAt);
+			if (p.expiration) {
+				p.expiration = new Date(p.expiration);
+			}
+			return p;
+		});
+
+		setPunishments(parsed);
 	};
 
 	const getAllActivePunishmentsType = (type: PunishmentType) => {

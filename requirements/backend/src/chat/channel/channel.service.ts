@@ -268,7 +268,7 @@ export class ChannelService {
 	}
 
 	async createPunishment(
-		punisher: { id: number },
+		punisher: User,
 		createPunishmentDto: CreatePunishmentDto
 	) {
 		const channel = await this.channelRepository.findOne(
@@ -321,6 +321,7 @@ export class ChannelService {
 			expiration: createPunishmentDto.expiration
 				? new Date(createPunishmentDto.expiration)
 				: undefined,
+			admin: punisher.displayName,
 		});
 
 		if (punishment.expiration && punishment.expiration < new Date()) {

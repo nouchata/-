@@ -18,14 +18,12 @@ const SanctionModal = ({
 	user,
 	punishmentsUtil,
 	back,
-	setModalOpen,
 }: {
 	punishmentType: PunishmentType;
 	channel: ChannelDto;
 	user: User;
 	punishmentsUtil: IUsePunishment;
 	back: () => void;
-	setModalOpen: (value: boolean) => void;
 }) => {
 	const [date, setDate] = useState(new Date());
 	const [reason, setReason] = useState('');
@@ -92,12 +90,12 @@ const SanctionModal = ({
 								: undefined,
 							reason,
 						});
-						setModalOpen(false);
+						back();
 					} catch (e) {
 						setError(
 							(e as any).response?.data?.message || 'Unknown error'
 						);
-						setIsLoading(false);
+						back();
 					}
 				}}
 				className={`confirm ${punishmentType}-button`}

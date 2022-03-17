@@ -38,6 +38,12 @@ export class PunishmentDto {
 	type: PunishmentType;
 
 	@ApiProperty({
+		description: 'the display name of the admin who created the punishment',
+		example: 'Froz',
+	})
+	admin: string;
+
+	@ApiProperty({
 		description: 'the date of the expiration',
 		example: '2020-01-01T00:00:00.000Z',
 	})
@@ -75,6 +81,9 @@ export class Punishment {
 	})
 	expiration?: Date;
 
+	@Column()
+	admin: string;
+
 	@CreateDateColumn()
 	createdAt: Date;
 
@@ -85,6 +94,7 @@ export class Punishment {
 			reason: this.reason,
 			type: this.type,
 			expiration: this.expiration,
+			admin: this.admin,
 			createdAt: this.createdAt,
 		};
 	}

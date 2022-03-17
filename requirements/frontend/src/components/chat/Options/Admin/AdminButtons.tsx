@@ -9,6 +9,7 @@ import { ChannelDto, User } from '../../types/user-channels.dto';
 import { IUsePunishment } from '../../utils/usePunishment';
 import Button from '../utils/Button';
 import SanctionModal from './SanctionModal';
+import SanctionLog from './SanctionsLog';
 
 const KickButton = ({ channel, user }: { channel: ChannelDto; user: User }) => {
 	return (
@@ -54,7 +55,6 @@ const MuteButton = ({
 					back={() => {
 						setModalOpen(false);
 					}}
-					setModalOpen={setModalOpen}
 				/>
 			)}
 		</>
@@ -92,14 +92,13 @@ const BanButton = ({
 					back={() => {
 						setModalOpen(false);
 					}}
-					setModalOpen={setModalOpen}
 				/>
 			)}
 		</>
 	);
 };
 
-const SeeSanctionsButton = ({
+export const SeeSanctionsButton = ({
 	user,
 	punishmentsUtil,
 }: {
@@ -107,16 +106,28 @@ const SeeSanctionsButton = ({
 	user: User;
 	punishmentsUtil: IUsePunishment;
 }) => {
+	const [modalOpen, setModalOpen] = useState(false);
+
 	return (
-		<Button
-			onClick={() => {
-				console.log(punishmentsUtil.getUserPunishments(user.id));
-			}}
-			className="see-sanctions-button"
-		>
-			<FontAwesomeIcon icon={faBan} className="icon" />
-			See sanctions log
-		</Button>
+		<>
+			<Button
+				onClick={() => {
+					setModalOpen(true);
+				}}
+				className="see-sanctions-button"
+			>
+				<FontAwesomeIcon icon={faBan} className="icon" />
+				See sanctions log
+			</Button>
+			{modalOpen && (
+				<SanctionLog
+					punishements={punishmentsUtil.getUserPunishments(user.id)}
+					back={() => {
+						setModalOpen(false);
+					}}
+				/>
+			)}
+		</>
 	);
 };
 
@@ -163,9 +174,12 @@ export const UnBanButton = ({
 }) => {
 	return (
 		<>
-			<Button onClick={() => {
-				punishmentsUtil.expirePunishementType(user.id, 'ban')
-			}} className="ban-button">
+			<Button
+				onClick={() => {
+					punishmentsUtil.expirePunishementType(user.id, 'ban');
+				}}
+				className="ban-button"
+			>
 				<FontAwesomeIcon icon={faBan} className="icon" />
 				Unban
 			</Button>
