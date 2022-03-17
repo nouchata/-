@@ -1,3 +1,4 @@
+import { PunishmentType } from './../entities/punishment.entity';
 import { MessageType } from './../entities/message.entity';
 import { ChatGateway } from './../chat.gateway';
 import { Injectable, HttpException, Inject, forwardRef } from '@nestjs/common';
@@ -366,6 +367,32 @@ export class ChannelService {
 		) {
 			throw new HttpException('User is not an admin', 403);
 		}
+		return channel.punishments.map((p) => p.toDto());
+	}
+
+	async deletePunishment(
+		channelId: number,
+		userId: number,
+		user: User,
+		punishmentType: PunishmentType
+	) {
+		const channel = await this.channelRepository.findOne(channelId, {
+			relations: ['punishments', 'punishments.user', 'admins', 'owner'],
+		});
+		if (!channel) {
+			throw new HttpException('Channel not found', 404);
+		}
+		if (
+			!channel.admins.some((u) => u.id === user.id) &&
+			channel.owner.id !== user.id
+		) {
+			throw new HttpException('User is not an admin', 403);
+		}
+
+		channel.punishments = channel.punishments.filter(
+			(p) => !(p.type === punishmentType && p.user.id === userId)
+		);
+		await this.channelRepository.save(channel);
 		return channel.punishments.map((p) => p.toDto());
 	}
 }

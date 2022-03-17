@@ -1,5 +1,5 @@
-import { PunishmentDto } from './../entities/punishment.entity';
-import { Param } from '@nestjs/common';
+import { PunishmentDto, PunishmentType } from './../entities/punishment.entity';
+import { Delete, Param } from '@nestjs/common';
 import { CreatePunishmentDto } from './../dtos/create-punishment.dto';
 import { GetChannelDto } from './../dtos/get-channel.dto';
 import { ChannelDto } from './../dtos/user-channels.dto';
@@ -154,6 +154,27 @@ export class ChannelController {
 		return await this.channelService.getChannelPunishments(
 			channelId,
 			req.user
+		);
+	}
+
+	@Delete('punishment/:channelId/:userId/:punishmentType')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'delete punishment',
+		type: [PunishmentDto],
+	})
+	async deletePunishment(
+		@Req() req: { user: User },
+		@Param('channelId') channelId: number,
+		@Param('userId') userId: number,
+		@Param('punishmentType') punishmentType: PunishmentType
+	) {
+		return await this.channelService.deletePunishment(
+			channelId,
+			userId,
+			req.user,
+			punishmentType
 		);
 	}
 }
