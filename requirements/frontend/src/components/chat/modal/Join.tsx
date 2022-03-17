@@ -40,7 +40,6 @@ const ModalJoin = ({
 				}
 			);
 			if (newChannel) {
-				console.log(newChannel);
 				socket.addChannel(newChannel);
 				setModalJoin(undefined);
 			}

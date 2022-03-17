@@ -122,6 +122,9 @@ const SanctionModal = ({
 								: undefined,
 							reason,
 						});
+						if (punishmentType === 'mute') {
+							back();
+						}
 					} catch (e) {
 						setError(
 							(e as any).response?.data?.message ||

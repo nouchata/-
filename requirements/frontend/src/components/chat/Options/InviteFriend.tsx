@@ -12,20 +12,23 @@ import { Member } from './utils/Members';
 const InviteFriendButton = ({
 	friend,
 	channel,
+	back
 }: {
 	friend: FetchFriendsList;
 	channel: ChannelDto;
+	back: () => void;
 }) => {
 	const notifHandler = useNotificationHandler();
-	const inviteFriend = (userId: number) => {
+	const inviteFriend = async (userId: number) => {
 		// POST: /channel/invite/:channelId/:userId
-		RequestWrapper.post(`/channel/invite/${channel.id}/${userId}`, undefined, (e) => {
+		await RequestWrapper.post(`/channel/invite/${channel.id}/${userId}`, undefined, (e) => {
 			notifHandler.addNotification({
 				name: 'Error',
 				content: e.response?.data?.message || 'Unknown error',
 				context: 'error',
 			});
 		});
+		back();
 	}
 	return (
 		<Button onClick={() => {inviteFriend(friend.id)}} className='friend-button'>
@@ -35,7 +38,7 @@ const InviteFriendButton = ({
 	);
 };
 
-const InviteFriend = ({ channel }: { channel: ChannelDto }) => {
+const InviteFriend = ({ channel, back }: { channel: ChannelDto, back: () => void }) => {
 	const { friends } = useFriendList();
 
 	const friendsNotInChannel = useMemo(() => {
@@ -54,6 +57,7 @@ const InviteFriend = ({ channel }: { channel: ChannelDto }) => {
 							<InviteFriendButton
 								friend={friend}
 								channel={channel}
+								back={back}
 							/>
 						</Member>
 					);

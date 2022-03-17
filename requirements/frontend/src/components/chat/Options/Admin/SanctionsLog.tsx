@@ -18,9 +18,9 @@ const SanctionLog = ({
 			/>
 			<h1>Sanctions Log</h1>
 			<div className="punishments">
-				{punishements.map((punishment) => {
+				{punishements.map((punishment, index) => {
 					return (
-						<div className="punishment">
+						<div className="punishment" key={index}>
 							<div className="info-group">
 								<label>Type:</label>
 								<p className={`info tag ${punishment.type}`}>

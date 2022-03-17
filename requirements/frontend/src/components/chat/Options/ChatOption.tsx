@@ -63,11 +63,18 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	}, [adminModalOpen, channel, setModalProps]);
 
 	useEffect(() => {
-		console.log('inviteModalOpen', inviteModalOpen);
 		if (inviteModalOpen) {
 			setModalProps({
 				show: true,
-				content: <InviteFriend channel={channel} />,
+				content: (
+					<InviteFriend
+						channel={channel}
+						back={() => {
+							setInviteModalOpen(false);
+							setModalProps(undefined);
+						}}
+					/>
+				),
 				width: '80%',
 				height: '80%',
 				onClose: () => setInviteModalOpen(false),
@@ -105,7 +112,9 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			{
 				icon: faUserPlus,
 				text: 'Invite a friend',
-				callback: () => {setInviteModalOpen(true)},
+				callback: () => {
+					setInviteModalOpen(true);
+				},
 			},
 		];
 

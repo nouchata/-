@@ -9,7 +9,7 @@ import { WsGroupGuard } from 'src/auth/guards/group.guard';
 import { Socket } from 'socket.io';
 import { User } from 'src/user/entities/user.entity';
 import { ChannelService } from './channel/channel.service';
-import { MessageDto } from './dtos/user-channels.dto';
+import { ChannelDto, MessageDto } from './dtos/user-channels.dto';
 
 @WebSocketGateway({ cors: true, namespace: 'chat' })
 export class ChatGateway {
@@ -65,6 +65,12 @@ export class ChatGateway {
 			this.userSockets[user.id].channels = this.userSockets[
 				user.id
 			].channels.filter((c) => c !== channelId);
+		}
+	}
+
+	async newChannelToUser(channel: ChannelDto, userId: number) {
+		if (this.userSockets[userId]) {
+			this.userSockets[userId].socket.emit('newChannel', channel);
 		}
 	}
 
