@@ -343,7 +343,7 @@ export class ChannelService {
 			msg = await this.createMessage(
 				channel,
 				'system',
-				`${user.displayName} is kicked by ${user.displayName} ${
+				`${user.displayName} is kicked by ${punisher.displayName} ${
 					createPunishmentDto.reason
 						? `for ${createPunishmentDto.reason}`
 						: ''
@@ -355,7 +355,7 @@ export class ChannelService {
 				'system',
 				`${user.displayName} is ${
 					createPunishmentDto.type === 'ban' ? 'banned' : 'muted'
-				} by ${user.displayName} ${
+				} by ${punisher.displayName} ${
 					createPunishmentDto.reason
 						? `for ${createPunishmentDto.reason}`
 						: ''
