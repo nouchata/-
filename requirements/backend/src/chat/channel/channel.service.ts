@@ -322,6 +322,11 @@ export class ChannelService {
 				? new Date(createPunishmentDto.expiration)
 				: undefined,
 		});
+
+		if (punishment.expiration && punishment.expiration < new Date()) {
+			throw new HttpException('Expiration date is in the past', 400);
+		}
+
 		const savedPunishment = await this.punishmentRepository.save(
 			punishment
 		);
