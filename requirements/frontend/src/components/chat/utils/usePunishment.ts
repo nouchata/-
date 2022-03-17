@@ -88,7 +88,7 @@ const usePunishment = (channelId: number): IUsePunishment => {
 		if (!punishments)
 			throw new Error('No punishments, did you wait for fetch ?');
 		// DELETE /punishment/:channelId/:userId/:punishmentType
-		await RequestWrapper.delete(
+		const newPunishments = await RequestWrapper.delete<PunishmentDto[]>(
 			`/channel/punishment/${channelId}/${userId}/${type}`,
 			(e: any) => {
 				notificationHandler.addNotification({
@@ -98,14 +98,7 @@ const usePunishment = (channelId: number): IUsePunishment => {
 				});
 			}
 		);
-		setPunishments(
-			punishments.map((p) => {
-				if (p.user.id === userId && p.type === type) {
-					p.expiration = new Date();
-				}
-				return p;
-			})
-		);
+		setPunishments(newPunishments);
 	};
 
 	const getAllActivePunishmentsType = (type: PunishmentType) => {

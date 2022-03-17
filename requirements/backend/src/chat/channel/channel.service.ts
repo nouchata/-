@@ -395,8 +395,13 @@ export class ChannelService {
 		}
 
 		channel.punishments = channel.punishments.map((p) => {
-			if (!(p.type === punishmentType && p.user.id === userId)) {
+			if (
+				p.type === punishmentType &&
+				p.user.id === userId &&
+				(!p.expiration || p.expiration > new Date())
+			) {
 				p.expiration = new Date();
+				this.punishmentRepository.save(p);
 				return p;
 			}
 			return p;
