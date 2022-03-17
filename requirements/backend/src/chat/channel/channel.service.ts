@@ -458,6 +458,17 @@ export class ChannelService {
 			throw new HttpException('User is already in the channel', 403);
 		}
 
+		if (
+			channel.punishments.some(
+				(p) =>
+					p.type === 'ban' &&
+					p.user.id === invitedUser.id &&
+					(!p.expiration || p.expiration > new Date())
+			)
+		) {
+			throw new HttpException('User is banned in the channel', 403);
+		}
+
 		channel.users.push(invitedUser);
 		const msg = await this.createMessage(
 			channel,
