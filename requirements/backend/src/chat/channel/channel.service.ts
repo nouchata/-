@@ -431,4 +431,46 @@ export class ChannelService {
 		await this.channelRepository.save(channel);
 		return channel.punishments.map((p) => p.toDto());
 	}
+
+	async inviteUser(channelId: number, userId: number, user: User) {
+		const channel = await this.channelRepository.findOne(channelId, {
+			relations: [
+				'users',
+				'admins',
+				'owner',
+				'punishments',
+				'punishments.user',
+				'messages',
+				'messages.user',
+			],
+		});
+		if (!channel) {
+			throw new HttpException('Channel not found', 404);
+		}
+		if (!channel.users.some((u) => u.id === user.id)) {
+			throw new HttpException('You are not in the channel', 403);
+		}
+		const invitedUser = await this.userService.findUserById(userId);
+		if (!invitedUser) {
+			throw new HttpException('invitedUser not found', 404);
+		}
+		if (channel.users.some((u) => u.id === invitedUser.id)) {
+			throw new HttpException('User is already in the channel', 403);
+		}
+
+		channel.users.push(invitedUser);
+		const msg = await this.createMessage(
+			channel,
+			'system',
+			`${user.displayName} invited ${invitedUser.displayName} to the channel`
+		);
+		await this.sendMessage(msg);
+		channel.messages.push(msg);
+		this.chatGateway.addNewUser(channel.id, invitedUser);
+		this.chatGateway.newChannelToUser(
+			channel.toDto(await this.userService.getBlockedUsers(invitedUser)),
+			invitedUser.id
+		);
+		await this.channelRepository.save(channel);
+	}
 }

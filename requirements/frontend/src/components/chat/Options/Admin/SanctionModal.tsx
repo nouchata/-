@@ -1,7 +1,6 @@
 import {
 	faBan,
 	faChevronLeft,
-	faCircleNotch,
 	faUserSlash,
 	faVolumeXmark,
 } from '@fortawesome/free-solid-svg-icons';
@@ -59,7 +58,6 @@ const SanctionModal = ({
 	const [date, setDate] = useState(new Date());
 	const [reason, setReason] = useState('');
 	const [banTemp, setBanTemp] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string>();
 
 	return (
@@ -114,7 +112,6 @@ const SanctionModal = ({
 			<p className="error">{error}</p>
 			<Button
 				onClick={async () => {
-					setIsLoading(true);
 					try {
 						await punishmentsUtil.addPunishment({
 							userId: user.id,
@@ -125,26 +122,16 @@ const SanctionModal = ({
 								: undefined,
 							reason,
 						});
-						back();
 					} catch (e) {
 						setError(
 							(e as any).response?.data?.message ||
 								'Unknown error'
 						);
-						back();
 					}
 				}}
 				className={`confirm ${punishmentType}-button`}
 			>
-				{!isLoading ? (
-					<SwitchButton punishmentType={punishmentType} />
-				) : (
-					<FontAwesomeIcon
-						icon={faCircleNotch}
-						className="icon"
-						spin
-					/>
-				)}
+				<SwitchButton punishmentType={punishmentType} />
 			</Button>
 		</div>
 	);

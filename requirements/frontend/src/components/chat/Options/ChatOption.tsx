@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Admin from './Admin/Admin';
 import { useLogin } from '../../../Providers/LoginProvider';
 import { Members } from './utils/Members';
+import InviteFriend from './InviteFriend';
 
 const Option = ({
 	children,
@@ -46,6 +47,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	const [isToggled, setIsToggled] = useState(false);
 	const { setModalProps } = useModal();
 	const [adminModalOpen, setAdminModalOpen] = useState(false);
+	const [inviteModalOpen, setInviteModalOpen] = useState(false);
 	const { loginStatus } = useLogin();
 
 	useEffect(() => {
@@ -59,6 +61,19 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			});
 		}
 	}, [adminModalOpen, channel, setModalProps]);
+
+	useEffect(() => {
+		console.log('inviteModalOpen', inviteModalOpen);
+		if (inviteModalOpen) {
+			setModalProps({
+				show: true,
+				content: <InviteFriend channel={channel} />,
+				width: '80%',
+				height: '80%',
+				onClose: () => setInviteModalOpen(false),
+			});
+		}
+	}, [channel, inviteModalOpen, setModalProps]);
 
 	const options = useMemo(() => {
 		const opts: {
@@ -89,8 +104,8 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			},
 			{
 				icon: faUserPlus,
-				text: 'Invite',
-				callback: () => {},
+				text: 'Invite a friend',
+				callback: () => {setInviteModalOpen(true)},
 			},
 		];
 
@@ -100,7 +115,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 		) {
 			opts.push({
 				icon: faGear,
-				text: 'Admin',
+				text: 'Admin panel',
 				callback: () => setAdminModalOpen(true),
 			});
 		}

@@ -2,11 +2,12 @@ import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLogin } from '../../../../Providers/LoginProvider';
 import { useModal } from '../../../../Providers/ModalProvider';
-import { ChannelDto, User } from '../../types/user-channels.dto';
+import { FetchFriendsList } from '../../../../types/FetchFriendsList';
+import { ChannelDto } from '../../types/user-channels.dto';
 import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
 
-const Member = ({ user, children}: { user: User, children?: React.ReactNode }) => {
+const Member = ({ user, children}: { user: FetchFriendsList, children?: React.ReactNode }) => {
 	const { loginStatus } = useLogin();
 	return (
 		<div className="member" key={user.id}>

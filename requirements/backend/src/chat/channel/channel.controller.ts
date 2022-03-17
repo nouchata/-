@@ -177,4 +177,22 @@ export class ChannelController {
 			punishmentType
 		);
 	}
+
+	@Post('invite/:channelId/:userId')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'invite user to channel',
+	})
+	async inviteUser(
+		@Req() req: { user: User },
+		@Param('channelId') channelId: number,
+		@Param('userId') userId: number
+	) {
+		return await this.channelService.inviteUser(
+			channelId,
+			userId,
+			req.user
+		);
+	}
 }
