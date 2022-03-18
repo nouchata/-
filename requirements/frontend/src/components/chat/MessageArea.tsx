@@ -7,7 +7,8 @@ import { ChatSocket } from "./utils/ChatSocket";
 const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSocket | undefined }) => {
 
 	const { loginStatus } = useLogin();
-	const messagesEndRef = useRef<HTMLDivElement>(null)
+	const messagesEndRef = useRef<HTMLDivElement>(null);
+	let loginBuffer : string = "";
 
 	const scrollToBottom = () => {
 		if (messagesEndRef.current) {
@@ -37,38 +38,16 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSoc
 		<div className="message-area">
 			{
 				channel?.messages.map((message: MessageDto, index: number) => {
-					return (<div className='message-chat' key={index}>
-						{
-							message.messageType === 'system' ?
-								<div className='message-system'>
-									{message.text}
-								</div>
-								:
-								loginStatus.user?.id === message.userId ?
-									<div className="message-self">
-										<div className='bubble-self'>
-											{
-												index === channel.messages.length - 1 ?
-													<p className="message-text" ref={messagesEndRef} >{message.text}</p>
-													:
-													<p className="message-text" >{message.text}</p>
-											}
-										</div>
-									</div>
-									:
-									<div className="message">
-										<div className='bubble'>
-											<h5 className="message-display-name" >{(message.userId && users[message.userId]) ? users[message.userId].displayName : 'unknow'}</h5>
-											{
-												index === channel.messages.length - 1 ?
-													<p className="message-text" ref={messagesEndRef} >{message.text}</p>
-													:
-													<p className="message-text" >{message.text}</p>
-											}
-										</div>
-									</div>
-						}
-					</div>);
+					if (!index)
+						loginBuffer = "";
+					const displayName = message.userId && loginStatus.user?.id !== message.userId && users[message.userId].displayName as string !== loginBuffer ? users[message.userId as number].displayName : "";
+					loginBuffer = message.userId ? users[message.userId].displayName : loginBuffer;
+					return (
+						<div className={message.messageType === 'system' ? "system" : ("user" + (loginStatus.user?.id === message.userId ? " self" : ''))} key={index}>
+							{message.messageType !== 'system' && displayName && <p className="author">{displayName}</p>}
+							<p className="message" ref={index === channel.messages.length - 1 ? messagesEndRef : undefined} >{message.text}</p>
+						</div>
+					);
 				})
 			}
 		</div>

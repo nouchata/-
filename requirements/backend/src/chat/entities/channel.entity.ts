@@ -13,6 +13,7 @@ import {
 import { ChannelType } from '../dtos/create-channel.dto';
 import { ChannelDto, MessageDto } from '../dtos/user-channels.dto';
 import { Message } from './message.entity';
+import { Punishment } from './punishment.entity';
 
 @Entity({ name: 'channels' })
 export class Channel {
@@ -44,6 +45,11 @@ export class Channel {
 	})
 	users: User[];
 
+	@OneToMany((type) => Punishment, (punishment) => punishment.channel, {
+		onDelete: 'CASCADE',
+	})
+	punishments: Punishment[];
+
 	@OneToMany((type) => Message, (message) => message.channel, {
 		onDelete: 'CASCADE',
 	})
@@ -52,8 +58,72 @@ export class Channel {
 	@CreateDateColumn()
 	createdAt: Date;
 
+	isUserBanned(user: User): boolean {
+		if (
+			this.punishments.some((punish) => {
+				return (
+					punish.user.id === user.id &&
+					punish.type === 'ban' &&
+					(!punish.expiration || punish.expiration > new Date())
+				);
+			})
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	isUserMuted(user: User): boolean {
+		if (
+			this.punishments.some((punish) => {
+				return (
+					punish.user.id === user.id &&
+					punish.type === 'mute' &&
+					(!punish.expiration || punish.expiration > new Date())
+				);
+			})
+		) {
+			return true;
+		}
+		return false;
+	}
+
+	getActivePunishment(user: User) {
+		return this.punishments.find((punishment) => {
+			return (
+				punishment.user.id === user.id &&
+				(!punishment.expiration || punishment.expiration > new Date())
+			);
+		});
+	}
+
+	isUserAdmin(user: User): boolean {
+		return this.admins.some((u) => u.id === user.id);
+	}
+
 	canUserAccess(user: User): boolean {
-		return this.users.some((u) => u.id === user.id);
+		if (!this.users.some((u) => u.id === user.id)) return false;
+
+		if (this.isUserBanned(user)) return false;
+
+		return true;
+	}
+
+	canUserTalk(user: User): boolean {
+		if (!this.canUserAccess(user)) return false;
+
+		if (
+			this.punishments.some((punish) => {
+				return (
+					punish.user.id === user.id &&
+					punish.type === 'mute' &&
+					(!punish.expiration || punish.expiration > new Date())
+				);
+			})
+		) {
+			return false;
+		}
+		return true;
 	}
 
 	toDto(blockedUsers: User[]): ChannelDto {

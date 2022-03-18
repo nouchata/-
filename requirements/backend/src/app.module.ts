@@ -14,6 +14,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path/posix';
 import { TfaModule } from './tfa/tfa.module';
 import { GameModule } from './game/game.module';
+import { Punishment } from './chat/entities/punishment.entity';
 
 const dyn_import: DynamicModule[] = [];
 
@@ -51,7 +52,14 @@ if (process.env.RUN_ENV === 'PROD') {
 			username: process.env.DB_USER,
 			password: process.env.DB_PASS,
 			database: process.env.DB_NAME,
-			entities: [User, SessionEntity, MatchHistory, Channel, Message],
+			entities: [
+				User,
+				SessionEntity,
+				MatchHistory,
+				Channel,
+				Message,
+				Punishment,
+			],
 			synchronize: true,
 			retryAttempts: 5,
 			retryDelay: 5000,

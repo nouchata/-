@@ -9,7 +9,7 @@ import { WsGroupGuard } from 'src/auth/guards/group.guard';
 import { Socket } from 'socket.io';
 import { User } from 'src/user/entities/user.entity';
 import { ChannelService } from './channel/channel.service';
-import { MessageDto } from './dtos/user-channels.dto';
+import { ChannelDto, MessageDto } from './dtos/user-channels.dto';
 
 @WebSocketGateway({ cors: true, namespace: 'chat' })
 export class ChatGateway {
@@ -39,17 +39,6 @@ export class ChatGateway {
 				});
 			}
 		}
-		/*.filter((userId) => {
-				const { channels } = this.userSockets[Number(userId)];
-				return channels.includes(channelId);
-			})
-			.forEach((userId) => {
-				const { socket } = this.userSockets[Number(userId)];
-				socket.emit('receiveMessage', {
-					...message,
-					channelId: channelId,
-				});
-			});*/
 	}
 
 	async addNewUser(channelId: number, user: User) {
@@ -64,16 +53,6 @@ export class ChatGateway {
 	}
 
 	async removeUserChannel(channelId: number, user: User) {
-		// remove user from room
-		/*Object.values(this.userSockets)
-			.filter(({ channels }) => channels.includes(channelId))
-			.forEach(({ socket }) => {
-				socket.emit('removeUser', { ...user, channelId: channelId });
-			});
-		if (!this.userSockets[user.id]) return;
-		this.userSockets[user.id].channels = this.userSockets[
-			user.id
-		].channels.filter((c) => c !== channelId);*/
 		for (const userId of Object.keys(this.userSockets)) {
 			if (this.userSockets[+userId]?.channels.includes(channelId)) {
 				this.userSockets[+userId]?.socket.emit('removeUser', {
@@ -86,6 +65,12 @@ export class ChatGateway {
 			this.userSockets[user.id].channels = this.userSockets[
 				user.id
 			].channels.filter((c) => c !== channelId);
+		}
+	}
+
+	async newChannelToUser(channel: ChannelDto, userId: number) {
+		if (this.userSockets[userId]) {
+			this.userSockets[userId].socket.emit('newChannel', channel);
 		}
 	}
 
@@ -136,7 +121,7 @@ export class ChatGateway {
 		const channelFound = await this.channelService.getChannel(channelId);
 
 		if (channelFound) {
-			if (channelFound.canUserAccess(client.request.user)) {
+			if (channelFound.canUserTalk(client.request.user)) {
 				const message = await this.channelService.createMessage(
 					channelFound,
 					'user',

@@ -1,13 +1,13 @@
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useLogin } from '../../../Providers/LoginProvider';
-import { useModal } from '../../../Providers/ModalProvider';
-import { ChannelDto, User } from '../types/user-channels.dto';
+import { useLogin } from '../../../../Providers/LoginProvider';
+import { useModal } from '../../../../Providers/ModalProvider';
+import { FetchFriendsList } from '../../../../types/FetchFriendsList';
+import { ChannelDto } from '../../types/user-channels.dto';
+import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
-import { BlockButton, FriendButton } from './SocialButtons';
 
-const Member = ({ user }: { user: User }) => {
-	const { setModalProps } = useModal();
+const Member = ({ user, children}: { user: FetchFriendsList, children?: React.ReactNode }) => {
 	const { loginStatus } = useLogin();
 	return (
 		<div className="member" key={user.id}>
@@ -34,6 +34,20 @@ const Member = ({ user }: { user: User }) => {
 
 			{loginStatus.user?.id !== user.id && (
 				<div className="buttons">
+					{children}
+				</div>
+			)}
+		</div>
+	);
+};
+
+const Members = ({ channel }: { channel: ChannelDto }) => {
+	const { setModalProps } = useModal();
+
+	return (
+		<div className="members">
+			{channel.users.map((user, key) => {
+				return <Member key={key} user={user} >
 					<Button
 						onClick={() => {
 							setModalProps(undefined);
@@ -44,20 +58,10 @@ const Member = ({ user }: { user: User }) => {
 					</Button>
 					<FriendButton userId={user.id} />
 					<BlockButton userId={user.id} />
-				</div>
-			)}
-		</div>
-	);
-};
-
-const Members = ({ channel }: { userId: number; channel: ChannelDto }) => {
-	return (
-		<div className="members">
-			{channel.users.map((user, key) => {
-				return <Member key={key} user={user} />;
+				</Member>;
 			})}
 		</div>
 	);
 };
 
-export default Members;
+export { Member, Members };

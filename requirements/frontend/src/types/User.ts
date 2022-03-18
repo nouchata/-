@@ -1,4 +1,5 @@
 import { UserRole } from "../components/chat/types/user-channels.dto";
+import { UserStatus } from "../components/utils/StatusDisplay";
 
 interface IObjectKeys {
 	[key: string]: any;
@@ -19,5 +20,5 @@ export interface User extends IObjectKeys {
 	friends: User[];
 	history: string[];
 	twofa: boolean;
-	status: string;
+	status: UserStatus;
 }

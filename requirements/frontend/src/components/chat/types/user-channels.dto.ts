@@ -1,3 +1,5 @@
+import { UserStatus } from "../../utils/StatusDisplay";
+
 export type UserRole = 'user' | 'moderator' | 'admin';
 export type ChannelType = 'private' | 'protected' | 'public';
 export type MessageType = "user" | "system";
@@ -11,7 +13,7 @@ export interface User
 	displayName: string;
 	profileURL: string;
 	email?: string;
-	status: string;
+	status: UserStatus;
 }
 
 export interface MessageDto
@@ -23,11 +25,11 @@ export interface MessageDto
 }
 
 export interface ChannelDto {
-
 	id: number;
 	name: string;
 	channelType: ChannelType;
 	owner: User;
 	users: User[];
+	admins: User[];
 	messages: MessageDto[];
 }

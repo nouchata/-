@@ -148,6 +148,8 @@ export class UserService {
 					'channels.owner',
 					'channels.users',
 					'channels.admins',
+					'channels.punishments',
+					'channels.punishments.user',
 					'channels.messages',
 					'channels.messages.user',
 				],
