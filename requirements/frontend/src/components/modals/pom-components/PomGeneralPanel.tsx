@@ -1,9 +1,8 @@
-import { FetchStatusData } from "../../../types/FetchStatusData";
-
 import "./styles/general_panel.scss";
 import EditAsset from "../../../assets/profile/write.png";
 import React, { useState } from "react";
 import { RequestWrapper } from "../../../utils/RequestWrapper";
+import { useLogin } from "../../../Providers/LoginProvider";
 
 const saveBtnText : Array<string> = [
 	"Save changes",
@@ -11,9 +10,8 @@ const saveBtnText : Array<string> = [
 	"Done !"
 ];
 
-const PomGeneralPanel = (props: {
-	fetchStatus: FetchStatusData,
-}) : JSX.Element => {
+const PomGeneralPanel = () : JSX.Element => {
+	const { loginStatus } = useLogin();
 	const [ editAvatarBtnState, setEditAvatarBtnState ] = useState<boolean>(false);
 	const [ uploadedAvatarBlob, setUploadedAvatarBlob ] = useState<string>('');
 	const [ uploadedAvatar, setUploadedAvatar ] = useState<File>();
@@ -54,7 +52,7 @@ const PomGeneralPanel = (props: {
 							</label>
 							<img 
 								src={uploadedAvatarBlob || process.env.REACT_APP_BACKEND_ADDRESS as string + 
-									'/' + props.fetchStatus.user?.picture}
+									'/' + loginStatus.user?.picture}
 								alt='profile'
 							/>
 						</div>
@@ -69,7 +67,7 @@ const PomGeneralPanel = (props: {
 							<label htmlFor="pom-login">
 								Login :
 							</label>
-							<input id="pom-login" type="text" placeholder={props.fetchStatus.user?.login} disabled />
+							<input id="pom-login" type="text" placeholder={loginStatus.user?.login} disabled />
 						</div>
 						<div className="pom-gp-tc-textfield">
 							<label htmlFor="pom-display-name">
@@ -78,7 +76,7 @@ const PomGeneralPanel = (props: {
 							<input 
 								id="pom-display-name"
 								type="text"
-								placeholder={props.fetchStatus.user?.displayName}
+								placeholder={loginStatus.user?.displayName}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									setDisplayName(e.target.value);
 								}}
@@ -91,7 +89,7 @@ const PomGeneralPanel = (props: {
 							<input
 								id="pom-email"
 								type="email"
-								placeholder={props.fetchStatus.user?.email}
+								placeholder={loginStatus.user?.email}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									setEmail(e.target.value);
 								}}

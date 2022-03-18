@@ -6,18 +6,25 @@ import { getVictoryRatio } from '../profile/UserDetails';
 import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
 import { GenericModalProps } from '../utils/GenericModal';
-import ProfileOptionsModal from '../modals/ProfileOptionsModal';
+import { IStdPanelContent } from '../modals/StandardModal';
 import { RequestWrapper } from '../../utils/RequestWrapper';
 import { useModal } from '../../Providers/ModalProvider';
+import PomGeneralPanel from '../modals/pom-components/PomGeneralPanel';
+import Pom2FAPanel from '../modals/pom-components/Pom2FAPanel';
+import StandardModal from '../modals/StandardModal';
 
 //import '../../styles/profile_overview.scss';
 
+const profileOptsContent : Array<IStdPanelContent> = [
+	{ name: "General", panel: <PomGeneralPanel /> },
+	{ name: "2FA", panel: <Pom2FAPanel /> }
+];
 const profileOptsModal : GenericModalProps = {
 	show: true,
-	content: <ProfileOptionsModal />,
+	content: <StandardModal panels={profileOptsContent} />,
 	height: '80%',
 	width: '80%'
-}
+};
 
 const ProfileOverview = ({fetchStatus}: {fetchStatus: FetchStatusData}) : JSX.Element => {
 	const { setModalProps } = useModal();

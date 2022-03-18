@@ -1,12 +1,12 @@
 $pom-nav-element-count: 2;
 
-.profile-options-modal {
+.standard-modal {
 	//border: 1px solid black;
 	height: 100%;
 	display: flex;
 	flex-flow: column nowrap;
 
-	.pom-navbar {
+	.stdmodal-navbar {
 		flex: 0 0 10%;
 		//border: 1px solid black;
 		list-style: none;

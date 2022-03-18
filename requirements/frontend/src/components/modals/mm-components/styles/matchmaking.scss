@@ -1,0 +1,59 @@
+@use "../../../../styles/theme";
+
+.mm-container {
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: center;
+	align-items: center;
+	align-content: center;
+	gap: 2px;
+
+	> button {
+		flex: 0 1 250px;
+		height: 80px;
+		background-color: theme.$modal-container-color;
+		border: 5px solid theme.$darkest-color;
+		border-radius: 10px;
+		padding: 0;
+
+		display: flex;
+		flex-flow: row nowrap;
+		align-items: center;
+
+		filter: drop-shadow(0 0 0.5rem rgba(theme.$darkest-color, 0.3));
+
+		> :first-child { // fontawesome-icon
+			box-sizing: border-box;
+			flex: 0 0 70px;
+			width: 70px;
+			font-size: 3rem;
+			color: theme.$darkest-color;
+		}
+		> span {
+			height: 100%;
+			flex: 1;
+			color: theme.$modal-container-color;
+			font-size: 2em;
+			font-weight: bolder;
+			text-align: left;
+			background-color: theme.$darkest-color;
+
+			display: flex;
+			flex-flow: row nowrap;
+			justify-content: center;
+			align-items: center;
+		}
+	}
+
+	> button:disabled {
+		cursor: not-allowed;
+		* { cursor: not-allowed; }
+	}
+
+	.mm-additional-text {
+		flex: 0 0 100%;
+		margin: 0;
+		text-align: center;
+		font-size: 0.7em;
+	}
+}
