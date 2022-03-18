@@ -86,7 +86,7 @@ const MatchMaking = () : JSX.Element => {
 		return (function cleanup() {
 			/* TODO: needs an exit route on the back if currentlyFetching */
 			if (refValues.current.isFetching)
-				refValues.current.isFetching = false;
+				refValues.current.isFetching = false; // eslint-disable-line
 		});
 	}, [refValues]);
 
