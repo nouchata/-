@@ -6,9 +6,17 @@ import { FetchFriendsList } from '../../../../types/FetchFriendsList';
 import { ChannelDto } from '../../types/user-channels.dto';
 import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
+import { useNavigate } from 'react-router-dom';
 
-const Member = ({ user, children}: { user: FetchFriendsList, children?: React.ReactNode }) => {
+const Member = ({
+	user,
+	children,
+}: {
+	user: FetchFriendsList;
+	children?: React.ReactNode;
+}) => {
 	const { loginStatus } = useLogin();
+
 	return (
 		<div className="member" key={user.id}>
 			<div className="user-infos">
@@ -25,17 +33,13 @@ const Member = ({ user, children}: { user: FetchFriendsList, children?: React.Re
 				<div>
 					<div className="member-name">{user.displayName}</div>
 					<div className="member-status">
-						{loginStatus.user?.id !== user.id
-							? user.status
-							: 'you'}
+						{loginStatus.user?.id !== user.id ? user.status : 'you'}
 					</div>
 				</div>
 			</div>
 
 			{loginStatus.user?.id !== user.id && (
-				<div className="buttons">
-					{children}
-				</div>
+				<div className="buttons">{children}</div>
 			)}
 		</div>
 	);
@@ -43,22 +47,26 @@ const Member = ({ user, children}: { user: FetchFriendsList, children?: React.Re
 
 const Members = ({ channel }: { channel: ChannelDto }) => {
 	const { setModalProps } = useModal();
+	const nav = useNavigate();
 
 	return (
 		<div className="members">
 			{channel.users.map((user, key) => {
-				return <Member key={key} user={user} >
-					<Button
-						onClick={() => {
-							setModalProps(undefined);
-						}}
-					>
-						<FontAwesomeIcon icon={faUser} className="icon" />
-						See profile
-					</Button>
-					<FriendButton userId={user.id} />
-					<BlockButton userId={user.id} />
-				</Member>;
+				return (
+					<Member key={key} user={user}>
+						<Button
+							onClick={() => {
+								nav(`/profile/${user.id}`);
+								setModalProps(undefined);
+							}}
+						>
+							<FontAwesomeIcon icon={faUser} className="icon" />
+							See profile
+						</Button>
+						<FriendButton userId={user.id} />
+						<BlockButton userId={user.id} />
+					</Member>
+				);
 			})}
 		</div>
 	);
