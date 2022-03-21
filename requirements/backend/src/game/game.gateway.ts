@@ -18,7 +18,6 @@ export class GameGateway {
 		setTimeout(() => {
 			this.createInstance(1, 2, { gameType: "extended" }, 123456);
 		}, 1000);
-
 	}
 
 	@WebSocketServer()
@@ -100,5 +99,14 @@ export class GameGateway {
 		}, gameOptions);
 
 		return (instanceId);
+	}
+
+	isUserPlaying(userId: number): number {
+		for (let gameId in this.gameInstances) {
+			if (this.gameInstances[gameId]?.players.find((playerId: number) => {
+				return (playerId === userId);
+			})) return parseInt(gameId); // return the game id the user is playing in
+		}
+		return 0; // user is not ingame
 	}
 }

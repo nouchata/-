@@ -14,15 +14,29 @@ export class GameService {
     private list: MatchmakingList;
     public gatewayPtr: GameGateway | undefined = undefined;
 
-    createMatch(ids: [number, number], options?: Partial<GameOptions>) {
-        if (this.gatewayPtr) {
-            try { // create a new game instance for the players
-                return this.gatewayPtr.createInstance(ids[0], ids[1], options);
-            } catch (e) {
-                return -1;
-            }
+    async createNewGame(ids: [number, number], options?: Partial<GameOptions>): Promise<number> {
+
+        const players = await this.userRepo.findByIds(ids);
+        if (players.length !== 2) {
+            throw new Error('One or both of the players are not existing users.');
         }
-        return 0;
+
+        if (this.gatewayPtr) {
+                return this.gatewayPtr.createInstance(ids[0], ids[1], options);
+            }
+        throw new Error('Game gateway is not initialized for now, please wait.');
+        }
+
+    getMatchId(userId: number): number {
+        if (this.gatewayPtr) {
+            return this.gatewayPtr.isUserPlaying(userId);
+        } // find the user in the game instances
+
+        const match = this.list.finished.find(match => {
+            return (userId === match.playerOne.id || userId === match.playerTwo.id)
+        }) // find the user in the list of matches created
+
+        return match ? match.id : 0;
     }
 
     async matchWaitingPlayers() {
@@ -40,16 +54,26 @@ export class GameService {
                 if (actualDiff <= allowedDiff) { // it's a match !
                     
                     this.list.finished.push({
-                        playerOne: [this.list.waiting[i - 1].user, false],
-                        playerTwo: [this.list.waiting[i].user, false],
+                        playerOne: this.list.waiting[i - 1].user,
+                        playerTwo: this.list.waiting[i].user,
                         id: 0
                     });
 
                     const last = this.list.finished.slice(-1)[0]; // get last match created
-                    last.id = this.createMatch([last.playerOne[0].id, last.playerTwo[0].id]);
-                    if (last.id > 0) { // if a new match has been created successfully
-                        this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
+                    try {
+                        last.id = await this.createNewGame([last.playerOne.id, last.playerTwo.id]);
+                        setTimeout(() => {
+                            const index = this.list.finished.findIndex((match) => {
+                                return match.id === last.id;
+                            });
+                            this.list.finished.splice(index, 1);
+                        }, 120e3); // delete the match after 2 minutes
+                    } catch (e: any) {
+                        last.id = -1;
+                        last.error = e.message;
                     }
+
+                        this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
                 }
                 i++;
             }
@@ -76,21 +100,21 @@ export class GameService {
         });
         const match = this.list.finished[matchIndex];
 
-        // create a new match instance
-        if (this.gatewayPtr && match) {
+    checkMatch(playerId: number) : { id: number, error?: string} {
 
-            // set the player as ready
-            match.playerOne[0].id === playerId ?
-                match.playerOne[1] = true:
-                match.playerTwo[1] = true;
+        if (this.gatewayPtr) {
+            return { id: this.gatewayPtr.isUserPlaying(playerId) };
+        } // find the user in the game instances
 
-            if (match.playerOne[1] && match.playerTwo[1]) {
-                this.list.finished.splice(matchIndex, 1); // both players are ready, matchmaking is over
-            }
+        const match = this.list.finished.find(match => {
+            return (playerId === match.playerOne.id || playerId === match.playerTwo.id)
+        }) // find the user in the list of matches created
+        if (!match)
+            return { id: 0 }; // no match yet
 
-            return match.id; // -1 is a fail, > 0 is a success
-        }
-        return (0);
+        if (match.error)
+            return { id: 0, error: match.error };
+        return { id: match.id };
     }
 
     async saveMatchResult(
