@@ -22,10 +22,10 @@ export class GameService {
         }
 
         if (this.gatewayPtr) {
-                return this.gatewayPtr.createInstance(ids[0], ids[1], options);
-            }
-        throw new Error('Game gateway is not initialized for now, please wait.');
+            return this.gatewayPtr.createInstance(ids[0], ids[1], options);
         }
+        throw new Error('Game gateway is not initialized for now, please wait.');
+    }
 
     getMatchId(userId: number): number {
         if (this.gatewayPtr) {
@@ -73,7 +73,7 @@ export class GameService {
                         last.error = e.message;
                     }
 
-                        this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
+                    this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
                 }
                 i++;
             }
@@ -94,14 +94,20 @@ export class GameService {
         });
     }
 
-    matchmakingCheckMatch(playerId: number) : number {
-        const matchIndex = this.list.finished.findIndex(match => {
-            return (match.playerOne[0].id === playerId || match.playerTwo[0].id === playerId);
-        });
-        const match = this.list.finished[matchIndex];
+    matchmakingRemovePlayer(player: User): boolean {
+        const index = this.list.waiting.findIndex(item => {
+            return item.user.id === player.id;
+        }) // find the player
+        if (index === -1)
+            return false;
+
+        // remove the player from the waiting list
+        this.list.waiting.splice(index, 1);
+        return true;
+    }
 
     checkMatch(playerId: number) : { id: number, error?: string} {
-
+        
         if (this.gatewayPtr) {
             return { id: this.gatewayPtr.isUserPlaying(playerId) };
         } // find the user in the game instances

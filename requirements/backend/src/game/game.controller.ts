@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiResponse } from "@nestjs/swagger";
+import { validateOrReject } from "class-validator";
 import { GroupGuard } from "src/auth/guards/group.guard";
 import { User } from "src/user/entities/user.entity";
+import { PrivateMatchDTO } from "./dto/PrivateMatch.dto";
 import { GameService } from "./game.service";
 import { GameOptions } from "./types/GameOptions";
 
@@ -24,7 +26,18 @@ export class GameController {
 		this.gameService.matchmakingAddPlayer(req.user);
 	}
 
-	@Get('matchmaking')
+	@Post('leave')
+	@HttpCode(HttpStatus.ACCEPTED)
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 202,
+		description: "Remove the player from the matchmaking queue, do nothing if the player is not there"
+	})
+ 	leaveMatchmaking(@Req() req: { user: User }) {
+		this.gameService.matchmakingRemovePlayer(req.user);
+	}
+
+	@Get('match')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 200,
@@ -60,7 +73,7 @@ export class GameController {
 			}
 		} catch (e) {
 			throw new BadRequestException('Game options are not valid.');
-	}
+		}
 
 		try {
 			return await this.gameService.createNewGame(body.ids, opt);
