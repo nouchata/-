@@ -40,15 +40,17 @@ export class GameService {
         clearTimeout(this.playersTimeout[playerId]);
         this.playersTimeout[playerId] = this.disconnectTimeout(playerId);
 
-        if (this.gatewayPtr) {
-            return { id: this.gatewayPtr.isUserPlaying(playerId) };
-        } // find the user in the game instances
-
         const match = this.list.finished.find(match => {
             return (playerId === match.playerOne.id || playerId === match.playerTwo.id)
         }) // find the user in the list of matches created
-        if (!match)
-            return { id: 0 }; // no match yet
+        
+        if (!match) {
+            // find the user in the game instances
+            if (this.gatewayPtr) {
+                return { id: this.gatewayPtr.isUserPlaying(playerId) };
+            }
+            return { id: 0 };
+        }
 
         if (match.error)
             return { id: 0, error: match.error };
@@ -116,9 +118,7 @@ export class GameService {
             relations: ['history']
         });
 
-        // should not happen
         if (players.length !== 2) {
-            console.error('could not find players in database');
             return ;
         }
 
@@ -160,19 +160,22 @@ export class GameService {
                         id: 0
                     });
 
-                    const last = this.list.finished.slice(-1)[0]; // get last match created
+                    const   last = this.list.finished.slice(-1)[0]; // get last match created
+                    let     timer: number;
                     try {
                         last.id = await this.createNewGame([last.playerOne.id, last.playerTwo.id]);
-                        setTimeout(() => {
-                            const index = this.list.finished.findIndex((match) => {
-                                return match.id === last.id;
-                            });
-                            this.list.finished.splice(index, 1);
-                        }, 120e3); // delete the match after 2 minutes
+                        timer = 120e3; // 2 minutes
                     } catch (e: any) {
                         last.id = -1;
                         last.error = e.message;
+                        timer = 5e3; // 5 seconds
                     }
+                    setTimeout(() => {
+                        const index = this.list.finished.findIndex((match) => {
+                            return match.id === last.id;
+                        });
+                        this.list.finished.splice(index, 1);
+                    }, timer); // delete the match once the timer ends
 
                     this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
                 }
