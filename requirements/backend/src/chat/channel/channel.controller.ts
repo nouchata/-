@@ -11,6 +11,7 @@ import { User } from 'src/user/entities/user.entity';
 import { CreateChannelDto } from '../dtos/create-channel.dto';
 import { ChannelService } from './channel.service';
 import { ApiResponse } from '@nestjs/swagger';
+import { EditChannelDto } from '../dtos/edit-channel.dto';
 
 @Controller('channel')
 export class ChannelController {
@@ -193,6 +194,24 @@ export class ChannelController {
 			channelId,
 			userId,
 			req.user
+		);
+	}
+
+	@Post('edit/:channelId')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'edit channel',
+	})
+	async editChannel(
+		@Req() req: { user: User },
+		@Param('channelId') channelId: number,
+		@Body() editChannelDto: EditChannelDto
+	) {
+		return await this.channelService.editChannel(
+			channelId,
+			req.user,
+			editChannelDto
 		);
 	}
 }

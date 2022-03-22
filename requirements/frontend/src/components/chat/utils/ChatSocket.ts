@@ -1,3 +1,4 @@
+import { UpdateChannelDto } from './../types/update-channel.dto';
 import { ChannelDto, MessageDto, User } from "../types/user-channels.dto";
 import socketIOClient, { Socket } from "socket.io-client";
 
@@ -85,6 +86,22 @@ export class ChatSocket {
 						channel.users = channel.users.filter(u => u.id !== user.id);
 					}
 
+				}
+				this._updateChatSocket();
+			});
+
+			this._socket.on('newChannel', (channel: ChannelDto) => {
+				this._channels.push(channel);
+				this._updateChatSocket();
+			});
+
+			this._socket.on('updateChannelMetadata', (channel: UpdateChannelDto) => {
+				let channel_found = this._channels.find(c => c.id === channel.id);
+				if (channel_found) {
+					channel_found.name = channel.name;
+					channel_found.admins = channel.admins;
+					channel_found.owner = channel.owner;
+					channel_found.channelType = channel.channelType;
 				}
 				this._updateChatSocket();
 			});

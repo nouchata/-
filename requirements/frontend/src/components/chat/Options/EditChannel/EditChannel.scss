@@ -19,6 +19,10 @@
         visibility: hidden;
     }
     .error {
+        position: absolute;
         color: red;
+        width: 100%;
+        text-align: center;
+        bottom: 5px;
     }
 }

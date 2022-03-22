@@ -74,6 +74,23 @@ export class ChatGateway {
 		}
 	}
 
+	async updateChannelMetadata(channel: ChannelDto) {
+		for (const userId of Object.keys(this.userSockets)) {
+			if (this.userSockets[+userId]?.channels.includes(channel.id)) {
+				this.userSockets[+userId]?.socket.emit(
+					'updateChannelMetadata',
+					{
+						id: channel.id,
+						name: channel.name,
+						admins: channel.admins,
+						owner: channel.owner,
+						channelType: channel.channelType,
+					}
+				);
+			}
+		}
+	}
+
 	// handle user connection
 	@UseGuards(WsGroupGuard)
 	handleConnection(client: Socket & { request: { user: User } }) {
