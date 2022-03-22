@@ -14,6 +14,7 @@ import { Message } from '../entities/message.entity';
 import { UserService } from 'src/user/user.service';
 import { CreatePunishmentDto } from '../dtos/create-punishment.dto';
 import { Punishment } from '../entities/punishment.entity';
+import { EditChannelDto } from '../dtos/edit-channel.dto';
 
 @Injectable()
 export class ChannelService {
@@ -56,13 +57,6 @@ export class ChannelService {
 	async createChannel(
 		channel: CreateChannelDto & { owner: User }
 	): Promise<ChannelDto> {
-		// check if we have the password for protected channels
-		if (channel.channelType === 'protected') {
-			if (!channel.password) {
-				throw new HttpException('Request malformed', 400);
-			}
-		}
-
 		const channelCreated: Channel = new Channel();
 
 		if (channel.channelType === 'protected') {
@@ -262,6 +256,7 @@ export class ChannelService {
 				);
 				await this.sendMessage(message);
 				channelToLeave.messages.push(message);
+				this.chatGateway.updateChannelMetadata(channelToLeave);
 			}
 			this.channelRepository.save(channelToLeave);
 		}
@@ -279,6 +274,7 @@ export class ChannelService {
 					'owner',
 					'admins',
 					'messages',
+					'messages.user',
 					'punishments',
 					'punishments.user',
 				],
@@ -483,5 +479,74 @@ export class ChannelService {
 			invitedUser.id
 		);
 		await this.channelRepository.save(channel);
+	}
+
+	async editChannel(
+		channelId: number,
+		user: User,
+		editChannelDto: EditChannelDto
+	) {
+		const channel = await this.channelRepository.findOne(channelId, {
+			relations: ['admins', 'owner', 'messages', 'messages.user'],
+		});
+		if (!channel) {
+			throw new HttpException('Channel not found', 404);
+		}
+		if (channel.owner.id !== user.id) {
+			throw new HttpException('User is not the owner', 403);
+		}
+
+		if (editChannelDto.password && editChannelDto.type !== 'protected') {
+			throw new HttpException(
+				'You can only set a password on a protected channel',
+				400
+			);
+		}
+
+		if (
+			editChannelDto.type === 'protected' &&
+			!editChannelDto.password &&
+			!channel.password_hash
+		) {
+			throw new HttpException(
+				'You must set a password on a protected channel',
+				400
+			);
+		}
+
+		if (editChannelDto.name) {
+			channel.name = editChannelDto.name;
+			const msg = await this.createMessage(
+				channel,
+				'system',
+				`${user.displayName} changed the channel name to ${editChannelDto.name}`
+			);
+			await this.sendMessage(msg);
+			channel.messages.push(msg);
+		}
+		if (editChannelDto.type !== channel.channelType) {
+			channel.channelType = editChannelDto.type;
+			const msg = await this.createMessage(
+				channel,
+				'system',
+				`${user.displayName} changed the channel type to ${editChannelDto.type}`
+			);
+			await this.sendMessage(msg);
+			channel.messages.push(msg);
+		}
+
+		if (editChannelDto.password) {
+			const salt = crypto.randomBytes(16).toString('hex');
+			// generate hash
+			const hash = crypto
+				.pbkdf2Sync(editChannelDto.password, salt, 1000, 64, 'sha512')
+				.toString('hex');
+			channel.password_hash = hash;
+			channel.password_salt = salt;
+		}
+
+		await this.channelRepository.save(channel);
+		this.chatGateway.updateChannelMetadata(channel);
+		return { status: 'ok', message: 'Channel edited' };
 	}
 }
