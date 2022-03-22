@@ -22,7 +22,10 @@ const EditChannel = ({ channel }: { channel: ChannelDto }) => {
 		const editChannelDto: EditChannelDto = {
 			name: name.length > 0 ? name : undefined,
 			type,
-			password: password.length > 0 ? password : undefined,
+			password:
+				password.length > 0 && type === 'protected'
+					? password
+					: undefined,
 		};
 		const res = await RequestWrapper.post(
 			`/channel/edit/${channel.id}`,
@@ -39,7 +42,7 @@ const EditChannel = ({ channel }: { channel: ChannelDto }) => {
 	return (
 		<div className="edit-channel">
 			<h3>Edit Channel - {channel.name}</h3>
-			<p>*Leave empty if you don't want to change</p>
+			<p>*Leave empty if you don't want to change value</p>
 			<div className="inputs">
 				<div className="inputs-name">
 					<p>Change Name</p>
