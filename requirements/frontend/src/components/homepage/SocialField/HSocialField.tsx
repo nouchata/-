@@ -113,7 +113,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	};
 
 	return (
-		<div className="social-field" style={{ height: props.standalone ? "100%" : "inherit" }}>
+		<div className="social-field" style={{ height: props.standalone ? "100%" : undefined, maxWidth: props.standalone ? "100%" : undefined }}>
 			{!props.standalone && <button
 				title={
 					isSocialFieldShowed
