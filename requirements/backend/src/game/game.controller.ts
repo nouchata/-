@@ -34,7 +34,7 @@ export class GameController {
 		description: "Remove the player from the matchmaking queue, do nothing if the player is not there"
 	})
  	leaveMatchmaking(@Req() req: { user: User }) {
-		this.gameService.matchmakingRemovePlayer(req.user);
+		this.gameService.matchmakingRemovePlayer(req.user.id);
 	}
 
 	@Get('match')

@@ -12,7 +12,14 @@ import { GameOptions } from "./types/GameOptions";
 export class GameService {
 
     private list: MatchmakingList;
+    private playersTimeout: { [playerId: number]: NodeJS.Timeout };
     public gatewayPtr: GameGateway | undefined = undefined;
+
+    private disconnectTimeout = (playerId: number) => {
+        return setTimeout(() => {
+            this.matchmakingRemovePlayer(playerId);
+        }, 5000)
+    };
 
     async createNewGame(ids: [number, number], options?: Partial<GameOptions>): Promise<number> {
 
@@ -27,57 +34,25 @@ export class GameService {
         throw new Error('Game gateway is not initialized for now, please wait.');
     }
 
-    getMatchId(userId: number): number {
+    checkMatch(playerId: number) : { id: number, error?: string} {
+        
+        // reset player timeout
+        clearTimeout(this.playersTimeout[playerId]);
+        this.playersTimeout[playerId] = this.disconnectTimeout(playerId);
+
         if (this.gatewayPtr) {
-            return this.gatewayPtr.isUserPlaying(userId);
+            return { id: this.gatewayPtr.isUserPlaying(playerId) };
         } // find the user in the game instances
 
         const match = this.list.finished.find(match => {
-            return (userId === match.playerOne.id || userId === match.playerTwo.id)
+            return (playerId === match.playerOne.id || playerId === match.playerTwo.id)
         }) // find the user in the list of matches created
+        if (!match)
+            return { id: 0 }; // no match yet
 
-        return match ? match.id : 0;
-    }
-
-    async matchWaitingPlayers() {
-        while (true) {
-            await new Promise(resolve => setTimeout(() => { resolve(true) }, 1000));
-
-            let i = 1;
-            while (i < this.list.waiting.length) {
-                // compute elo gap between the two players
-                const actualDiff = this.list.waiting[i - 1].user.elo - this.list.waiting[i].user.elo;
-                // every 15s the allowed elo gap is bigger by 250 elo
-                const allowedDiff = 250 * (Math.floor((Date.now() - this.list.waiting[i].time) / 15000) + 1);
-    
-                // if the players have a fairly close level
-                if (actualDiff <= allowedDiff) { // it's a match !
-                    
-                    this.list.finished.push({
-                        playerOne: this.list.waiting[i - 1].user,
-                        playerTwo: this.list.waiting[i].user,
-                        id: 0
-                    });
-
-                    const last = this.list.finished.slice(-1)[0]; // get last match created
-                    try {
-                        last.id = await this.createNewGame([last.playerOne.id, last.playerTwo.id]);
-                        setTimeout(() => {
-                            const index = this.list.finished.findIndex((match) => {
-                                return match.id === last.id;
-                            });
-                            this.list.finished.splice(index, 1);
-                        }, 120e3); // delete the match after 2 minutes
-                    } catch (e: any) {
-                        last.id = -1;
-                        last.error = e.message;
-                    }
-
-                    this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
-                }
-                i++;
-            }
-        }
+        if (match.error)
+            return { id: 0, error: match.error };
+        return { id: match.id };
     }
 
     matchmakingAddPlayer(player: User) {
@@ -92,35 +67,32 @@ export class GameService {
             user: player,
             time: Date.now()
         });
+
+        // create timeout for the player
+        this.playersTimeout[player.id] = this.disconnectTimeout(player.id);
     }
 
-    matchmakingRemovePlayer(player: User): boolean {
+    matchmakingRemovePlayer(playerId: number) {
         const index = this.list.waiting.findIndex(item => {
-            return item.user.id === player.id;
+            return item.user.id === playerId;
         }) // find the player
         if (index === -1)
-            return false;
+            return ;
 
         // remove the player from the waiting list
         this.list.waiting.splice(index, 1);
-        return true;
     }
 
-    checkMatch(playerId: number) : { id: number, error?: string} {
-        
+    getMatchId(userId: number): number {
         if (this.gatewayPtr) {
-            return { id: this.gatewayPtr.isUserPlaying(playerId) };
+            return this.gatewayPtr.isUserPlaying(userId);
         } // find the user in the game instances
 
         const match = this.list.finished.find(match => {
-            return (playerId === match.playerOne.id || playerId === match.playerTwo.id)
+            return (userId === match.playerOne.id || userId === match.playerTwo.id)
         }) // find the user in the list of matches created
-        if (!match)
-            return { id: 0 }; // no match yet
 
-        if (match.error)
-            return { id: 0, error: match.error };
-        return { id: match.id };
+        return match ? match.id : 0;
     }
 
     async saveMatchResult(
@@ -168,7 +140,48 @@ export class GameService {
         return updatedElo;
     }
 
-    computeNewEloScore(winnerElo: number, loserElo: number): number[] {
+    private async matchWaitingPlayers() {
+        while (true) {
+            await new Promise(resolve => setTimeout(() => { resolve(true) }, 1000));
+
+            let i = 1;
+            while (i < this.list.waiting.length) {
+                // compute elo gap between the two players
+                const actualDiff = this.list.waiting[i - 1].user.elo - this.list.waiting[i].user.elo;
+                // every 15s the allowed elo gap is bigger by 250 elo
+                const allowedDiff = 250 * (Math.floor((Date.now() - this.list.waiting[i].time) / 15000) + 1);
+    
+                // if the players have a fairly close level
+                if (actualDiff <= allowedDiff) { // it's a match !
+                    
+                    this.list.finished.push({
+                        playerOne: this.list.waiting[i - 1].user,
+                        playerTwo: this.list.waiting[i].user,
+                        id: 0
+                    });
+
+                    const last = this.list.finished.slice(-1)[0]; // get last match created
+                    try {
+                        last.id = await this.createNewGame([last.playerOne.id, last.playerTwo.id]);
+                        setTimeout(() => {
+                            const index = this.list.finished.findIndex((match) => {
+                                return match.id === last.id;
+                            });
+                            this.list.finished.splice(index, 1);
+                        }, 120e3); // delete the match after 2 minutes
+                    } catch (e: any) {
+                        last.id = -1;
+                        last.error = e.message;
+                    }
+
+                    this.list.waiting.splice(i - 1, 2); // remove the players from the waiting list
+                }
+                i++;
+            }
+        }
+    }
+
+    private computeNewEloScore(winnerElo: number, loserElo: number): number[] {
         const K: number = 32; // coefficient
 
         const R: number[] = [ // transformed rankings
@@ -197,6 +210,7 @@ export class GameService {
         @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>    
     ) {
         this.list = { waiting: [], finished: [] };
+        this.playersTimeout = {};
         this.matchWaitingPlayers(); // launch matching loop
     }
 }
