@@ -147,7 +147,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			});
 			opts.push({
 				icon: faUserPlus,
-				text: 'Add admin',
+				text: 'Manage admin',
 				callback: () => {
 					setModalProps({
 						show: true,

@@ -214,4 +214,36 @@ export class ChannelController {
 			editChannelDto
 		);
 	}
+
+	@Post(':channelId/admins/:userId')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'add admin to channel',
+	})
+	async addAdmin(
+		@Req() req: { user: User },
+		@Param('channelId') channelId: number,
+		@Param('userId') userId: number
+	) {
+		return await this.channelService.addAdmin(channelId, userId, req.user);
+	}
+
+	@Delete(':channelId/admins/:userId')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'remove admin from channel',
+	})
+	async removeAdmin(
+		@Req() req: { user: User },
+		@Param('channelId') channelId: number,
+		@Param('userId') userId: number
+	) {
+		return await this.channelService.removeAdmin(
+			channelId,
+			userId,
+			req.user
+		);
+	}
 }
