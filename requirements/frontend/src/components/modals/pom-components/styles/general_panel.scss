@@ -117,6 +117,10 @@ $pom-avatar-padding: 5px;
 		cursor: not-allowed;
 	}
 
+	.pom-gp-save:disabled {
+		cursor: not-allowed;
+	}
+
 	#pom-login {
 		cursor: not-allowed;
 	}

@@ -29,6 +29,10 @@ body {
 	font-family: 'Outfit', sans-serif;
 }
 
+// *:disabled {
+// 	cursor: not-allowed !important;
+// }
+
 button {
 	background-color: theme.$darker-color;
 	cursor: pointer;

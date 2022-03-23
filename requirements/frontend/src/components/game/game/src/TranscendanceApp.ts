@@ -1,4 +1,4 @@
-import { Application, IApplicationOptions } from "pixi.js";
+import { Application, IApplicationOptions, Loader } from "pixi.js";
 import { GameClientInstance } from "../GameClientInstance";
 import { RacketUnit } from "./game_scene/racket/Racket";
 import { ScenesManager } from "./ScenesManager";
@@ -25,6 +25,11 @@ class TranscendanceApp extends Application {
 		this.manager = new ScenesManager(this);
 		if (forceSpectator)
 			this.forceSpectator = forceSpectator;
+	}
+
+	public destroy() {
+		Loader.shared.destroy();
+		super.destroy();
 	}
 }
 

@@ -1,6 +1,7 @@
 import {
 	faDoorOpen,
 	faGear,
+	faPencil,
 	faPerson,
 	faUserPlus,
 	IconDefinition,
@@ -15,6 +16,7 @@ import Admin from './Admin/Admin';
 import { useLogin } from '../../../Providers/LoginProvider';
 import { Members } from './utils/Members';
 import InviteFriend from './InviteFriend';
+import EditChannel from './EditChannel/EditChannel';
 
 const Option = ({
 	children,
@@ -128,6 +130,22 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 				callback: () => setAdminModalOpen(true),
 			});
 		}
+
+		if (loginStatus.user?.id === channel.owner.id) {
+			opts.push({
+				icon: faPencil,
+				text: 'Edit channel',
+				callback: () => {
+					setModalProps({
+						show: true,
+						content: <EditChannel channel={channel} />,
+						width: '400px',
+						height: '400px',
+					});
+				}
+			});
+		}
+
 		return opts;
 	}, [channel, loginStatus.user?.id, setModalProps]);
 

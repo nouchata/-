@@ -89,7 +89,7 @@ $hsf-chat-window-min-size: 50px;
         >figure {
             display: flex;
             position: relative;
-            flex-flow: row wrap;
+            flex-flow: row nowrap;
             height: 100%;
             width: 100%;
             align-items: center;
@@ -105,6 +105,9 @@ $hsf-chat-window-min-size: 50px;
             }
             >figcaption {
                 font-size: 1em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
     }
@@ -174,7 +177,9 @@ $hsf-chat-window-min-size: 50px;
         margin: 0;
         overflow: hidden;
         font-size: 1rem;
-        //padding: 0 0 0 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         color: theme.$darker-color;
         filter: brightness(175%);
     }

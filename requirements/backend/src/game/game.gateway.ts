@@ -13,12 +13,7 @@ import { GameService } from './game.service';
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
-	constructor(@Inject(GameService) private gameService: GameService) {
-		// debug test fake p2
-		setTimeout(() => {
-			this.createInstance(1, 2, { gameType: "extended" }, 123456);
-		}, 1000);
-	}
+  constructor(@Inject(GameService) private gameService: GameService) {}
 
 	@WebSocketServer()
 	wsServer: Server;
