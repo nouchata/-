@@ -17,6 +17,7 @@ import { useLogin } from '../../../Providers/LoginProvider';
 import { Members } from './utils/Members';
 import InviteFriend from './InviteFriend';
 import EditChannel from './EditChannel/EditChannel';
+import AddAdmin from './EditChannel/AddAdmin';
 
 const Option = ({
 	children,
@@ -141,6 +142,18 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 						content: <EditChannel channel={channel} />,
 						width: '400px',
 						height: '400px',
+					});
+				}
+			});
+			opts.push({
+				icon: faUserPlus,
+				text: 'Add admin',
+				callback: () => {
+					setModalProps({
+						show: true,
+						content: <AddAdmin channel={channel} />,
+						width: '80%',
+						height: '80%',
 					});
 				}
 			});
