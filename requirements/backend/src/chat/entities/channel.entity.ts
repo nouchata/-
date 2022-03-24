@@ -10,10 +10,50 @@ import {
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ChannelType } from '../dtos/create-channel.dto';
-import { ChannelDto, MessageDto } from '../dtos/user-channels.dto';
+import { ChannelDto } from '../dtos/user-channels.dto';
 import { Message } from './message.entity';
 import { Punishment } from './punishment.entity';
+
+export type ChannelType = 'private' | 'protected' | 'public' | 'direct';
+
+export interface BaseChannel {
+	id: number;
+	name: string;
+	users: User[];
+	messages: Message[];
+	createdAt: Date;
+	canUserAccess(user: User): boolean;
+	canUserTalk(user: User): boolean;
+	toDto(blockedUsers: User[]): ChannelDto;
+}
+
+export interface GroupChannel extends BaseChannel {
+	owner: User;
+	admins: User[];
+	punishments: Punishment[];
+	isUserBanned(user: User): boolean;
+	isUserMuted(user: User): boolean;
+	getActivePunishment(user: User): Punishment | undefined;
+	isUserAdmin(user: User): boolean;
+}
+
+export interface ProtectedChannel extends GroupChannel {
+	channelType: 'protected';
+	password_hash: string;
+	password_salt: string;
+}
+
+interface StandardChannel extends GroupChannel {
+	channelType: 'public' | 'private';
+	password_hash?: string;
+	password_salt?: string;
+}
+
+interface DirectChannel extends BaseChannel {
+	channelType: 'direct';
+}
+
+export type IChannel = ProtectedChannel | StandardChannel | DirectChannel;
 
 @Entity({ name: 'channels' })
 export class Channel {
@@ -28,13 +68,13 @@ export class Channel {
 
 	// optional column
 	@Column({ nullable: true })
-	password_hash: string;
+	password_hash?: string;
 
 	@Column({ nullable: true })
-	password_salt: string;
+	password_salt?: string;
 
-	@ManyToOne((type) => User)
-	owner: User;
+	@ManyToOne((type) => User, { nullable: true })
+	owner?: User;
 
 	@ManyToMany((type) => User)
 	@JoinTable()
@@ -131,7 +171,7 @@ export class Channel {
 			id: this.id,
 			name: this.name,
 			channelType: this.channelType,
-			owner: this.owner.toDto(),
+			owner: this.owner?.toDto(),
 			users: this.users.map((user) => user.toDto()),
 			admins: this.admins.map((u) => u.toDto()),
 			messages: this.messages

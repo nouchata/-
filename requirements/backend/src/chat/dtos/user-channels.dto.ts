@@ -30,7 +30,7 @@ export class ChannelDto {
 	channelType: string;
 
 	@ApiProperty({ description: 'Owner of the channel', type: UserDto })
-	owner: UserDto;
+	owner?: UserDto;
 
 	@ApiProperty({ description: 'Admins of the channel', type: [UserDto] })
 	admins: UserDto[];
