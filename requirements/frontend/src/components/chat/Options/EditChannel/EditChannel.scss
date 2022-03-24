@@ -26,3 +26,31 @@
         bottom: 5px;
     }
 }
+
+.add-admin {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    .members {
+        position: relative;
+        flex-grow: 1;
+        background-color: white;
+        border-radius: 10px;
+        overflow-y: scroll;
+        .member {
+            width: 100%;
+        }
+    }
+    .error {
+        position: absolute;
+        color: red;
+        width: 100%;
+        text-align: center;
+        top: 5px;
+    }
+}

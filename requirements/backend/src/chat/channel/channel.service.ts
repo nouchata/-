@@ -549,4 +549,64 @@ export class ChannelService {
 		this.chatGateway.updateChannelMetadata(channel);
 		return { status: 'ok', message: 'Channel edited' };
 	}
+
+	async addAdmin(channelId: number, userId: number, user: User) {
+		const channel = await this.channelRepository.findOne(channelId, {
+			relations: ['admins', 'owner', 'messages', 'messages.user'],
+		});
+		if (!channel) {
+			throw new HttpException('Channel not found', 404);
+		}
+		if (channel.owner.id !== user.id) {
+			throw new HttpException('User is not the owner', 403);
+		}
+		const admin = await this.userService.findUserById(userId);
+		if (!admin) {
+			throw new HttpException('user not found', 404);
+		}
+		if (channel.admins.some((u) => u.id === admin.id)) {
+			throw new HttpException('User is already an admin', 403);
+		}
+		channel.admins.push(admin);
+		const msg = await this.createMessage(
+			channel,
+			'system',
+			`${user.displayName} added ${admin.displayName} to the channel admins`
+		);
+		await this.sendMessage(msg);
+		channel.messages.push(msg);
+		await this.channelRepository.save(channel);
+		this.chatGateway.updateChannelMetadata(channel);
+		return { status: 'ok', message: 'Admin added' };
+	}
+
+	async removeAdmin(channelId: number, userId: number, user: User) {
+		const channel = await this.channelRepository.findOne(channelId, {
+			relations: ['admins', 'owner', 'messages', 'messages.user'],
+		});
+		if (!channel) {
+			throw new HttpException('Channel not found', 404);
+		}
+		if (channel.owner.id !== user.id) {
+			throw new HttpException('User is not the owner', 403);
+		}
+		const admin = await this.userService.findUserById(userId);
+		if (!admin) {
+			throw new HttpException('user not found', 404);
+		}
+		if (!channel.admins.some((u) => u.id === admin.id)) {
+			throw new HttpException('User is not an admin', 403);
+		}
+		channel.admins = channel.admins.filter((u) => u.id !== admin.id);
+		const msg = await this.createMessage(
+			channel,
+			'system',
+			`${user.displayName} removed ${admin.displayName} from the channel admins`
+		);
+		await this.sendMessage(msg);
+		channel.messages.push(msg);
+		await this.channelRepository.save(channel);
+		this.chatGateway.updateChannelMetadata(channel);
+		return { status: 'ok', message: 'Admin removed' };
+	}
 }

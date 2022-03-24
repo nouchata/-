@@ -3,17 +3,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLogin } from '../../../../Providers/LoginProvider';
 import { useModal } from '../../../../Providers/ModalProvider';
 import { FetchFriendsList } from '../../../../types/FetchFriendsList';
-import { ChannelDto } from '../../types/user-channels.dto';
+import { ChannelDto, User } from '../../types/user-channels.dto';
 import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
 import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 
 const Member = ({
 	user,
 	children,
+	title,
 }: {
 	user: FetchFriendsList;
 	children?: React.ReactNode;
+	title?: string;
 }) => {
 	const { loginStatus } = useLogin();
 
@@ -31,7 +34,9 @@ const Member = ({
 					/>
 				</div>
 				<div>
-					<div className="member-name">{user.displayName}</div>
+					<div className="member-name">{`${user.displayName} ${
+						title || ''
+					}`}</div>
 					<div className="member-status">
 						{loginStatus.user?.id !== user.id ? user.status : 'you'}
 					</div>
@@ -49,11 +54,24 @@ const Members = ({ channel }: { channel: ChannelDto }) => {
 	const { setModalProps } = useModal();
 	const nav = useNavigate();
 
+	const getTitle = useCallback(
+		(user: User) => {
+			if (channel.owner.id === user.id) {
+				return '(owner)';
+			}
+			if (channel.admins.some((admin) => admin.id === user.id)) {
+				return '(admin)';
+			}
+			return undefined;
+		},
+		[channel.admins, channel.owner.id]
+	);
+
 	return (
 		<div className="members">
 			{channel.users.map((user, key) => {
 				return (
-					<Member key={key} user={user}>
+					<Member key={key} user={user} title={getTitle(user)}>
 						<Button
 							onClick={() => {
 								nav(`/profile/${user.id}`);
