@@ -499,6 +499,11 @@ class GameInstance {
 				this.ballCollisionPlayerChecker(gameAction, playerId === this.playerOne.id);
 		}
 	}
+
+	get players() : [number, number] {
+		return [this.playerOne.id, this.playerTwo.id];
+	}
+	
 };
 
 export { GameInstance, RUNSTATE };

@@ -1,7 +1,9 @@
-import { Body, Controller, Get, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiResponse } from "@nestjs/swagger";
+import { validateOrReject } from "class-validator";
 import { GroupGuard } from "src/auth/guards/group.guard";
 import { User } from "src/user/entities/user.entity";
+import { PrivateMatchDTO } from "./dto/PrivateMatch.dto";
 import { GameService } from "./game.service";
 import { GameOptions } from "./types/GameOptions";
 
@@ -18,10 +20,24 @@ export class GameController {
 		description: "Add the player to the matchmaking queue"
 	})
  	startMatchmaking(@Req() req: { user: User }) {
-		return this.gameService.matchmakingAddPlayer(req.user);
+		if (this.gameService.getMatchId(req.user.id) !== 0) {
+			throw new ForbiddenException('You already are in a match !');
+		}
+		this.gameService.matchmakingAddPlayer(req.user);
 	}
 
-	@Get('matchmaking')
+	@Post('leave')
+	@HttpCode(HttpStatus.ACCEPTED)
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 202,
+		description: "Remove the player from the matchmaking queue, do nothing if the player is not there"
+	})
+ 	leaveMatchmaking(@Req() req: { user: User }) {
+		this.gameService.matchmakingRemovePlayer(req.user.id);
+	}
+
+	@Get('match')
 	@UseGuards(GroupGuard)
 	@ApiResponse({
 		status: 200,
@@ -32,10 +48,12 @@ export class GameController {
 		description: "Error while trying to create a new match"
 	})
 	getMatchmakingState(@Req() req: { user: User }) {
-		const matchId: number = this.gameService.matchmakingCheckMatch(req.user.id);
-		if (matchId != -1)
-			return matchId;
-		throw new InternalServerErrorException("We can't match you with another player for now, try again later");
+		const response = this.gameService.checkMatch(req.user.id);
+
+		if (response.error) {
+			throw new InternalServerErrorException(response.error);
+		}
+		return response.id;
 	}
 
 	@Post('create')
@@ -44,11 +62,23 @@ export class GameController {
 		status: 201,
 		description: "Create a private match with the parameters specified in the body"
 	})
-	createPrivateMatch(@Body() body: {
-		ids: [number, number],
-		options: Partial<GameOptions>
-	}) {
-		return this.gameService.createMatch(body.ids, body.options);
-	}
+	async createPrivateMatch(@Body() body: PrivateMatchDTO) {
+		
+		const opt = new GameOptions(body.options);
 
+		try {
+			await validateOrReject(opt);
+			if (opt.gameType !== 'standard' && opt.gameType !== 'extended') {
+				throw new Error();
+			}
+		} catch (e) {
+			throw new BadRequestException('Game options are not valid.');
+		}
+
+		try {
+			return await this.gameService.createNewGame(body.ids, opt);
+		} catch (e: any) {
+			throw new InternalServerErrorException(e.message);
+		}
+	}
 }

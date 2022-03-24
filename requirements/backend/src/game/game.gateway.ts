@@ -13,7 +13,7 @@ import { GameService } from './game.service';
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
-	constructor(@Inject(GameService) private gameService: GameService) {}
+  constructor(@Inject(GameService) private gameService: GameService) {}
 
 	@WebSocketServer()
 	wsServer: Server;
@@ -94,5 +94,14 @@ export class GameGateway {
 		}, gameOptions);
 
 		return (instanceId);
+	}
+
+	isUserPlaying(userId: number): number {
+		for (let gameId in this.gameInstances) {
+			if (this.gameInstances[gameId]?.players.find((playerId: number) => {
+				return (playerId === userId);
+			})) return parseInt(gameId); // return the game id the user is playing in
+		}
+		return 0; // user is not ingame
 	}
 }
