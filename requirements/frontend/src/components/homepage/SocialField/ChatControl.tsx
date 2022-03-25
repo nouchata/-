@@ -1,8 +1,7 @@
 import { faClose, faAngleDoubleDown, faAngleDoubleUp } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ChatSocket } from "../../../Providers/ChatProvider";
+import { ChatSocket, ChatState } from "../../../Providers/ChatProvider";
 import ChatOption from "../../chat/Options/ChatOption";
-import { ChatState } from "./HSocialField";
 
 const ChatControl = ({
 	chatSocket,

@@ -42,11 +42,11 @@ export interface ProtectedChannel extends GroupChannel {
 	channelType: 'protected';
 }
 
-interface StandardChannel extends GroupChannel {
+export interface StandardChannel extends GroupChannel {
 	channelType: 'public' | 'private';
 }
 
-interface DirectChannel extends BaseChannel {
+export interface DirectChannel extends BaseChannel {
 	channelType: 'direct';
 }
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 
-
 import '../../../styles/social_field.scss';
 import '../styles/Chat.scss';
 
@@ -18,25 +17,22 @@ import ChatBox from './ChatBox';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../../Providers/ChatProvider';
 
-
-export type ChatState = {
-	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
-};
-
 const HSocialField = (props: { standalone?: boolean }) => {
 	const [isFriendTabSelected, setIsFriendTabSelected] =
 		useState<boolean>(false);
-	const [chatStatus, setChatStatus] = useState<ChatState>({
-		state: 'CLOSED',
-	});
 	const [isSocialFieldShowed, setIsSocialFieldShowed] =
 		useState<boolean>(true);
 	const { setModalProps } = useModal();
-	const {chatSocket, selectedChannelIndex, setSelectedChannelIndex} = useChat();
+	const {
+		chatSocket,
+		selectedChannelIndex,
+		setSelectedChannelIndex,
+		chatStatus,
+		setChatStatus,
+	} = useChat();
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
 	const navigate = useNavigate();
-
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -44,7 +40,10 @@ const HSocialField = (props: { standalone?: boolean }) => {
 			const user = channel.users.find((u) => u.id === message.userId);
 
 			notificationHandler?.addNotification({
-				name: channel.channelType === 'direct' ? 'Direct message' : channel.name,
+				name:
+					channel.channelType === 'direct'
+						? 'Direct message'
+						: channel.name,
 				content: `${user ? user.displayName : 'system'}: ${
 					message.text
 				}`,
@@ -53,12 +52,11 @@ const HSocialField = (props: { standalone?: boolean }) => {
 				openAction: (windowWidth?: number) => {
 					if (windowWidth && windowWidth < 800)
 						navigate(`/social?id=${channel.id}`);
-					else
-						setChatStatus({ state: 'OPENED' });
+					else setChatStatus({ state: 'OPENED' });
 				},
 			});
 		},
-		[navigate, notificationHandler]
+		[navigate, notificationHandler, setChatStatus]
 	);
 
 	useEffect(() => {
@@ -87,20 +85,28 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	};
 
 	return (
-		<div className="social-field" style={{ height: props.standalone ? "100%" : undefined, maxWidth: props.standalone ? "100%" : undefined }}>
-			{!props.standalone && <button
-				title={
-					isSocialFieldShowed
-						? 'Hide social panel'
-						: 'Show social panel'
-				}
-				onClick={() => {
-					socialToggleCSS(isSocialFieldShowed);
-					setIsSocialFieldShowed(!isSocialFieldShowed);
-				}}
-			>
-				{isSocialFieldShowed ? '<' : '>'}
-			</button>}
+		<div
+			className="social-field"
+			style={{
+				height: props.standalone ? '100%' : undefined,
+				maxWidth: props.standalone ? '100%' : undefined,
+			}}
+		>
+			{!props.standalone && (
+				<button
+					title={
+						isSocialFieldShowed
+							? 'Hide social panel'
+							: 'Show social panel'
+					}
+					onClick={() => {
+						socialToggleCSS(isSocialFieldShowed);
+						setIsSocialFieldShowed(!isSocialFieldShowed);
+					}}
+				>
+					{isSocialFieldShowed ? '<' : '>'}
+				</button>
+			)}
 			<TabSelector
 				isFriendTabSelected={isFriendTabSelected}
 				setIsFriendTabSelected={setIsFriendTabSelected}
@@ -136,8 +142,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 
 function socialToggleCSS(isShowed: boolean): void {
 	let elem: HTMLElement | null = document.querySelector('.main-content');
-	if (!elem)
-		return ;
+	if (!elem) return;
 	elem.style.animation = 'none';
 	setTimeout(() => {
 		if (elem) {

@@ -177,10 +177,18 @@ export class ChatSocket {
 	}
 }
 
+
+
+export interface ChatState {
+	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
+};
+
 interface IChat {
 	chatSocket?: ChatSocket;
 	selectedChannelIndex: number;
 	setSelectedChannelIndex: (index: number) => void;
+	chatStatus: ChatState;
+	setChatStatus: (status: ChatState) => void;
 }
 
 const ChatContext = createContext<IChat | undefined>(undefined);
@@ -196,6 +204,9 @@ const useChat = () => {
 const ChatProvider = ({ children }: { children: ReactNode }) => {
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
 	const [selectedChannelIndex, setSelectedChannelIndex] = useState(0);
+	const [chatStatus, setChatStatus] = useState<ChatState>({
+		state: 'CLOSED',
+	});
 	const { loginStatus } = useLogin();
 
 	useEffect(() => {
@@ -223,6 +234,8 @@ const ChatProvider = ({ children }: { children: ReactNode }) => {
 				chatSocket,
 				selectedChannelIndex,
 				setSelectedChannelIndex,
+				chatStatus,
+				setChatStatus,
 			}}
 		>
 			{children}
