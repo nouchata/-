@@ -1,8 +1,55 @@
-import { NotificationHandler } from "../../../Providers/NotificationProvider";
-import { ChatSocket } from "../../chat/utils/ChatSocket";
-import { ChatState } from "./HSocialField";
-import Hashtag from "../../../assets/social/hashtag.png";
+import { NotificationHandler } from '../../../Providers/NotificationProvider';
+import { ChatSocket } from '../../chat/utils/ChatSocket';
+import { ChatState } from './HSocialField';
+import { ChannelDto } from '../../chat/types/user-channels.dto';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGlobe, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
+import { useLogin } from '../../../Providers/LoginProvider';
 
+const ChannelIcon = ({ channel }: { channel: ChannelDto }) => {
+	const { loginStatus } = useLogin();
+
+	if (channel.channelType === 'direct') {
+		const otherUser = channel.users.find(
+			(user) => user.id !== loginStatus.user?.id
+		);
+
+		if (otherUser) {
+			return (
+				<img
+                    alt="friend's avatar"
+                    src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${otherUser.picture}`}
+					className="hsf-content-channel-image"
+                />
+			);
+		}
+	}
+
+	if (channel.channelType === 'public') {
+		return (
+			<FontAwesomeIcon
+				icon={faGlobe}
+				className="hsf-content-channel-icon"
+			/>
+		);
+	}
+
+	if (channel.channelType === 'protected') {
+		return (
+			<FontAwesomeIcon
+				icon={faKey}
+				className="hsf-content-channel-icon"
+			/>
+		);
+	}
+
+	return (
+		<FontAwesomeIcon
+			icon={faLock}
+			className="hsf-content-channel-icon"
+		/>
+	);
+};
 
 const ChannelList = ({
 	chatSocket,
@@ -32,11 +79,7 @@ const ChannelList = ({
 						}}
 					>
 						<figure>
-							<img
-								src={Hashtag}
-								alt="Message Tab"
-								className="hsf-content-channel-img"
-							/>
+							<ChannelIcon channel={channel} />
 							<figcaption>{channel.name}</figcaption>
 						</figure>
 					</li>
@@ -44,6 +87,6 @@ const ChannelList = ({
 			})}
 		</ul>
 	);
-}
+};
 
 export default ChannelList;

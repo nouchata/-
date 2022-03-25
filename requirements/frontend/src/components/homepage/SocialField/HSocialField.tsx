@@ -104,7 +104,6 @@ const HSocialField = (props: { standalone?: boolean }) => {
 			} else {
 				errinfo = 'Unexpected Error :(';
 			}
-			console.log(errinfo);
 			setModalProps({
 				show: true,
 				content: <AddFriendModal cb={AddFriend} info={errinfo} />,
