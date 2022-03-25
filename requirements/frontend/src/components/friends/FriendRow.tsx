@@ -6,17 +6,42 @@ import UserAsset from '../../assets/homepage/user.png';
 import ChatAsset from '../../assets/homepage/chat.png';
 import RemoveAsset from '../../assets/chat/close.png';
 import { useNavigate } from "react-router-dom";
+import { useModal } from "../../Providers/ModalProvider";
+import { useFriendList } from "../../Providers/FriendListProvider";
+import ConfirmRemoveModal from "./modal/ConfirmRemoveModal";
 
 interface IProps {
     data: FetchFriendsList,
-    onClick: (name: string) => void
 }
 
 const FriendRow = (props: IProps) => {
-
     const [buttonVisible, setButtonVisible] = useState(false);
     const nav = useNavigate();
-    
+    const { setModalProps } = useModal();
+    const friendList = useFriendList();
+
+    const removeFriend = (friend: FetchFriendsList) => {
+		const userConfirm = async (confirmed: boolean) => {
+			if (confirmed) {
+				friendList.removeFriend(friend.id);
+			}
+			setModalProps(undefined);
+		};
+
+		setModalProps({
+			show: true,
+			content: (
+				<ConfirmRemoveModal
+					name={friend.displayName}
+					cb={userConfirm}
+				/>
+			),
+			width: '40%',
+			maxWidth: '500px',
+		});
+	};
+
+
     return (
         <li
             className="friend-row"
@@ -52,7 +77,7 @@ const FriendRow = (props: IProps) => {
                         <img
                             src={RemoveAsset}
                             alt='remove friend'
-                            onClick={() => { props.onClick(props.data.displayName); }}
+                            onClick={() => { removeFriend(props.data); }}
                         />
                     </div>
                 : null
