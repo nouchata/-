@@ -5,6 +5,7 @@ import StatusDisplay from "../utils/StatusDisplay";
 import UserAsset from '../../assets/homepage/user.png';
 import ChatAsset from '../../assets/homepage/chat.png';
 import RemoveAsset from '../../assets/chat/close.png';
+import { useNavigate } from "react-router-dom";
 
 interface IProps {
     data: FetchFriendsList,
@@ -14,7 +15,8 @@ interface IProps {
 const FriendRow = (props: IProps) => {
 
     const [buttonVisible, setButtonVisible] = useState(false);
-
+    const nav = useNavigate();
+    
     return (
         <li
             className="friend-row"
@@ -39,6 +41,9 @@ const FriendRow = (props: IProps) => {
                             <img
                                 src={UserAsset}
                                 alt='profile page'
+                                onClick={() => {
+                                    nav(`/profile/${props.data.id}`); 
+                                }}
                             />
                         <img
                             src={ChatAsset}
