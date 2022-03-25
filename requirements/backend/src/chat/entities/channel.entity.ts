@@ -23,7 +23,7 @@ export interface BaseChannel {
 	createdAt: Date;
 	canUserAccess(user: User): boolean;
 	canUserTalk(user: User): boolean;
-	toDto(blockedUsers: User[]): ChannelDto;
+	toDto(blockedUsers: User[], user: User): ChannelDto;
 }
 
 export interface GroupChannel extends BaseChannel {

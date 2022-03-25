@@ -138,7 +138,10 @@ export class ChannelService {
 		})) as IChannel;
 
 		if (channel) {
-			return channel.toDto(await this.userService.getBlockedUsers(user));
+			return channel.toDto(
+				await this.userService.getBlockedUsers(user),
+				user
+			);
 		}
 
 		const channelCreated = this.channelRepository.create({
@@ -149,6 +152,13 @@ export class ChannelService {
 		});
 		const newChannel: Channel = await this.channelRepository.save(
 			channelCreated
+		);
+		this.chatGateway.newChannelToUser(
+			newChannel.toDto(
+				await this.userService.getBlockedUsers(user2),
+				user2
+			),
+			user2.id
 		);
 		return newChannel.toDto(
 			await this.userService.getBlockedUsers(user),
@@ -246,7 +256,8 @@ export class ChannelService {
 		channelToJoin.messages.push(msg);
 		await this.chatGateway.addNewUser(channelToJoin.id, user);
 		return (await this.channelRepository.save(channelToJoin)).toDto(
-			await this.userService.getBlockedUsers(user)
+			await this.userService.getBlockedUsers(user),
+			user
 		);
 	}
 
@@ -543,7 +554,10 @@ export class ChannelService {
 		channel.messages.push(msg);
 		this.chatGateway.addNewUser(channel.id, invitedUser);
 		this.chatGateway.newChannelToUser(
-			channel.toDto(await this.userService.getBlockedUsers(invitedUser)),
+			channel.toDto(
+				await this.userService.getBlockedUsers(invitedUser),
+				invitedUser
+			),
 			invitedUser.id
 		);
 		await this.channelRepository.save(channel);
