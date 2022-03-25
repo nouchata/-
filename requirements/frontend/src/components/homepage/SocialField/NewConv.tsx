@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ChatSocket } from '../../../Providers/ChatProvider';
 import { useModal } from '../../../Providers/ModalProvider';
 import JoinCreateModal from '../../chat/modal/JoinCreateModal';
-import { ChatSocket } from '../../chat/utils/ChatSocket';
 import AddFriendModal from '../../friends/modal/AddFriendModal';
 import { GenericModalProps } from '../../utils/GenericModal';
 

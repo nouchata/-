@@ -6,19 +6,17 @@ import '../styles/Chat.scss';
 
 import chatImage from '../../../assets/homepage/chat.png';
 
-import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { ChannelDto, MessageDto } from '../../chat/types/user-channels.dto';
-import { ChatSocket } from '../../chat/utils/ChatSocket';
 import FriendsList from '../../friends/FriendsList';
 import AddFriendModal from '../../friends/modal/AddFriendModal';
 import { useModal } from '../../../Providers/ModalProvider';
-import { useLogin } from '../../../Providers/LoginProvider';
 import { useFriendList } from '../../../Providers/FriendListProvider';
 import { useNotificationHandler } from '../../../Providers/NotificationProvider';
 import ChannelList from './ChannelList';
 import NewConv from './NewConv';
 import ChatBox from './ChatBox';
 import { useNavigate } from 'react-router-dom';
+import { useChat } from '../../../Providers/ChatProvider';
 
 
 export type ChatState = {
@@ -34,9 +32,8 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	const [isSocialFieldShowed, setIsSocialFieldShowed] =
 		useState<boolean>(true);
 	const { setModalProps } = useModal();
-	const [chatSocket, setChatSocket] = useState<ChatSocket>();
+	const chatSocket = useChat();
 	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
-	const { loginStatus } = useLogin();
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
 	const navigate = useNavigate();
@@ -62,29 +59,8 @@ const HSocialField = (props: { standalone?: boolean }) => {
 				},
 			});
 		},
-		[notificationHandler] // eslint-disable-line
+		[navigate, notificationHandler]
 	);
-
-	useEffect(() => {
-		const fetchChannels = async () => {
-			const channels = await RequestWrapper.get<ChannelDto[]>(
-				'/user/channels/list'
-			);
-			channels &&
-				setChatSocket(
-					new ChatSocket(
-						channels,
-						{
-							setChatSocket,
-							onMessage,
-						},
-						loginStatus.user
-					)
-				);
-		};
-		fetchChannels();
-		// eslint-disable-next-line
-	}, [loginStatus.user]);
 
 	useEffect(() => {
 		if (chatSocket) {
@@ -132,7 +108,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 			/>
 			<div className="hsf-content">
 				{isFriendTabSelected ? (
-					<FriendsList setModal={setModalProps} />
+					<FriendsList channels={chatSocket?.channels}/>
 				) : (
 					<ChannelList
 						chatSocket={chatSocket}

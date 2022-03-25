@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react";
+import { ChatSocket } from "../../Providers/ChatProvider";
 import { useLogin } from "../../Providers/LoginProvider";
 import { MessageDto, User } from "./types/user-channels.dto";
-import { ChatSocket } from "./utils/ChatSocket";
 
-
-const MessageArea = ({ index, chatSocket }: { index: number, chatSocket: ChatSocket | undefined }) => {
+const MessageArea = ({ index, chatSocket }: { index: number, chatSocket?: ChatSocket}) => {
 
 	const { loginStatus } = useLogin();
 	const messagesEndRef = useRef<HTMLDivElement>(null);

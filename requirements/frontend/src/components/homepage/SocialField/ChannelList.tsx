@@ -1,10 +1,10 @@
 import { NotificationHandler } from '../../../Providers/NotificationProvider';
-import { ChatSocket } from '../../chat/utils/ChatSocket';
 import { ChatState } from './HSocialField';
 import { ChannelDto } from '../../chat/types/user-channels.dto';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGlobe, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
 import { useLogin } from '../../../Providers/LoginProvider';
+import { ChatSocket } from '../../../Providers/ChatProvider';
 
 const ChannelIcon = ({ channel }: { channel: ChannelDto }) => {
 	const { loginStatus } = useLogin();

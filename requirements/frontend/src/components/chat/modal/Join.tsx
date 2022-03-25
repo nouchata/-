@@ -7,10 +7,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useState, useCallback, useEffect } from 'react';
+import { ChatSocket } from '../../../Providers/ChatProvider';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { GetChannelDto } from '../types/get-channel.dto';
 import { ChannelDto } from '../types/user-channels.dto';
-import { ChatSocket } from '../utils/ChatSocket';
 
 const ModalJoin = ({
 	channel,
