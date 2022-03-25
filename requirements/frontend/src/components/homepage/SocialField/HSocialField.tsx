@@ -108,7 +108,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 			/>
 			<div className="hsf-content">
 				{isFriendTabSelected ? (
-					<FriendsList channels={chatSocket?.channels}/>
+					<FriendsList />
 				) : (
 					<ChannelList
 						chatSocket={chatSocket}

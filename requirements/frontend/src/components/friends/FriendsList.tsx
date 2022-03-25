@@ -6,9 +6,8 @@ import '../../styles/social_field.scss';
 import { FetchFriendsList } from '../../types/FetchFriendsList';
 import { useFriendList } from '../../Providers/FriendListProvider';
 import { useModal } from '../../Providers/ModalProvider';
-import { ChannelDto } from '../chat/types/user-channels.dto';
 
-const FriendsList = ({ channels }: { channels?: ChannelDto[] }) => {
+const FriendsList = () => {
 	const { setModalProps } = useModal();
 	const friendList = useFriendList();
 	const RemoveFriend = (friend: FetchFriendsList) => {
