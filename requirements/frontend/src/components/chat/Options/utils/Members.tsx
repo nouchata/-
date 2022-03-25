@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLogin } from '../../../../Providers/LoginProvider';
 import { useModal } from '../../../../Providers/ModalProvider';
 import { FetchFriendsList } from '../../../../types/FetchFriendsList';
-import { GroupChannel, User } from '../../types/user-channels.dto';
+import { ChannelDto, User } from '../../types/user-channels.dto';
 import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
 import { useNavigate } from 'react-router-dom';
@@ -50,12 +50,15 @@ const Member = ({
 	);
 };
 
-const Members = ({ channel }: { channel: GroupChannel }) => {
+const Members = ({ channel }: { channel: ChannelDto }) => {
 	const { setModalProps } = useModal();
 	const nav = useNavigate();
 
 	const getTitle = useCallback(
 		(user: User) => {
+			if (channel.channelType === 'direct') {
+				return undefined;
+			}
 			if (channel.owner.id === user.id) {
 				return '(owner)';
 			}
@@ -64,7 +67,7 @@ const Members = ({ channel }: { channel: GroupChannel }) => {
 			}
 			return undefined;
 		},
-		[channel.admins, channel.owner.id]
+		[channel]
 	);
 
 	return (

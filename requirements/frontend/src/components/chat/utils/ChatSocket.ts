@@ -97,7 +97,7 @@ export class ChatSocket {
 
 			this._socket.on('updateChannelMetadata', (channel: UpdateChannelDto) => {
 				let channel_found = this._channels.find(c => c.id === channel.id);
-				if (channel_found) {
+				if (channel_found && channel_found.channelType !== 'direct') {
 					channel_found.name = channel.name;
 					channel_found.admins = channel.admins;
 					channel_found.owner = channel.owner;

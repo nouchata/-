@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { useModal } from '../../../../Providers/ModalProvider';
 import { RequestWrapper } from '../../../../utils/RequestWrapper';
 import { EditChannelDto } from '../../types/edit-channel.dto';
-import { ChannelType, GroupChannel } from '../../types/user-channels.dto';
+import { GroupChannel } from '../../types/user-channels.dto';
 import Button from '../utils/Button';
 import './EditChannel.scss';
 
