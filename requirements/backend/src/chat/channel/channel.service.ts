@@ -1,4 +1,8 @@
-import { IChannel } from './../entities/channel.entity';
+import {
+	GroupChannel,
+	IChannel,
+	ProtectedChannel,
+} from './../entities/channel.entity';
 import { PunishmentType } from './../entities/punishment.entity';
 import { MessageType } from './../entities/message.entity';
 import { ChatGateway } from './../chat.gateway';
@@ -120,21 +124,49 @@ export class ChannelService {
 		);
 	}
 
-	async getPublicChannels(): Promise<Channel[]> {
+	async createDirectChannel(userId: number, user: User) {
+		const user2 = await this.userService.findUserById(userId);
+		if (!user2) {
+			throw new HttpException('User not found', 404);
+		}
+		const channel = (await this.channelRepository.findOne({
+			where: {
+				channelType: 'direct',
+				users: [user, user2],
+			},
+		})) as IChannel;
+
+		if (channel) {
+			return channel.toDto(await this.userService.getBlockedUsers(user));
+		}
+
+		const channelCreated = this.channelRepository.create({
+			channelType: 'direct',
+			users: [user, user2],
+			messages: [],
+			admins: [],
+		});
+		const newChannel: Channel = await this.channelRepository.save(
+			channelCreated
+		);
+		return newChannel.toDto(await this.userService.getBlockedUsers(user));
+	}
+
+	async getPublicChannels(): Promise<GroupChannel[]> {
 		return this.channelRepository.find({
 			where: { channelType: 'public' },
-		});
+		}) as Promise<GroupChannel[]>;
 	}
 
-	async getProtectedChannels(): Promise<Channel[]> {
+	async getProtectedChannels(): Promise<ProtectedChannel[]> {
 		return this.channelRepository.find({
 			where: { channelType: 'protected' },
-		});
+		}) as Promise<ProtectedChannel[]>;
 	}
 
-	async getPublicAndProtectedChannels(): Promise<Channel[]> {
-		const publicChannels: Channel[] = await this.getPublicChannels();
-		const protectedChannels: Channel[] = await this.getProtectedChannels();
+	async getPublicAndProtectedChannels(): Promise<GroupChannel[]> {
+		const publicChannels = await this.getPublicChannels();
+		const protectedChannels = await this.getProtectedChannels();
 		return [...publicChannels, ...protectedChannels];
 	}
 

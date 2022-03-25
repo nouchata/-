@@ -18,7 +18,6 @@ export type ChannelType = 'private' | 'protected' | 'public' | 'direct';
 
 export interface BaseChannel {
 	id: number;
-	name: string;
 	users: User[];
 	messages: Message[];
 	createdAt: Date;
@@ -28,6 +27,8 @@ export interface BaseChannel {
 }
 
 export interface GroupChannel extends BaseChannel {
+	name: string;
+	channelType: 'public' | 'protected' | 'private';
 	owner: User;
 	admins: User[];
 	punishments: Punishment[];
@@ -60,8 +61,8 @@ export class Channel {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
-	name: string;
+	@Column({ nullable: true })
+	name?: string;
 
 	@Column()
 	channelType: ChannelType;
