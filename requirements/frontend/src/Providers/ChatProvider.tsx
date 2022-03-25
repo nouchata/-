@@ -177,14 +177,25 @@ export class ChatSocket {
 	}
 }
 
-const ChatContext = createContext<ChatSocket | undefined>(undefined);
+interface IChat {
+	chatSocket?: ChatSocket;
+	selectedChannelIndex: number;
+	setSelectedChannelIndex: (index: number) => void;
+}
+
+const ChatContext = createContext<IChat | undefined>(undefined);
 
 const useChat = () => {
-	return useContext(ChatContext);
+	const context = useContext(ChatContext);
+	if (!context) {
+		throw new Error('useChat must be used within a ChatProvider');
+	}
+	return context;
 };
 
 const ChatProvider = ({ children }: { children: ReactNode }) => {
 	const [chatSocket, setChatSocket] = useState<ChatSocket>();
+	const [selectedChannelIndex, setSelectedChannelIndex] = useState(0);
 	const { loginStatus } = useLogin();
 
 	useEffect(() => {
@@ -207,7 +218,13 @@ const ChatProvider = ({ children }: { children: ReactNode }) => {
 	}, [loginStatus.user]);
 
 	return (
-		<ChatContext.Provider value={chatSocket}>
+		<ChatContext.Provider
+			value={{
+				chatSocket,
+				selectedChannelIndex,
+				setSelectedChannelIndex,
+			}}
+		>
 			{children}
 		</ChatContext.Provider>
 	);

@@ -32,8 +32,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	const [isSocialFieldShowed, setIsSocialFieldShowed] =
 		useState<boolean>(true);
 	const { setModalProps } = useModal();
-	const chatSocket = useChat();
-	const [selectChannelIndex, setSelectChannelIndex] = useState<number>(0);
+	const {chatSocket, selectedChannelIndex, setSelectedChannelIndex} = useChat();
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
 	const navigate = useNavigate();
@@ -112,17 +111,17 @@ const HSocialField = (props: { standalone?: boolean }) => {
 				) : (
 					<ChannelList
 						chatSocket={chatSocket}
-						setSelectChannelIndex={setSelectChannelIndex}
+						setSelectChannelIndex={setSelectedChannelIndex}
 						notificationHandler={notificationHandler}
 						setChatStatus={setChatStatus}
 					/>
 				)}
 			</div>
-			{chatSocket?.channels[selectChannelIndex] && (
+			{chatSocket?.channels[selectedChannelIndex] && (
 				<ChatBox
 					chatStatus={chatStatus}
 					chatSocket={chatSocket}
-					selectChannelIndex={selectChannelIndex}
+					selectChannelIndex={selectedChannelIndex}
 					setChatStatus={setChatStatus}
 				/>
 			)}
