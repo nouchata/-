@@ -1,4 +1,5 @@
 import {
+	DirectChannel,
 	GroupChannel,
 	IChannel,
 	ProtectedChannel,
@@ -130,12 +131,26 @@ export class ChannelService {
 		if (!user2) {
 			throw new HttpException('User not found', 404);
 		}
-		const channel = (await this.channelRepository.findOne({
+
+		if (user.id === user2.id) {
+			throw new HttpException(
+				'You cannot create a direct channel with yourself',
+				400
+			);
+		}
+
+		const channels = (await this.channelRepository.find({
+			relations: ['users'],
 			where: {
 				channelType: 'direct',
-				users: [user, user2],
 			},
-		})) as IChannel;
+		})) as DirectChannel[];
+
+		const channel = channels.find(
+			(channel) =>
+				channel.users.find((user) => user.id === user2.id) &&
+				channel.users.find((user) => user.id === user.id)
+		);
 
 		if (channel) {
 			return channel.toDto(

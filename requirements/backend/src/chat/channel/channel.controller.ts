@@ -44,7 +44,7 @@ export class ChannelController {
 	async directChannel(
 		@Req() req: { user: User },
 		@Param('userId') userId: number
-	): Promise<ChannelDto> {
+	) {
 		return this.channelService.createDirectChannel(userId, req.user);
 	}
 

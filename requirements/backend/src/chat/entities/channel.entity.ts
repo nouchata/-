@@ -44,13 +44,13 @@ export interface ProtectedChannel extends GroupChannel {
 	password_salt: string;
 }
 
-interface StandardChannel extends GroupChannel {
+export interface StandardChannel extends GroupChannel {
 	channelType: 'public' | 'private';
 	password_hash?: string;
 	password_salt?: string;
 }
 
-interface DirectChannel extends BaseChannel {
+export interface DirectChannel extends BaseChannel {
 	channelType: 'direct';
 }
 
