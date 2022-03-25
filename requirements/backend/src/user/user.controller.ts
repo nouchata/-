@@ -177,7 +177,7 @@ export class UserController {
 		description: 'The channels were the is member user',
 	})
 	async getUserChannels(@Req() req: { user: User }): Promise<ChannelDto[]> {
-		return this.userService.getUserChannels({ id: req.user.id });
+		return this.userService.getUserChannels(req.user);
 	}
 
 	@Post('block/:id')

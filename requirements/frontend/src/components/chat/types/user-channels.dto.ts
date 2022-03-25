@@ -1,7 +1,7 @@
 import { UserStatus } from "../../utils/StatusDisplay";
 
 export type UserRole = 'user' | 'moderator' | 'admin';
-export type ChannelType = 'private' | 'protected' | 'public';
+export type ChannelType = 'private' | 'protected' | 'public' | 'direct';
 export type MessageType = "user" | "system";
 
 export interface User
@@ -24,12 +24,31 @@ export interface MessageDto
 	userId?: number;
 }
 
-export interface ChannelDto {
-	id: number;
+export interface BaseChannel {
 	name: string;
-	channelType: ChannelType;
-	owner: User;
+	id: number;
 	users: User[];
-	admins: User[];
 	messages: MessageDto[];
+	createdAt: Date;
 }
+
+export interface GroupChannel extends BaseChannel {
+	channelType: 'public' | 'protected' | 'private';
+	owner: User;
+	admins: User[];
+}
+
+export interface ProtectedChannel extends GroupChannel {
+	channelType: 'protected';
+}
+
+interface StandardChannel extends GroupChannel {
+	channelType: 'public' | 'private';
+}
+
+interface DirectChannel extends BaseChannel {
+	channelType: 'direct';
+}
+
+export type ChannelDto = ProtectedChannel | StandardChannel | DirectChannel;
+

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useLogin } from '../../../../Providers/LoginProvider';
 import { useModal } from '../../../../Providers/ModalProvider';
 import { FetchFriendsList } from '../../../../types/FetchFriendsList';
-import { ChannelDto, User } from '../../types/user-channels.dto';
+import { GroupChannel, User } from '../../types/user-channels.dto';
 import { BlockButton, FriendButton } from '../SocialButtons';
 import Button from './Button';
 import { useNavigate } from 'react-router-dom';
@@ -50,7 +50,7 @@ const Member = ({
 	);
 };
 
-const Members = ({ channel }: { channel: ChannelDto }) => {
+const Members = ({ channel }: { channel: GroupChannel }) => {
 	const { setModalProps } = useModal();
 	const nav = useNavigate();
 

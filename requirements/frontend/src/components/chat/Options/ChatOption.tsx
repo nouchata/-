@@ -9,7 +9,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import './ChatOption.scss';
-import { ChannelDto } from '../types/user-channels.dto';
+import { GroupChannel } from '../types/user-channels.dto';
 import { useModal } from '../../../Providers/ModalProvider';
 import { useEffect, useMemo, useState } from 'react';
 import Admin from './Admin/Admin';
@@ -46,7 +46,7 @@ const Option = ({
 	);
 };
 
-const ChatOption = ({ channel }: { channel: ChannelDto }) => {
+const ChatOption = ({ channel }: { channel: GroupChannel }) => {
 	const [isToggled, setIsToggled] = useState(false);
 	const { setModalProps } = useModal();
 	const [adminModalOpen, setAdminModalOpen] = useState(false);

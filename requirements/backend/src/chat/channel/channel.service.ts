@@ -120,7 +120,8 @@ export class ChannelService {
 		);
 
 		return newChannel.toDto(
-			await this.userService.getBlockedUsers(channel.owner)
+			await this.userService.getBlockedUsers(channel.owner),
+			channel.owner
 		);
 	}
 
@@ -149,7 +150,10 @@ export class ChannelService {
 		const newChannel: Channel = await this.channelRepository.save(
 			channelCreated
 		);
-		return newChannel.toDto(await this.userService.getBlockedUsers(user));
+		return newChannel.toDto(
+			await this.userService.getBlockedUsers(user),
+			user
+		);
 	}
 
 	async getPublicChannels(): Promise<GroupChannel[]> {

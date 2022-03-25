@@ -48,7 +48,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 			const user = channel.users.find((u) => u.id === message.userId);
 
 			notificationHandler?.addNotification({
-				name: channel.name,
+				name: channel.channelType === 'direct' ? 'Direct message' : channel.name,
 				content: `${user ? user.displayName : 'system'}: ${
 					message.text
 				}`,

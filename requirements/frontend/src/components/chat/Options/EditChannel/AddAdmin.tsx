@@ -3,11 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCallback, useState } from 'react';
 import { useModal } from '../../../../Providers/ModalProvider';
 import { RequestWrapper } from '../../../../utils/RequestWrapper';
-import { ChannelDto, User } from '../../types/user-channels.dto';
+import { GroupChannel, User } from '../../types/user-channels.dto';
 import Button from '../utils/Button';
 import { Member } from '../utils/Members';
 
-const AddAdmin = ({ channel }: { channel: ChannelDto }) => {
+const AddAdmin = ({ channel }: { channel: GroupChannel }) => {
 	const [error, setError] = useState<string>();
 	const { setModalProps } = useModal();
 

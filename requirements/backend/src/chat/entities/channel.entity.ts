@@ -167,10 +167,13 @@ export class Channel {
 		return true;
 	}
 
-	toDto(blockedUsers: User[]): ChannelDto {
+	toDto(blockedUsers: User[], user: User): ChannelDto {
 		const channelDto: ChannelDto = {
 			id: this.id,
-			name: this.name,
+			name:
+				this.name ||
+				this.users.find((u) => u.id !== user.id)?.displayName ||
+				'',
 			channelType: this.channelType,
 			owner: this.owner?.toDto(),
 			users: this.users.map((user) => user.toDto()),

@@ -24,7 +24,7 @@ export class ChannelDto {
 	id: number;
 
 	@ApiProperty({ description: 'name of the channel', example: 'yolo' })
-	name?: string;
+	name: string;
 
 	@ApiProperty({ description: 'type of the channel', example: 'private' })
 	channelType: string;

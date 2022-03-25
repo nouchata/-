@@ -139,7 +139,7 @@ export class UserService {
 		});
 	}
 
-	async getUserChannels(user: { id: number }) {
+	async getUserChannels(user: User) {
 		const channels = (
 			await this.userRepo.findOne({
 				where: { id: user.id },
@@ -148,8 +148,6 @@ export class UserService {
 					'channels.owner',
 					'channels.users',
 					'channels.admins',
-					'channels.punishments',
-					'channels.punishments.user',
 					'channels.messages',
 					'channels.messages.user',
 				],
@@ -158,7 +156,7 @@ export class UserService {
 
 		if (!channels) return [];
 		const blockedUsers = await this.getBlockedUsers(user);
-		return channels.map((channel) => channel.toDto(blockedUsers));
+		return channels.map((channel) => channel.toDto(blockedUsers, user));
 	}
 
 	async blockUser(user: User, blockedUser: User) {
