@@ -2,7 +2,7 @@ import {
 	faCheck,
 	faCircleNotch,
 	faGlobe,
-	faLock,
+	faKey,
 	faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -71,7 +71,7 @@ const ModalJoin = ({
 							onClick={() => setModalJoin(undefined)}
 						/>
 						<div className="title">
-							<FontAwesomeIcon icon={faLock} />
+							<FontAwesomeIcon icon={faKey} />
 							<span>Enter the password</span>
 						</div>
 						<input
@@ -144,7 +144,7 @@ const Join = ({
 									icon={
 										channel.channelType === 'public'
 											? faGlobe
-											: faLock
+											: faKey
 									}
 									className="icon"
 								/>
