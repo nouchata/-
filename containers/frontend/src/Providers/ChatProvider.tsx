@@ -64,10 +64,9 @@ export class ChatSocket {
 		else {
 			// if we don't have socket, we create a new one
 			this._socket = socketIOClient('/chat', {
-				path: '/api',
+				path: process.env.REACT_APP_BACKEND_ADDRESS + '/socket.io',
 				withCredentials: true,
 			});
-			console.log(process.env.REACT_APP_BACKEND_ADDRESS + '/chat');
 
 			// we join all channels
 			for (const channel of channels) {
