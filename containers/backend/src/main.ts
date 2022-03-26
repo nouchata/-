@@ -15,14 +15,17 @@ async function bootstrap() {
 
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = Number(configService.get('BACKEND_PORT'));
-	const front_address: string = configService.get(
+	const front_address = configService.get(
 		'FRONTEND_ADDRESS'
-	) as string;
+	);
 
-	app.enableCors({
-		origin: front_address,
-		credentials: true,
-	});
+	if (front_address) {
+		app.enableCors({
+			origin: front_address,
+			credentials: true,
+		});
+	}
+
 
 	// verify user content
 	app.useGlobalPipes(
