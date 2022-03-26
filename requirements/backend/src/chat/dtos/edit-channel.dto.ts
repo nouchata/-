@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsOptional } from 'class-validator';
-import { ChannelType } from './create-channel.dto';
 
 export class EditChannelDto {
 	@IsNotEmpty()
@@ -17,7 +16,7 @@ export class EditChannelDto {
 		description: 'The type of the channel',
 		example: 'public',
 	})
-	type: ChannelType;
+	type: 'private' | 'protected' | 'public';
 
 	@ApiProperty({
 		description: 'The password of the channel if it is protected',

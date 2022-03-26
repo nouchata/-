@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { useModal } from '../../../../Providers/ModalProvider';
 import { RequestWrapper } from '../../../../utils/RequestWrapper';
 import { EditChannelDto } from '../../types/edit-channel.dto';
-import { ChannelDto, ChannelType } from '../../types/user-channels.dto';
+import { GroupChannel } from '../../types/user-channels.dto';
 import Button from '../utils/Button';
 import './EditChannel.scss';
 
@@ -11,7 +11,7 @@ import './EditChannel.scss';
  ** type (private, plubic and protected),
  ** and the password
  **/
-const EditChannel = ({ channel }: { channel: ChannelDto }) => {
+const EditChannel = ({ channel }: { channel: GroupChannel }) => {
 	const { setModalProps } = useModal();
 	const [type, setType] = useState(channel.channelType);
 	const [name, setName] = useState('');
@@ -56,7 +56,7 @@ const EditChannel = ({ channel }: { channel: ChannelDto }) => {
 					<p>Change Type</p>
 					<select
 						value={type}
-						onChange={(e) => setType(e.target.value as ChannelType)}
+						onChange={(e) => setType(e.target.value as 'public' | 'private' | 'protected')}
 					>
 						<option value="public">Public</option>
 						<option value="private">Private</option>

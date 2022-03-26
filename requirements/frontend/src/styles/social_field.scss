@@ -1,7 +1,6 @@
 @use 'theme';
 $hsf-content-pp-size: 35px;
 $hsf-chat-window-min-size: 50px;
-
 .social-field {
     flex-flow: column nowrap;
     justify-content: center;
@@ -95,14 +94,6 @@ $hsf-chat-window-min-size: 50px;
             align-items: center;
             gap: 20px;
             overflow: hidden;
-            >img {
-                padding: 0;
-                margin: 0 0 0 30px;
-                width: $hsf-content-pp-size;
-                height: $hsf-content-pp-size;
-                border-radius: 100%;
-                background-color: theme.$darkest-color;
-            }
             >figcaption {
                 font-size: 1em;
                 white-space: nowrap;
@@ -113,10 +104,18 @@ $hsf-chat-window-min-size: 50px;
     }
 }
 
-.hsf-content-channel-img {
-    border-radius: 0 !important;
-    opacity: 0.5 !important;
-    background: none !important;
+.hsf-content-channel-icon {
+    width: 40px;
+    height: 40px;
+    margin-left: 10px;
+    opacity: 0.7;
+}
+
+.hsf-content-channel-image {
+    margin-left: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 100%;
 }
 
 .hsf-content-notification {

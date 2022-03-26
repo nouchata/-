@@ -17,6 +17,7 @@ import HSocialField from './components/homepage/SocialField/HSocialField';
 import Compose from './utils/Compose';
 import { BrowserRouter as Router } from "react-router-dom";
 import MaterialLikeBtns from './components/homepage/MaterialLikeBtns';
+import { ChatProvider } from './Providers/ChatProvider';
 
 const TransApp = () => {
 	const { loginStatus } = useLogin();
@@ -82,6 +83,7 @@ const App = (): JSX.Element => {
 				LoginProvider,
 				NotificationProvider,
 				ModalProvider,
+				ChatProvider
 			]}
 		>
 			<ContextLoader />

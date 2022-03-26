@@ -1,3 +1,9 @@
+import {
+	DirectChannel,
+	GroupChannel,
+	IChannel,
+	ProtectedChannel,
+} from './../entities/channel.entity';
 import { PunishmentType } from './../entities/punishment.entity';
 import { MessageType } from './../entities/message.entity';
 import { ChatGateway } from './../chat.gateway';
@@ -29,15 +35,33 @@ export class ChannelService {
 		private userService: UserService
 	) {}
 
+	async getChannel(
+		channelId: number,
+		relations?: string[]
+	): Promise<IChannel | undefined> {
+		const defaultRelations = [
+			'users',
+			'owner',
+			'admins',
+			'messages',
+			'messages.user',
+			'punishments',
+			'punishments.user',
+		];
+		return this.channelRepository.findOne(channelId, {
+			relations: relations || defaultRelations,
+		}) as Promise<IChannel | undefined>;
+	}
+
 	async createMessage(
-		channel: Channel,
+		channel: IChannel | Channel,
 		messageType: MessageType,
 		text: string,
 		user?: User
 	): Promise<Message> {
 		// add info message
 		const messageCreated: Message = new Message();
-		messageCreated.channel = channel;
+		messageCreated.channel = channel as Channel;
 		messageCreated.messageType = messageType;
 		messageCreated.text = text;
 		messageCreated.user = user;
@@ -57,32 +81,37 @@ export class ChannelService {
 	async createChannel(
 		channel: CreateChannelDto & { owner: User }
 	): Promise<ChannelDto> {
-		const channelCreated: Channel = new Channel();
-
+		const channelCreated = this.channelRepository.create({
+			name: channel.name,
+			channelType: channel.channelType,
+			owner: channel.owner,
+			users: [channel.owner],
+			admins: [],
+			messages: [],
+		});
 		if (channel.channelType === 'protected') {
 			if (!channel.password) {
-				throw new HttpException('Request malformed', 400);
+				throw new HttpException('Password is required', 400);
 			}
 			// generate salt
-			const salt = crypto.randomBytes(16).toString('hex');
-			// generate hash
-			const hash = crypto
-				.pbkdf2Sync(channel.password, salt, 1000, 64, 'sha512')
+			channelCreated.password_salt = crypto
+				.randomBytes(16)
 				.toString('hex');
-			channelCreated.password_hash = hash;
-			channelCreated.password_salt = salt;
+			// generate hash
+			channelCreated.password_hash = crypto
+				.pbkdf2Sync(
+					channel.password,
+					channelCreated.password_salt,
+					1000,
+					64,
+					'sha512'
+				)
+				.toString('hex');
 		}
-		channelCreated.name = channel.name;
-		channelCreated.channelType = channel.channelType;
-		channelCreated.owner = channel.owner;
-		channelCreated.users = [channel.owner];
-		channelCreated.admins = [];
-		channelCreated.messages = [];
 
 		const newChannel: Channel = await this.channelRepository.save(
-			this.channelRepository.create(channelCreated)
+			channelCreated
 		);
-
 		newChannel.messages.push(
 			await this.createMessage(
 				newChannel,
@@ -92,38 +121,81 @@ export class ChannelService {
 		);
 
 		return newChannel.toDto(
-			await this.userService.getBlockedUsers(channel.owner)
+			await this.userService.getBlockedUsers(channel.owner),
+			channel.owner
 		);
 	}
 
-	async getChannel(channelId: number) {
-		return this.channelRepository.findOne(channelId, {
-			relations: [
-				'users',
-				'owner',
-				'admins',
-				'messages',
-				'punishments',
-				'punishments.user',
-			],
+	async createDirectChannel(userId: number, user: User) {
+		const user2 = await this.userService.findUserById(userId);
+		if (!user2) {
+			throw new HttpException('User not found', 404);
+		}
+
+		if (user.id === user2.id) {
+			throw new HttpException(
+				'You cannot create a direct channel with yourself',
+				400
+			);
+		}
+
+		const channels = (await this.channelRepository.find({
+			relations: ['users'],
+			where: {
+				channelType: 'direct',
+			},
+		})) as DirectChannel[];
+
+		const channel = channels.find(
+			(channel) =>
+				channel.users.find((user) => user.id === user2.id) &&
+				channel.users.find((user) => user.id === user.id)
+		);
+
+		if (channel) {
+			return channel.toDto(
+				await this.userService.getBlockedUsers(user),
+				user
+			);
+		}
+
+		const channelCreated = this.channelRepository.create({
+			channelType: 'direct',
+			users: [user, user2],
+			messages: [],
+			admins: [],
 		});
+		const newChannel: Channel = await this.channelRepository.save(
+			channelCreated
+		);
+		this.chatGateway.newChannelToUser(
+			newChannel.toDto(
+				await this.userService.getBlockedUsers(user2),
+				user2
+			),
+			user2.id
+		);
+		return newChannel.toDto(
+			await this.userService.getBlockedUsers(user),
+			user
+		);
 	}
 
-	async getPublicChannels(): Promise<Channel[]> {
+	async getPublicChannels(): Promise<GroupChannel[]> {
 		return this.channelRepository.find({
 			where: { channelType: 'public' },
-		});
+		}) as Promise<GroupChannel[]>;
 	}
 
-	async getProtectedChannels(): Promise<Channel[]> {
+	async getProtectedChannels(): Promise<ProtectedChannel[]> {
 		return this.channelRepository.find({
 			where: { channelType: 'protected' },
-		});
+		}) as Promise<ProtectedChannel[]>;
 	}
 
-	async getPublicAndProtectedChannels(): Promise<Channel[]> {
-		const publicChannels: Channel[] = await this.getPublicChannels();
-		const protectedChannels: Channel[] = await this.getProtectedChannels();
+	async getPublicAndProtectedChannels(): Promise<GroupChannel[]> {
+		const publicChannels = await this.getPublicChannels();
+		const protectedChannels = await this.getProtectedChannels();
 		return [...publicChannels, ...protectedChannels];
 	}
 
@@ -131,17 +203,7 @@ export class ChannelService {
 		channel: JoinChannelDto,
 		user: User
 	): Promise<ChannelDto> {
-		const channelToJoin = await this.channelRepository.findOne(channel.id, {
-			relations: [
-				'users',
-				'owner',
-				'admins',
-				'messages',
-				'messages.user',
-				'punishments',
-				'punishments.user',
-			],
-		});
+		const channelToJoin = await this.getChannel(channel.id);
 
 		if (!channelToJoin) {
 			throw new HttpException('Channel not found', 404);
@@ -152,6 +214,10 @@ export class ChannelService {
 				'This channel is private, you must be invited',
 				403
 			);
+		}
+
+		if (channelToJoin.channelType === 'direct') {
+			throw new HttpException('You can not join a direct channel', 400);
 		}
 
 		if (channelToJoin.channelType === 'protected') {
@@ -205,17 +271,27 @@ export class ChannelService {
 		channelToJoin.messages.push(msg);
 		await this.chatGateway.addNewUser(channelToJoin.id, user);
 		return (await this.channelRepository.save(channelToJoin)).toDto(
-			await this.userService.getBlockedUsers(user)
+			await this.userService.getBlockedUsers(user),
+			user
 		);
 	}
 
 	async leaveChannel(channelId: number, user: User) {
-		const channelToLeave = await this.channelRepository.findOne(channelId, {
-			relations: ['users', 'owner', 'admins', 'messages', 'punishments'],
-		});
+		const channelToLeave = await this.getChannel(channelId, [
+			'users',
+			'owner',
+			'admins',
+			'messages',
+		]);
+
 		if (!channelToLeave) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channelToLeave.channelType === 'direct') {
+			throw new HttpException('You can not leave a direct channel', 400);
+		}
+
 		if (!channelToLeave.users.some((u) => u.id === user.id)) {
 			throw new HttpException('User not in channel', 400);
 		}
@@ -266,22 +342,17 @@ export class ChannelService {
 		punisher: User,
 		createPunishmentDto: CreatePunishmentDto
 	) {
-		const channel = await this.channelRepository.findOne(
-			createPunishmentDto.channelId,
-			{
-				relations: [
-					'users',
-					'owner',
-					'admins',
-					'messages',
-					'messages.user',
-					'punishments',
-					'punishments.user',
-				],
-			}
-		);
+		const channel = await this.getChannel(createPunishmentDto.channelId);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
+		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException(
+				'You can not punish on a direct channel',
+				400
+			);
 		}
 
 		if (
@@ -378,12 +449,24 @@ export class ChannelService {
 	}
 
 	async getChannelPunishments(channelId: number, user: User) {
-		const channel = await this.channelRepository.findOne(channelId, {
-			relations: ['punishments', 'punishments.user', 'admins', 'owner'],
-		});
+		const channel = await this.getChannel(channelId, [
+			'punishments',
+			'punishments.user',
+			'admins',
+			'owner',
+		]);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException(
+				'You can not get punishments on a direct channel',
+				400
+			);
+		}
+
 		if (
 			!channel.admins.some((u) => u.id === user.id) &&
 			channel.owner.id !== user.id
@@ -399,12 +482,24 @@ export class ChannelService {
 		user: User,
 		punishmentType: PunishmentType
 	) {
-		const channel = await this.channelRepository.findOne(channelId, {
-			relations: ['punishments', 'punishments.user', 'admins', 'owner'],
-		});
+		const channel = await this.getChannel(channelId, [
+			'punishments',
+			'punishments.user',
+			'admins',
+			'owner',
+		]);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException(
+				'You can not delete a punishment on a direct channel',
+				400
+			);
+		}
+
 		if (
 			!channel.admins.some((u) => u.id === user.id) &&
 			channel.owner.id !== user.id
@@ -429,20 +524,19 @@ export class ChannelService {
 	}
 
 	async inviteUser(channelId: number, userId: number, user: User) {
-		const channel = await this.channelRepository.findOne(channelId, {
-			relations: [
-				'users',
-				'admins',
-				'owner',
-				'punishments',
-				'punishments.user',
-				'messages',
-				'messages.user',
-			],
-		});
+		const channel = await this.getChannel(channelId);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException(
+				'You can not invite users on a direct channel',
+				400
+			);
+		}
+
 		if (!channel.users.some((u) => u.id === user.id)) {
 			throw new HttpException('You are not in the channel', 403);
 		}
@@ -475,7 +569,10 @@ export class ChannelService {
 		channel.messages.push(msg);
 		this.chatGateway.addNewUser(channel.id, invitedUser);
 		this.chatGateway.newChannelToUser(
-			channel.toDto(await this.userService.getBlockedUsers(invitedUser)),
+			channel.toDto(
+				await this.userService.getBlockedUsers(invitedUser),
+				invitedUser
+			),
 			invitedUser.id
 		);
 		await this.channelRepository.save(channel);
@@ -486,12 +583,21 @@ export class ChannelService {
 		user: User,
 		editChannelDto: EditChannelDto
 	) {
-		const channel = await this.channelRepository.findOne(channelId, {
-			relations: ['admins', 'owner', 'messages', 'messages.user'],
-		});
+		const channel = await this.getChannel(channelId, [
+			'admins',
+			'owner',
+			'messages',
+			'messages.user',
+		]);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException('You can not edit a direct channel', 400);
+		}
+
 		if (channel.owner.id !== user.id) {
 			throw new HttpException('User is not the owner', 403);
 		}
@@ -551,12 +657,24 @@ export class ChannelService {
 	}
 
 	async addAdmin(channelId: number, userId: number, user: User) {
-		const channel = await this.channelRepository.findOne(channelId, {
-			relations: ['admins', 'owner', 'messages', 'messages.user'],
-		});
+		const channel = await this.getChannel(channelId, [
+			'admins',
+			'owner',
+			'messages',
+			'messages.user',
+		]);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException(
+				'You can not add admins to a direct channel',
+				400
+			);
+		}
+
 		if (channel.owner.id !== user.id) {
 			throw new HttpException('User is not the owner', 403);
 		}
@@ -581,12 +699,24 @@ export class ChannelService {
 	}
 
 	async removeAdmin(channelId: number, userId: number, user: User) {
-		const channel = await this.channelRepository.findOne(channelId, {
-			relations: ['admins', 'owner', 'messages', 'messages.user'],
-		});
+		const channel = await this.getChannel(channelId, [
+			'admins',
+			'owner',
+			'messages',
+			'messages.user',
+		]);
+
 		if (!channel) {
 			throw new HttpException('Channel not found', 404);
 		}
+
+		if (channel.channelType === 'direct') {
+			throw new HttpException(
+				'You can not remove admins from a direct channel',
+				400
+			);
+		}
+
 		if (channel.owner.id !== user.id) {
 			throw new HttpException('User is not the owner', 403);
 		}

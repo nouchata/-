@@ -5,10 +5,10 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useCallback, useEffect, useState } from 'react';
+import { ChatSocket } from '../../../Providers/ChatProvider';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { CreateChannelDto } from '../types/create-channel.dto';
 import { ChannelDto, ChannelType } from '../types/user-channels.dto';
-import { ChatSocket } from '../utils/ChatSocket';
 
 type ButtonState = 'loading' | 'error' | 'success';
 

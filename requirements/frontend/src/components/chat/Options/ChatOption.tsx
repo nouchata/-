@@ -86,20 +86,11 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	}, [channel, inviteModalOpen, setModalProps]);
 
 	const options = useMemo(() => {
-		const opts: {
+		let options: {
 			icon: IconDefinition;
 			text: string;
 			callback: () => void;
 		}[] = [
-			{
-				icon: faDoorOpen,
-				text: 'Leave',
-				callback: () => {
-					RequestWrapper.post('/channel/leave', {
-						id: channel.id,
-					});
-				},
-			},
 			{
 				icon: faPerson,
 				text: 'Members',
@@ -112,6 +103,22 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 					});
 				},
 			},
+		];
+
+		if (channel.channelType === 'direct') {
+			return options;
+		}
+
+		options = options.concat([
+			{
+				icon: faDoorOpen,
+				text: 'Leave',
+				callback: () => {
+					RequestWrapper.post('/channel/leave', {
+						id: channel.id,
+					});
+				},
+			},
 			{
 				icon: faUserPlus,
 				text: 'Invite a friend',
@@ -119,13 +126,13 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 					setInviteModalOpen(true);
 				},
 			},
-		];
+		])
 
 		if (
 			channel.admins.some((admin) => admin.id === loginStatus.user?.id) ||
 			loginStatus.user?.id === channel.owner.id
 		) {
-			opts.push({
+			options.push({
 				icon: faGear,
 				text: 'Admin panel',
 				callback: () => setAdminModalOpen(true),
@@ -133,7 +140,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 		}
 
 		if (loginStatus.user?.id === channel.owner.id) {
-			opts.push({
+			options.push({
 				icon: faPencil,
 				text: 'Edit channel',
 				callback: () => {
@@ -145,7 +152,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 					});
 				}
 			});
-			opts.push({
+			options.push({
 				icon: faUserPlus,
 				text: 'Manage admin',
 				callback: () => {
@@ -159,7 +166,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 			});
 		}
 
-		return opts;
+		return options;
 	}, [channel, loginStatus.user?.id, setModalProps]);
 
 	return (

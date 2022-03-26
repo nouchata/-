@@ -56,6 +56,9 @@ const Members = ({ channel }: { channel: ChannelDto }) => {
 
 	const getTitle = useCallback(
 		(user: User) => {
+			if (channel.channelType === 'direct') {
+				return undefined;
+			}
 			if (channel.owner.id === user.id) {
 				return '(owner)';
 			}
@@ -64,7 +67,7 @@ const Members = ({ channel }: { channel: ChannelDto }) => {
 			}
 			return undefined;
 		},
-		[channel.admins, channel.owner.id]
+		[channel]
 	);
 
 	return (

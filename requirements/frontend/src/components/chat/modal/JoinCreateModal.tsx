@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
+import { ChatSocket } from '../../../Providers/ChatProvider';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { GetChannelDto } from '../types/get-channel.dto';
-import { ChatSocket } from '../utils/ChatSocket';
 import Create from './Create';
 import Join from './Join';
 import './JoinCreateModal.scss';

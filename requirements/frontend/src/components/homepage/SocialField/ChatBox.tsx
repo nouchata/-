@@ -1,8 +1,7 @@
+import { ChatSocket, ChatState } from '../../../Providers/ChatProvider';
 import InputChat from '../../chat/InputChat';
 import MessageArea from '../../chat/MessageArea';
-import { ChatSocket } from '../../chat/utils/ChatSocket';
 import ChatControl from './ChatControl';
-import { ChatState } from './HSocialField';
 
 const chatToggleCSS = (cs: ChatState) => {
 	let ret: string = 'hsf-chat';

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ChannelType } from './create-channel.dto';
+import { ChannelType } from '../entities/channel.entity';
 
 export class GetChannelDto {
 	@ApiProperty({ description: 'The id of the channel.', example: 1 })

@@ -22,7 +22,7 @@ export class ChannelController {
 	@ApiResponse({
 		status: 201,
 		description: 'The channel has been created',
-		type: CreateChannelDto,
+		type: ChannelDto,
 	})
 	async createChannel(
 		@Req() req: { user: User },
@@ -32,6 +32,20 @@ export class ChannelController {
 			...channel,
 			owner: req.user,
 		});
+	}
+
+	@Post('direct/:userId')
+	@UseGuards(GroupGuard)
+	@ApiResponse({
+		status: 201,
+		description: 'The channel has been created',
+		type: ChannelDto,
+	})
+	async directChannel(
+		@Req() req: { user: User },
+		@Param('userId') userId: number
+	) {
+		return this.channelService.createDirectChannel(userId, req.user);
 	}
 
 	@Post('join')
@@ -69,7 +83,7 @@ export class ChannelController {
 		description: 'The list of public channels',
 		type: [GetChannelDto],
 	})
-	async getPublicChannels(): Promise<GetChannelDto[]> {
+	async getPublicChannels() {
 		return (await this.channelService.getPublicChannels()).map(
 			(channel) => {
 				const getChannelDto: GetChannelDto = {
@@ -89,7 +103,7 @@ export class ChannelController {
 		description: 'The list of protected channels',
 		type: [GetChannelDto],
 	})
-	async getProtectedChannels(): Promise<GetChannelDto[]> {
+	async getProtectedChannels() {
 		return (await this.channelService.getProtectedChannels()).map(
 			(channel) => {
 				const getChannelDto: GetChannelDto = {
@@ -111,7 +125,7 @@ export class ChannelController {
 		description: 'The list of protected and public channels',
 		type: [GetChannelDto],
 	})
-	async getPublicAndProtectedChannels(): Promise<GetChannelDto[]> {
+	async getPublicAndProtectedChannels() {
 		return (await this.channelService.getPublicAndProtectedChannels()).map(
 			(channel) => {
 				const getChannelDto: GetChannelDto = {
