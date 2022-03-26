@@ -1,33 +1,37 @@
 version: '3.3'
 services:
+        proxy:
+        
+
         frontend:
                 build:
-                  context: ./requirements/frontend
+                  context: ./containers/frontend
                   args:
-                    - REACT_APP_BACKEND_ADDRESS=${REACT_APP_BACKEND_ADDRESS}
+                    - REACT_APP_BACKEND_ADDRESS=/api
                   dockerfile: Dockerfile.prod
                 image: frontend:v1
                 container_name: frontend
                 depends_on:
                         - backend
-                ports: 
-                        - "80:80"
                 restart: always
+                hostname: frontend
+                networks:
+                        - trans-network
 
         backend:
                 build: 
-                  context: ./requirements/backend
+                  context: ./containers/backend
                   dockerfile: Dockerfile.prod
                 image: backend:v1
                 environment:
                         - RUN_ENV=${RUN_ENV}
-                        - DB_HOSTNAME=${DB_HOSTNAME}
-                        - DB_PORT=${DB_PORT}
-                        - DB_NAME=${DB_NAME}
+                        - DB_HOSTNAME=database
+                        - DB_PORT=5432
+                        - DB_NAME=trans
                         - DB_USER=${DB_USER}
                         - DB_PASS=${DB_PASS}
                         - DB_ROOT_PASS=${DB_ROOT_PASS}
-                        - BACKEND_PORT=${BACKEND_PORT}
+                        - BACKEND_PORT=3000
                         - COOKIE_SECRET=${COOKIE_SECRET}
                         - UID_42=${UID_42}
                         - SECRET_42=${SECRET_42}
@@ -36,28 +40,25 @@ services:
                 container_name: backend
                 depends_on:
                         - database
-                ports: 
-                        - "3000:3000"
                 restart: always
+                hostname: backend
                 networks:
-                        - database-network
+                        - trans-network
         database:
                 build:
-                  context: ./requirements/database
+                  context: ./containers/database
                   args:
-                        - DB_PORT=${DB_PORT}
-                        - DB_NAME=${DB_NAME}
-                        - DB_USER=${DB_USER}
+                        - DB_PORT=5432
+                        - DB_NAME=trans
+                        - DB_USER=trans
                         - DB_PASS=${DB_PASS}
                         - DB_ROOT_PASS=${DB_ROOT_PASS}
                   dockerfile: Dockerfile.prod
                 image: database:v1
                 container_name: database
-                ports: 
-                        - "5432:5432"
-                hostname: ${DB_HOSTNAME}
+                hostname: database
                 networks:
-                        - database-network
+                        - trans-network
                 restart: always
                 volumes:
                   - db_vol:/var/lib/postgresql/data
@@ -66,4 +67,4 @@ volumes:
         db_vol:
 
 networks:
-        database-network:
+        trans-network:
