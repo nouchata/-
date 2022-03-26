@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
-import socketIOClient, { Socket } from "socket.io-client"; // eslint-disable-line
 import { useLogin } from '../Providers/LoginProvider';
 import { LoginState } from '../types/FetchStatusData';
 import Game from './game/Game';

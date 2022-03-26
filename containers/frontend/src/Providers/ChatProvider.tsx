@@ -63,10 +63,10 @@ export class ChatSocket {
 		if (socket) this._socket = socket;
 		else {
 			// if we don't have socket, we create a new one
-			this._socket = socketIOClient(
-				process.env.REACT_APP_BACKEND_ADDRESS + '/chat',
-				{ withCredentials: true }
-			);
+			this._socket = socketIOClient('/chat', {
+				path: process.env.REACT_APP_BACKEND_ADDRESS + '/socket.io',
+				withCredentials: true,
+			});
 
 			// we join all channels
 			for (const channel of channels) {
@@ -177,11 +177,9 @@ export class ChatSocket {
 	}
 }
 
-
-
 export interface ChatState {
 	state: 'OPENED' | 'MINIMIZED' | 'CLOSED';
-};
+}
 
 interface IChat {
 	chatSocket?: ChatSocket;
