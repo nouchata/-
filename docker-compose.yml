@@ -1,70 +1,79 @@
-version: '3.3'
+version: "3.3"
 services:
-        proxy:
-        
+  proxy:
+    build:
+      context: ./containers/proxy
+      dockerfile: Dockerfile
+    image: proxy:v1
+    container_name: proxy
+    depends_on:
+      - frontend
+    ports:
+        - "8080:80"
+    networks:
+      - trans-network
 
-        frontend:
-                build:
-                  context: ./containers/frontend
-                  args:
-                    - REACT_APP_BACKEND_ADDRESS=/api
-                  dockerfile: Dockerfile.prod
-                image: frontend:v1
-                container_name: frontend
-                depends_on:
-                        - backend
-                restart: always
-                hostname: frontend
-                networks:
-                        - trans-network
+  frontend:
+    build:
+      context: ./containers/frontend
+      args:
+        - REACT_APP_BACKEND_ADDRESS=/api
+      dockerfile: Dockerfile.prod
+    image: frontend:v1
+    container_name: frontend
+    depends_on:
+      - backend
+    restart: always
+    hostname: frontend
+    networks:
+      - trans-network
 
-        backend:
-                build: 
-                  context: ./containers/backend
-                  dockerfile: Dockerfile.prod
-                image: backend:v1
-                environment:
-                        - RUN_ENV=${RUN_ENV}
-                        - DB_HOSTNAME=database
-                        - DB_PORT=5432
-                        - DB_NAME=trans
-                        - DB_USER=${DB_USER}
-                        - DB_PASS=${DB_PASS}
-                        - DB_ROOT_PASS=${DB_ROOT_PASS}
-                        - BACKEND_PORT=3000
-                        - COOKIE_SECRET=${COOKIE_SECRET}
-                        - UID_42=${UID_42}
-                        - SECRET_42=${SECRET_42}
-                        - CALLBACK_URL_42=${CALLBACK_URL_42}
-                        - FRONTEND_ADDRESS=${FRONTEND_ADDRESS}
-                container_name: backend
-                depends_on:
-                        - database
-                restart: always
-                hostname: backend
-                networks:
-                        - trans-network
-        database:
-                build:
-                  context: ./containers/database
-                  args:
-                        - DB_PORT=5432
-                        - DB_NAME=trans
-                        - DB_USER=trans
-                        - DB_PASS=${DB_PASS}
-                        - DB_ROOT_PASS=${DB_ROOT_PASS}
-                  dockerfile: Dockerfile.prod
-                image: database:v1
-                container_name: database
-                hostname: database
-                networks:
-                        - trans-network
-                restart: always
-                volumes:
-                  - db_vol:/var/lib/postgresql/data
+  backend:
+    build:
+      context: ./containers/backend
+      dockerfile: Dockerfile.prod
+    image: backend:v1
+    environment:
+      - RUN_ENV=PROD
+      - DB_HOSTNAME=database
+      - DB_PORT=5432
+      - DB_NAME=trans
+      - DB_USER=nestjs
+      - DB_PASS=${DB_PASS}
+      - DB_ROOT_PASS=${DB_ROOT_PASS}
+      - BACKEND_PORT=3000
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - UID_42=${UID_42}
+      - SECRET_42=${SECRET_42}
+      - CALLBACK_URL_42=${CALLBACK_URL_42}
+    container_name: backend
+    depends_on:
+      - database
+    restart: always
+    hostname: backend
+    networks:
+      - trans-network
+  database:
+    build:
+      context: ./containers/database
+      args:
+        - DB_PORT=5432
+        - DB_NAME=trans
+        - DB_USER=nestjs
+        - DB_PASS=${DB_PASS}
+        - DB_ROOT_PASS=${DB_ROOT_PASS}
+      dockerfile: Dockerfile.prod
+    image: database:v1
+    container_name: database
+    hostname: database
+    networks:
+      - trans-network
+    restart: always
+    volumes:
+      - db_vol:/var/lib/postgresql/data
 
 volumes:
-        db_vol:
+  db_vol:
 
 networks:
-        trans-network:
+  trans-network:
