@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../../../Providers/LoginProvider';
 import { useModal } from '../../../Providers/ModalProvider';
-import { User } from '../../../types/User';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
+import { User } from '../../chat/types/user-channels.dto';
 
 import './styles/gamecreator.scss';
 
@@ -18,10 +18,12 @@ function submitTextValue(instanceId: number): string {
 	}
 }
 
-const GameCreator = (): JSX.Element => {
+const GameCreator = ({ user }: { user?: User }): JSX.Element => {
 	const [currentlyFetching, setCurrentlyFetching] = useState<boolean>(false);
-	const [userTwoFound, setUserTwoFound] = useState<number>(0);
-	const [userTwoLogin, setUserTwoLogin] = useState<string>('');
+	const [userTwoFound, setUserTwoFound] = useState<number>(user?.id || 0);
+	const [userTwoLogin, setUserTwoLogin] = useState<string | undefined>(
+		user?.displayName
+	);
 	const [timeoutStamp, setTimeoutStamp] = useState<number>(0);
 	const [instanceId, setInstanceId] = useState<number>(0);
 	const [gameType, setGameType] = useState<'standard' | 'extended'>(
