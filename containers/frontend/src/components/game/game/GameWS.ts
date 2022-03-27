@@ -14,14 +14,20 @@ class GameWS {
 		errorCallback: (e: any) => void
 	) {
 		this.instanceId = instanceId;
-
-		this.socket = socketIOClient(
-			process.env.REACT_APP_BACKEND_ADDRESS + '/game',
-			{
-				path: process.env.REACT_APP_BACKEND_ADDRESS + '/socket.io',
-				withCredentials: true,
-			}
-		);
+		// if REACT_APP_BACKEND_ADDRESS start with http with use it + '/chat' else we just use '/chat'
+		const backend_address = process.env.REACT_APP_BACKEND_ADDRESS;
+		if (!backend_address)
+			throw new Error('REACT_APP_BACKEND_ADDRESS is not defined');
+		const url = backend_address.startsWith('http')
+			? backend_address + '/game'
+			: '/chat';
+		const path = backend_address.startsWith('http')
+			? undefined
+			: backend_address + '/socket.io';
+		this.socket = socketIOClient(url, {
+			path: path,
+			withCredentials: true,
+		});
 
 		this.socket.on('exception', errorCallback);
 
