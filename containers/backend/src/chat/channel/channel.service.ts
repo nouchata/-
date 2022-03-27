@@ -33,7 +33,15 @@ export class ChannelService {
 		private punishmentRepository: Repository<Punishment>,
 		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
 		private userService: UserService
-	) {}
+	) {
+		this.messageRepository.find({
+			where: {
+				messageType: 'invitation'
+			}
+		}).then(async (messages) => {
+			this.messageRepository.remove(messages);
+		});
+	}
 
 	async getChannel(
 		channelId: number,
