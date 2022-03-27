@@ -1,21 +1,25 @@
-import { useEffect, useRef } from "react";
-import { ChatSocket } from "../../Providers/ChatProvider";
-import { useLogin } from "../../Providers/LoginProvider";
-import { MessageDto, User } from "./types/user-channels.dto";
-import ChatGameInvitation from "./utils/ChatGameInvitation";
+import { useEffect, useRef } from 'react';
+import { ChatSocket } from '../../Providers/ChatProvider';
+import { useLogin } from '../../Providers/LoginProvider';
+import { MessageDto, User } from './types/user-channels.dto';
+import ChatGameInvitation from './utils/ChatGameInvitation';
 
-const MessageArea = ({ index, chatSocket }: { index: number, chatSocket?: ChatSocket}) => {
-
+const MessageArea = ({
+	index,
+	chatSocket,
+}: {
+	index: number;
+	chatSocket?: ChatSocket;
+}) => {
 	const { loginStatus } = useLogin();
 	const messagesEndRef = useRef<HTMLDivElement>(null);
-	let loginBuffer : string = "";
 
 	const scrollToBottom = () => {
 		if (messagesEndRef.current) {
 			// fast scrool to bottom
 			messagesEndRef.current.scrollIntoView();
 		}
-	}
+	};
 
 	const msg_length = chatSocket?.channels[index].messages.length || 0;
 
@@ -25,8 +29,7 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket?: ChatSo
 
 	const channel = chatSocket?.channels[index];
 
-	if (!channel)
-		return <div>No channel selected</div>;
+	if (!channel) return <div>No channel selected</div>;
 
 	// transform channel.user to use user.id as key as users[id]
 	const users = channel.users.reduce((acc, user) => {
@@ -36,24 +39,47 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket?: ChatSo
 
 	return (
 		<div className="message-area">
-			{
-				channel?.messages.map((message: MessageDto, index: number) => {
-					if (!index)
-						loginBuffer = "";
-					const displayName = message.userId && loginStatus.user?.id !== message.userId && users[message.userId].displayName as string !== loginBuffer ? users[message.userId as number].displayName : "";
-					loginBuffer = message.userId ? users[message.userId].displayName : loginBuffer;
-					if (message.messageType === "invitation")
-						return (<ChatGameInvitation instanceId={message.text} />);
+			{channel?.messages.map((message: MessageDto, index: number) => {
+				if (message.messageType === 'invitation')
 					return (
-						<div className={message.messageType === 'system' ? "system" : ("user" + (loginStatus.user?.id === message.userId ? " self" : ''))} key={index}>
-							{message.messageType !== 'system' && displayName && <p className="author">{displayName}</p>}
-							<p className="message" ref={index === channel.messages.length - 1 ? messagesEndRef : undefined} >{message.text}</p>
-						</div>
+						<ChatGameInvitation
+							instanceId={message.text}
+							key={index}
+						/>
 					);
-				})
-			}
+				return (
+					<div
+						className={
+							message.messageType === 'system'
+								? 'system'
+								: 'user' +
+								  (loginStatus.user?.id === message.userId
+										? ' self'
+										: '')
+						}
+						key={index}
+					>
+						{message.messageType === 'user' && message.userId && (
+							<p className="author">
+								{users[message.userId]?.displayName ||
+									'Unknown'}
+							</p>
+						)}
+						<p
+							className="message"
+							ref={
+								index === channel.messages.length - 1
+									? messagesEndRef
+									: undefined
+							}
+						>
+							{message.text}
+						</p>
+					</div>
+				);
+			})}
 		</div>
 	);
-}
+};
 
 export default MessageArea;
