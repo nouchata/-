@@ -62,9 +62,16 @@ export class ChatSocket {
 		// if we have socket, we can use it
 		if (socket) this._socket = socket;
 		else {
-			// if we don't have socket, we create a new one
-			this._socket = socketIOClient('/chat', {
-				path: process.env.REACT_APP_BACKEND_ADDRESS + '/socket.io',
+
+			// if REACT_APP_BACKEND_ADDRESS start with http with use it + '/chat' else we just use '/chat'
+			const backend_address = process.env.REACT_APP_BACKEND_ADDRESS;
+			if (!backend_address) throw new Error('REACT_APP_BACKEND_ADDRESS is not defined');
+			const url = backend_address.startsWith('http') ? backend_address + '/chat' : '/chat';
+			const path = backend_address.startsWith('http') ? undefined : backend_address + '/socket.io';
+
+
+			this._socket = socketIOClient(url, {
+				path: path,
 				withCredentials: true,
 			});
 
