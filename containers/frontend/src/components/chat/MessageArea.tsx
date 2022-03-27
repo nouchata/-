@@ -59,12 +59,14 @@ const MessageArea = ({
 						}
 						key={index}
 					>
-						{message.messageType === 'user' && message.userId && (
-							<p className="author">
-								{users[message.userId]?.displayName ||
-									'Unknown'}
-							</p>
-						)}
+						{message.messageType === 'user' &&
+							message.userId &&
+							loginStatus.user?.id !== message.userId && (
+								<p className="author">
+									{users[message.userId]?.displayName ||
+										'Unknown'}
+								</p>
+							)}
 						<p
 							className="message"
 							ref={
