@@ -1,3 +1,4 @@
+import { FindUsersByDisplayNameDTO } from './dto/find-users-by-displayname.dto';
 import { GroupGuard } from 'src/auth/guards/group.guard';
 import { EditUserDTO } from './dto/edit-user.dto';
 import {
@@ -18,7 +19,6 @@ import {
 	UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
-import { FindUsersByLoginDTO } from './dto/find-users-by-login.dto';
 import { User, UserDto } from './entities/user.entity';
 import { UserService } from './user.service';
 import { FindUserDTO } from './dto/find-user.dto';
@@ -85,18 +85,20 @@ export class UserController {
 		description: 'No login matching',
 	})
 	@UseGuards(GroupGuard)
-	@Post('search/login')
-	async findUsersByLogin(
-		@Body() findUserByLogin: FindUsersByLoginDTO
+	@Post('search/displayname')
+	async findUsersByDisplayName(
+		@Body() findUsersByDisplayName: FindUsersByDisplayNameDTO
 	): Promise<User[]> {
-		const users: User[] = await this.userService.findUsersByLogin(
-			findUserByLogin.loginfragment
+		const users: User[] = await this.userService.findUsersByDisplayName(
+			findUsersByDisplayName.displaynamefragment
 		);
 
 		if (users.length > 0)
 			return users.slice(
-				(findUserByLogin.offset - 1) * findUserByLogin.maxresults,
-				findUserByLogin.offset * findUserByLogin.maxresults
+				(findUsersByDisplayName.offset - 1) *
+					findUsersByDisplayName.maxresults,
+				findUsersByDisplayName.offset *
+					findUsersByDisplayName.maxresults
 			);
 		else throw new HttpException('Not found', HttpStatus.NOT_FOUND);
 	}

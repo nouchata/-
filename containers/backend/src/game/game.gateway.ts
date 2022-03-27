@@ -8,18 +8,23 @@ import { GameInstance } from './state/GameInstance';
 import { GameOptions } from './types/GameOptions';
 import { GameAction, GA_KEY } from './types/GameAction';
 import { GameService } from './game.service';
+import { ResponseState } from './types/ResponseState';
+import { ChannelService } from 'src/chat/channel/channel.service';
 
 @UseGuards(OnlineStateGuard)
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
-  constructor(@Inject(GameService) private gameService: GameService) {}
+	constructor(
+	  @Inject(GameService) private gameService: GameService,
+	  @Inject(ChannelService) private channelService: ChannelService
+	) {}
 
 	@WebSocketServer()
 	wsServer: Server;
 
 	/* relie les instances à leur id */
-	private gameInstances : { [instanceId: number]: GameInstance | undefined } = {};
+	public gameInstances : { [instanceId: number]: GameInstance | undefined } = {};
 	/* relie les joueurs à l'id de leur instance */
 	private associatedPlayers : { [userId: number]: number | undefined } = {};
 
@@ -64,6 +69,7 @@ export class GameGateway {
 		playerOneId: number,
 		playerTwoId: number,
 		gameOptions: Partial<GameOptions> = {},
+		sendInvitation?: boolean,
 		givenInstanceId?: number
 	) : number {
 		let instanceId : number = givenInstanceId ? givenInstanceId : 0;
@@ -93,6 +99,20 @@ export class GameGateway {
 			playersId: { one: playerOneId, two: playerTwoId }
 		}, gameOptions);
 
+		if (sendInvitation)
+			this.channelService
+				.retrieveDirectChannel([playerOneId, playerTwoId])
+				.then((channel) => {
+					this.channelService
+						.createMessage(channel, 'invitation', String(instanceId))
+						.then((message) => {
+							(this.gameInstances[instanceId] as GameInstance).injectInvitationId(message.id);
+							this.channelService.sendMessage(message);
+						}
+					);
+				}
+			);
+
 		return (instanceId);
 	}
 
@@ -103,5 +123,11 @@ export class GameGateway {
 			})) return parseInt(gameId); // return the game id the user is playing in
 		}
 		return 0; // user is not ingame
+	}
+
+	getInstanceData(instanceId: number) : ResponseState | undefined {
+		if (!this.gameInstances[instanceId])
+			return ;
+		return (this.gameInstances[instanceId] as GameInstance).getData();
 	}
 }

@@ -13,7 +13,7 @@ const samplePlayer : PlayerState = {
 	id: 0,
 	connected: false,
 	pos: { x: undefined, y: 50 },
-	flags: {
+	flags: { 
 		falsePosAnimation: false,
 		capacityCharging: false,
 		stuned: true,
@@ -78,6 +78,9 @@ class GameInstance {
 
 	private responseState : ResponseState;
 
+	// backend invitation
+	private invitationId : number = 0;
+
 	constructor(
 		@Inject(GameService) private gameService: GameService,
 		instanceSettings : InstanceSettings,
@@ -141,6 +144,8 @@ class GameInstance {
 		this.associatedPlayers[this.playerOne.id] = 0;
 		this.associatedPlayers[this.playerTwo.id] = 0;
 		this.gameInstances[this.instanceId] = undefined;
+		if (this.invitationId !== 0)
+			this.gameService.removeInvitation(this.invitationId);
 	}
 
 	private runStateHandler() {
@@ -174,6 +179,13 @@ class GameInstance {
 		{
 			if (!this.playerOne.connected || !this.playerTwo.connected)
 				this.runState = RUNSTATE.PLAYER_DISCONNECTED;
+		}
+		else if (this.runState === RUNSTATE.AFTER_GAME)
+		{
+			if (!this.runStateStartWaitingTime)
+				this.runStateStartWaitingTime = this.mSecElapsed;
+			else if (this.runStateStartWaitingTime && this.mSecElapsed - this.runStateStartWaitingTime - 1000 > -50)
+				this.runState = RUNSTATE.ENDED;
 		}
 	}
 
@@ -500,10 +512,22 @@ class GameInstance {
 		}
 	}
 
+	injectInvitationId(id: number) {
+		this.invitationId = id;
+	}
+
+	getData() : ResponseState {
+		return (cloneDeep(this.responseState));
+	}
+
 	get players() : [number, number] {
 		return [this.playerOne.id, this.playerTwo.id];
+	}
+
+	get getRunState() : RUNSTATE {
+		return (this.runState);
 	}
 	
 };
 
-export { GameInstance, RUNSTATE };
+export { GameInstance };

@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef, useState } from "react";
 
-import "./styles/matchmaking.scss";
+import "./styles/matchmaking.scss"; 
 import { RequestWrapper } from "../../../utils/RequestWrapper";
 import { useNavigate } from "react-router-dom";
 import { useModal } from "../../../Providers/ModalProvider";
@@ -37,10 +37,10 @@ const MatchMaking = () : JSX.Element => {
 		setAdditionalText('');
 	}
 
-	async function handleFound() {
+	async function handleFound(message?: string) {
 		refValues.current.isFetching = false;
 		setFetchState(2);
-		setAdditionalText('');
+		setAdditionalText(message || '');
 		await new Promise((resolve) => setTimeout(() => resolve(1), 500));
 		setFetchState(3);
 	}
@@ -50,7 +50,7 @@ const MatchMaking = () : JSX.Element => {
 			refValues.current.isFetching = true;
 
 			let registerError : boolean = false;
-			await RequestWrapper.post(
+			const joinResponse : number | undefined = await RequestWrapper.post(
 				'/game/join',
 				undefined,
 				(e) => {
@@ -60,16 +60,19 @@ const MatchMaking = () : JSX.Element => {
 			);
 			if (registerError)
 				return ;
+			if (joinResponse && joinResponse !== 0) {
+				refValues.current.instanceId = joinResponse;
+				return handleFound("You're already in a game, click to join it.");
+			}
 			
 			setFetchState(1);
 			setAdditionalText('You\'re currently in queue. To quit the search, close this modal.');
 			while (refValues.current.isFetching) {
 				const instanceId : number | undefined = await RequestWrapper.get<number>(
-					'/game/matchmaking',
+					'/game/match',
 					undefined,
 					(e) => handleError(e.message)
 				);
-				console.log(instanceId);
 				if (instanceId) {
 					refValues.current.instanceId = instanceId;
 					handleFound();
@@ -84,7 +87,7 @@ const MatchMaking = () : JSX.Element => {
 
 	useEffect(() => {
 		return (function cleanup() {
-			/* TODO: needs an exit route on the back if currentlyFetching */
+			RequestWrapper.post('/game/leave');
 			if (refValues.current.isFetching)
 				refValues.current.isFetching = false; // eslint-disable-line
 		});

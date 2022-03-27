@@ -1,5 +1,6 @@
 import {
 	faDoorOpen,
+	faGamepad,
 	faGear,
 	faPencil,
 	faPerson,
@@ -18,6 +19,7 @@ import { Members } from './utils/Members';
 import InviteFriend from './InviteFriend';
 import EditChannel from './EditChannel/EditChannel';
 import AddAdmin from './EditChannel/AddAdmin';
+import GameCreator from '../../modals/mm-components/GameCreator';
 
 const Option = ({
 	children,
@@ -106,6 +108,22 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 		];
 
 		if (channel.channelType === 'direct') {
+			options.push(
+				{
+					icon: faGamepad,
+					text: 'Play together',
+					callback: () => {
+						const user = channel.users.find(
+							(user) => user.id !== loginStatus.user?.id,
+						);
+						setModalProps({
+							show: true,
+							content: <GameCreator user={user} />,
+							width: '80%',
+							height: '80%',
+						});
+					},
+				})
 			return options;
 		}
 

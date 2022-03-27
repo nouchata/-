@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MatchHistory } from "src/user/entities/match-history.entity";
 import { User } from "src/user/entities/user.entity";
@@ -7,6 +7,8 @@ import { PlayerState } from "./types/PlayerState";
 import { MatchmakingList } from "./types/Matchmaking"
 import { GameGateway } from "./game.gateway";
 import { GameOptions } from "./types/GameOptions";
+import { ResponseState, RUNSTATE } from "./types/ResponseState";
+import { ChannelService } from "src/chat/channel/channel.service";
 
 @Injectable()
 export class GameService {
@@ -15,13 +17,23 @@ export class GameService {
     private playersTimeout: { [playerId: number]: NodeJS.Timeout };
     public gatewayPtr: GameGateway | undefined = undefined;
 
+    constructor(
+        @InjectRepository(User) private userRepo: Repository<User>,
+        @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>,
+        @Inject(ChannelService) private channelService: ChannelService
+    ) {
+        this.list = { waiting: [], finished: [] };
+        this.playersTimeout = {};
+        this.matchWaitingPlayers(); // launch matching loop
+    }
+
     private disconnectTimeout = (playerId: number) => {
         return setTimeout(() => {
             this.matchmakingRemovePlayer(playerId);
         }, 5000)
     };
 
-    async createNewGame(ids: [number, number], options?: Partial<GameOptions>): Promise<number> {
+    async createNewGame(ids: [number, number], options?: Partial<GameOptions>, sendInvitation?: boolean): Promise<number> {
 
         const players = await this.userRepo.findByIds(ids);
         if (players.length !== 2) {
@@ -29,7 +41,7 @@ export class GameService {
         }
 
         if (this.gatewayPtr) {
-            return this.gatewayPtr.createInstance(ids[0], ids[1], options);
+            return this.gatewayPtr.createInstance(ids[0], ids[1], options, sendInvitation);
         }
         throw new Error('Game gateway is not initialized for now, please wait.');
     }
@@ -140,6 +152,19 @@ export class GameService {
         return updatedElo;
     }
 
+    instanceStateRetriever(instanceId: number) : ResponseState | undefined {
+        if (!this.gatewayPtr)
+            throw new HttpException("The game server isn't loaded yet", 500);
+        const responseState : ResponseState | undefined = this.gatewayPtr.getInstanceData(instanceId);
+        if (!responseState)
+            throw new HttpException("The given instanceId is invalid", 404);
+        return (responseState);
+    }
+
+    async removeInvitation(invitationId: number) : Promise<boolean> {
+		return await this.channelService.deleteMessage(invitationId);
+	}
+
     private async matchWaitingPlayers() {
         while (true) {
             await new Promise(resolve => setTimeout(() => { resolve(true) }, 1000));
@@ -206,14 +231,5 @@ export class GameService {
         ]
 
         return updatedElo;
-    }
-
-    constructor(
-        @InjectRepository(User) private userRepo: Repository<User>,
-        @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>    
-    ) {
-        this.list = { waiting: [], finished: [] };
-        this.playersTimeout = {};
-        this.matchWaitingPlayers(); // launch matching loop
     }
 }

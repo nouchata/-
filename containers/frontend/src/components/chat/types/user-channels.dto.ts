@@ -2,7 +2,7 @@ import { UserStatus } from "../../utils/StatusDisplay";
 
 export type UserRole = 'user' | 'moderator' | 'admin';
 export type ChannelType = 'private' | 'protected' | 'public' | 'direct';
-export type MessageType = "user" | "system";
+export type MessageType = "user" | "system" | "invitation";
 
 export interface User
 {

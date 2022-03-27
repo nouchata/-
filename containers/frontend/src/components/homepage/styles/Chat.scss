@@ -34,10 +34,10 @@ $self-bubble-color: black;
         flex-flow: row wrap;
     }
     > *:first-child {
-        padding-top: 10px;
+        margin-top: 10px;
     }
     > *:last-child {
-        padding-bottom: 10px;
+        margin-bottom: 10px;
     }
 
     .system {

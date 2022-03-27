@@ -17,5 +17,6 @@ import { Punishment } from './entities/punishment.entity';
 	],
 	controllers: [ChatController, ChannelController],
 	providers: [ChannelService, ChatGateway],
+	exports: [ChannelService],
 })
 export class ChatModule {}
