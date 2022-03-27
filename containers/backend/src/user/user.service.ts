@@ -42,9 +42,9 @@ export class UserService {
 		return this.userRepo.findOne({ login });
 	}
 
-	async findUsersByLogin(loginFragment: string) {
+	async findUsersByDisplayName(loginFragment: string) {
 		return await this.userRepo.find({
-			login: Like(`%${loginFragment}%`),
+			displayName: Like(`%${loginFragment}%`),
 		});
 	}
 

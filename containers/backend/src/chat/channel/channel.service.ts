@@ -34,13 +34,15 @@ export class ChannelService {
 		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
 		private userService: UserService
 	) {
-		this.messageRepository.find({
-			where: {
-				messageType: 'invitation'
-			}
-		}).then(async (messages) => {
-			this.messageRepository.remove(messages);
-		});
+		this.messageRepository
+			.find({
+				where: {
+					messageType: 'invitation',
+				},
+			})
+			.then(async (messages) => {
+				this.messageRepository.remove(messages);
+			});
 	}
 
 	async getChannel(
@@ -86,12 +88,11 @@ export class ChannelService {
 		);
 	}
 
-	async deleteMessage(id: number) : Promise<boolean> {
+	async deleteMessage(id: number): Promise<boolean> {
 		const retrieveMsg = await this.messageRepository.findOne(id);
-		if (!retrieveMsg)
-			return (false);
-		await this.messageRepository.remove([ retrieveMsg ]);
-		return (true);
+		if (!retrieveMsg) return false;
+		await this.messageRepository.remove([retrieveMsg]);
+		return true;
 	}
 
 	async createChannel(
@@ -197,12 +198,13 @@ export class ChannelService {
 		);
 	}
 
-	async retrieveDirectChannel(users: [number, number]) : Promise<IChannel | Channel> {
+	async retrieveDirectChannel(
+		users: [number, number]
+	): Promise<IChannel | Channel> {
 		const user1 = await this.userService.findUserById(users[0]);
 		const user2 = await this.userService.findUserById(users[1]);
 
-		if (!user1 || !user2)
-			throw new Error("Undefined user(s)");
+		if (!user1 || !user2) throw new Error('Undefined user(s)');
 
 		const channels = (await this.channelRepository.find({
 			relations: ['users'],

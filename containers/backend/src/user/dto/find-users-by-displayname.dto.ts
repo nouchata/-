@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class FindUsersByLoginDTO {
+export class FindUsersByDisplayNameDTO {
 	@ApiProperty({
-		description: 'login fragment to search for',
-		example: 'tmatis',
+		description: 'display name fragment to search for',
+		example: 'Theo',
 	})
 	@IsNotEmpty()
-	loginfragment: string;
+	displaynamefragment: string;
 
 	@ApiProperty({
 		description: 'maximum number of results to return',
