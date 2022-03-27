@@ -78,6 +78,9 @@ class GameInstance {
 
 	private responseState : ResponseState;
 
+	// backend invitation
+	private invitationId : number = 0;
+
 	constructor(
 		@Inject(GameService) private gameService: GameService,
 		instanceSettings : InstanceSettings,
@@ -141,6 +144,8 @@ class GameInstance {
 		this.associatedPlayers[this.playerOne.id] = 0;
 		this.associatedPlayers[this.playerTwo.id] = 0;
 		this.gameInstances[this.instanceId] = undefined;
+		if (this.invitationId !== 0)
+			this.gameService.removeInvitation(this.invitationId);
 	}
 
 	private runStateHandler() {
@@ -505,6 +510,10 @@ class GameInstance {
 			if (gameAction.keyPressed === GA_KEY.NONE && gameAction.data.ballPos)
 				this.ballCollisionPlayerChecker(gameAction, playerId === this.playerOne.id);
 		}
+	}
+
+	injectInvitationId(id: number) {
+		this.invitationId = id;
 	}
 
 	getData() : ResponseState {

@@ -9,12 +9,16 @@ import { GameOptions } from './types/GameOptions';
 import { GameAction, GA_KEY } from './types/GameAction';
 import { GameService } from './game.service';
 import { ResponseState } from './types/ResponseState';
+import { ChannelService } from 'src/chat/channel/channel.service';
 
 @UseGuards(OnlineStateGuard)
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
-  constructor(@Inject(GameService) private gameService: GameService) {}
+	constructor(
+	  @Inject(GameService) private gameService: GameService,
+	  @Inject(ChannelService) private channelService: ChannelService
+	) {}
 
 	@WebSocketServer()
 	wsServer: Server;
@@ -65,6 +69,7 @@ export class GameGateway {
 		playerOneId: number,
 		playerTwoId: number,
 		gameOptions: Partial<GameOptions> = {},
+		sendInvitation?: boolean,
 		givenInstanceId?: number
 	) : number {
 		let instanceId : number = givenInstanceId ? givenInstanceId : 0;
@@ -93,6 +98,20 @@ export class GameGateway {
 			gameInstances: this.gameInstances,
 			playersId: { one: playerOneId, two: playerTwoId }
 		}, gameOptions);
+
+		if (sendInvitation)
+			this.channelService
+				.retrieveDirectChannel([playerOneId, playerTwoId])
+				.then((channel) => {
+					this.channelService
+						.createMessage(channel, 'invitation', String(instanceId))
+						.then((message) => {
+							(this.gameInstances[instanceId] as GameInstance).injectInvitationId(message.id);
+							this.channelService.sendMessage(message);
+						}
+					);
+				}
+			);
 
 		return (instanceId);
 	}

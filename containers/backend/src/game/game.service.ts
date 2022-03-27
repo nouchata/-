@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from "@nestjs/common";
+import { HttpException, Inject, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MatchHistory } from "src/user/entities/match-history.entity";
 import { User } from "src/user/entities/user.entity";
@@ -8,6 +8,7 @@ import { MatchmakingList } from "./types/Matchmaking"
 import { GameGateway } from "./game.gateway";
 import { GameOptions } from "./types/GameOptions";
 import { ResponseState, RUNSTATE } from "./types/ResponseState";
+import { ChannelService } from "src/chat/channel/channel.service";
 
 @Injectable()
 export class GameService {
@@ -18,7 +19,8 @@ export class GameService {
 
     constructor(
         @InjectRepository(User) private userRepo: Repository<User>,
-        @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>    
+        @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>,
+        @Inject(ChannelService) private channelService: ChannelService
     ) {
         this.list = { waiting: [], finished: [] };
         this.playersTimeout = {};
@@ -31,7 +33,7 @@ export class GameService {
         }, 5000)
     };
 
-    async createNewGame(ids: [number, number], options?: Partial<GameOptions>): Promise<number> {
+    async createNewGame(ids: [number, number], options?: Partial<GameOptions>, sendInvitation?: boolean): Promise<number> {
 
         const players = await this.userRepo.findByIds(ids);
         if (players.length !== 2) {
@@ -39,7 +41,7 @@ export class GameService {
         }
 
         if (this.gatewayPtr) {
-            return this.gatewayPtr.createInstance(ids[0], ids[1], options);
+            return this.gatewayPtr.createInstance(ids[0], ids[1], options, sendInvitation);
         }
         throw new Error('Game gateway is not initialized for now, please wait.');
     }
@@ -158,6 +160,10 @@ export class GameService {
             throw new HttpException("The given instanceId is invalid", 404);
         return (responseState);
     }
+
+    async removeInvitation(invitationId: number) : Promise<boolean> {
+		return await this.channelService.deleteMessage(invitationId);
+	}
 
     private async matchWaitingPlayers() {
         while (true) {

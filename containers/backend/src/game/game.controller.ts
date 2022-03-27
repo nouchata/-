@@ -3,7 +3,6 @@ import { ApiResponse } from "@nestjs/swagger";
 import { validateOrReject } from "class-validator";
 import { GroupGuard } from "src/auth/guards/group.guard";
 import { OnlineStateGuard } from "src/auth/guards/online-state.guard";
-import { ChannelService } from "src/chat/channel/channel.service";
 import { User } from "src/user/entities/user.entity";
 import { PrivateMatchDTO } from "./dto/PrivateMatch.dto";
 import { GameService } from "./game.service";
@@ -15,7 +14,6 @@ import { GameOptions } from "./types/GameOptions";
 export class GameController { 
 	constructor(
 		@Inject(GameService) private gameService: GameService,
-		@Inject(ChannelService) private channelService: ChannelService
 	) {}
 
 	@Post('join')
@@ -80,7 +78,7 @@ export class GameController {
 		}
 
 		try {
-			return await this.gameService.createNewGame(body.ids, opt);
+			return await this.gameService.createNewGame(body.ids, opt, true);
 		} catch (e: any) {
 			throw new InternalServerErrorException(e.message);
 		}

@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { ChatSocket } from "../../Providers/ChatProvider";
 import { useLogin } from "../../Providers/LoginProvider";
 import { MessageDto, User } from "./types/user-channels.dto";
+import ChatGameInvitation from "./utils/ChatGameInvitation";
 
 const MessageArea = ({ index, chatSocket }: { index: number, chatSocket?: ChatSocket}) => {
 
@@ -41,6 +42,8 @@ const MessageArea = ({ index, chatSocket }: { index: number, chatSocket?: ChatSo
 						loginBuffer = "";
 					const displayName = message.userId && loginStatus.user?.id !== message.userId && users[message.userId].displayName as string !== loginBuffer ? users[message.userId as number].displayName : "";
 					loginBuffer = message.userId ? users[message.userId].displayName : loginBuffer;
+					if (message.messageType === "invitation")
+						return (<ChatGameInvitation instanceId={message.text} />);
 					return (
 						<div className={message.messageType === 'system' ? "system" : ("user" + (loginStatus.user?.id === message.userId ? " self" : ''))} key={index}>
 							{message.messageType !== 'system' && displayName && <p className="author">{displayName}</p>}

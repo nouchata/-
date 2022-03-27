@@ -78,6 +78,14 @@ export class ChannelService {
 		);
 	}
 
+	async deleteMessage(id: number) : Promise<boolean> {
+		const retrieveMsg = await this.messageRepository.findOne(id);
+		if (!retrieveMsg)
+			return (false);
+		await this.messageRepository.remove([ retrieveMsg ]);
+		return (true);
+	}
+
 	async createChannel(
 		channel: CreateChannelDto & { owner: User }
 	): Promise<ChannelDto> {
@@ -179,6 +187,48 @@ export class ChannelService {
 			await this.userService.getBlockedUsers(user),
 			user
 		);
+	}
+
+	async retrieveDirectChannel(users: [number, number]) : Promise<IChannel | Channel> {
+		const user1 = await this.userService.findUserById(users[0]);
+		const user2 = await this.userService.findUserById(users[1]);
+
+		if (!user1 || !user2)
+			throw new Error("Undefined user(s)");
+
+		const channels = (await this.channelRepository.find({
+			relations: ['users'],
+			where: {
+				channelType: 'direct',
+			},
+		})) as DirectChannel[];
+		const channel = channels.find(
+			(channel) =>
+				channel.users.find((user) => user.id === user1.id) &&
+				channel.users.find((user) => user.id === user2.id)
+		);
+
+		if (channel) {
+			return channel;
+		}
+
+		const channelCreated = this.channelRepository.create({
+			channelType: 'direct',
+			users: [user1, user2],
+			messages: [],
+			admins: [],
+		});
+		const newChannel: Channel = await this.channelRepository.save(
+			channelCreated
+		);
+		this.chatGateway.newChannelToUser(
+			newChannel.toDto(
+				await this.userService.getBlockedUsers(user2),
+				user2
+			),
+			user2.id
+		);
+		return newChannel;
 	}
 
 	async getPublicChannels(): Promise<GroupChannel[]> {
