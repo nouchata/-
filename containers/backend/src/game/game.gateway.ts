@@ -8,6 +8,7 @@ import { GameInstance } from './state/GameInstance';
 import { GameOptions } from './types/GameOptions';
 import { GameAction, GA_KEY } from './types/GameAction';
 import { GameService } from './game.service';
+import { ResponseState } from './types/ResponseState';
 
 @UseGuards(OnlineStateGuard)
 @UseGuards(WsGroupGuard)
@@ -19,7 +20,7 @@ export class GameGateway {
 	wsServer: Server;
 
 	/* relie les instances à leur id */
-	private gameInstances : { [instanceId: number]: GameInstance | undefined } = {};
+	public gameInstances : { [instanceId: number]: GameInstance | undefined } = {};
 	/* relie les joueurs à l'id de leur instance */
 	private associatedPlayers : { [userId: number]: number | undefined } = {};
 
@@ -103,5 +104,11 @@ export class GameGateway {
 			})) return parseInt(gameId); // return the game id the user is playing in
 		}
 		return 0; // user is not ingame
+	}
+
+	getInstanceData(instanceId: number) : ResponseState | undefined {
+		if (!this.gameInstances[instanceId])
+			return ;
+		return (this.gameInstances[instanceId] as GameInstance).getData();
 	}
 }

@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { MatchHistory } from "src/user/entities/match-history.entity";
 import { User } from "src/user/entities/user.entity";
@@ -7,6 +7,7 @@ import { PlayerState } from "./types/PlayerState";
 import { MatchmakingList } from "./types/Matchmaking"
 import { GameGateway } from "./game.gateway";
 import { GameOptions } from "./types/GameOptions";
+import { ResponseState, RUNSTATE } from "./types/ResponseState";
 
 @Injectable()
 export class GameService {
@@ -14,6 +15,15 @@ export class GameService {
     private list: MatchmakingList;
     private playersTimeout: { [playerId: number]: NodeJS.Timeout };
     public gatewayPtr: GameGateway | undefined = undefined;
+
+    constructor(
+        @InjectRepository(User) private userRepo: Repository<User>,
+        @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>    
+    ) {
+        this.list = { waiting: [], finished: [] };
+        this.playersTimeout = {};
+        this.matchWaitingPlayers(); // launch matching loop
+    }
 
     private disconnectTimeout = (playerId: number) => {
         return setTimeout(() => {
@@ -140,6 +150,15 @@ export class GameService {
         return updatedElo;
     }
 
+    instanceStateRetriever(instanceId: number) : ResponseState | undefined {
+        if (!this.gatewayPtr)
+            throw new HttpException("The game server isn't loaded yet", 500);
+        const responseState : ResponseState | undefined = this.gatewayPtr.getInstanceData(instanceId);
+        if (!responseState)
+            throw new HttpException("The given instanceId is invalid", 404);
+        return (responseState);
+    }
+
     private async matchWaitingPlayers() {
         while (true) {
             await new Promise(resolve => setTimeout(() => { resolve(true) }, 1000));
@@ -206,14 +225,5 @@ export class GameService {
         ]
 
         return updatedElo;
-    }
-
-    constructor(
-        @InjectRepository(User) private userRepo: Repository<User>,
-        @InjectRepository(MatchHistory) private matchRepo: Repository<MatchHistory>    
-    ) {
-        this.list = { waiting: [], finished: [] };
-        this.playersTimeout = {};
-        this.matchWaitingPlayers(); // launch matching loop
     }
 }

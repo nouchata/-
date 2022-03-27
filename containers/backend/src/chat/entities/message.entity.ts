@@ -10,7 +10,7 @@ import {
 import { MessageDto } from '../dtos/user-channels.dto';
 import { Channel } from './channel.entity';
 
-export type MessageType = 'user' | 'system';
+export type MessageType = 'user' | 'system' | 'invitation';
 
 @Entity({ name: 'messages' })
 export class Message {

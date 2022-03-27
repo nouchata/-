@@ -8,7 +8,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useRef, useState } from "react";
 
-import "./styles/matchmaking.scss";
+import "./styles/matchmaking.scss"; 
 import { RequestWrapper } from "../../../utils/RequestWrapper";
 import { useNavigate } from "react-router-dom";
 import { useModal } from "../../../Providers/ModalProvider";

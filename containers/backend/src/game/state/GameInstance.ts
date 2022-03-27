@@ -13,7 +13,7 @@ const samplePlayer : PlayerState = {
 	id: 0,
 	connected: false,
 	pos: { x: undefined, y: 50 },
-	flags: {
+	flags: { 
 		falsePosAnimation: false,
 		capacityCharging: false,
 		stuned: true,
@@ -507,10 +507,18 @@ class GameInstance {
 		}
 	}
 
+	getData() : ResponseState {
+		return (cloneDeep(this.responseState));
+	}
+
 	get players() : [number, number] {
 		return [this.playerOne.id, this.playerTwo.id];
+	}
+
+	get getRunState() : RUNSTATE {
+		return (this.runState);
 	}
 	
 };
 
-export { GameInstance, RUNSTATE };
+export { GameInstance };
