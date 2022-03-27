@@ -82,7 +82,6 @@ you need to setup a file named dev.env in _./requirements/backend_ with those fi
 
 ```
 REACT_APP_BACKEND_ADDRESS=http://localhost:3000
-GENERATE_SOURCEMAP=false
 ```
 
 run 
