@@ -14,6 +14,7 @@ you need _docker_ and _docker-compose_.
 You have to setup a file named `.env` at the root of the project with those fields filled:
 
 ```env
+APP_PORT=8080
 DB_PASS=password
 DB_ROOT_PASS=root
 COOKIE_SECRET=cookie_secret

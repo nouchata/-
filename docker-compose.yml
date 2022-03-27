@@ -9,7 +9,7 @@ services:
     depends_on:
       - frontend
     ports:
-        - "8080:80"
+        - "${APP_PORT}:80"
     networks:
       - trans-network
 
