@@ -175,6 +175,13 @@ class GameInstance {
 			if (!this.playerOne.connected || !this.playerTwo.connected)
 				this.runState = RUNSTATE.PLAYER_DISCONNECTED;
 		}
+		else if (this.runState === RUNSTATE.AFTER_GAME)
+		{
+			if (!this.runStateStartWaitingTime)
+				this.runStateStartWaitingTime = this.mSecElapsed;
+			else if (this.runStateStartWaitingTime && this.mSecElapsed - this.runStateStartWaitingTime - 1000 > -50)
+				this.runState = RUNSTATE.ENDED;
+		}
 	}
 
 	private responseRefresh() {

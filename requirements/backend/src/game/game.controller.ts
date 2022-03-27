@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, ConflictException, Controller, Get, HttpCode, HttpStatus, Inject, InternalServerErrorException, Param, ParseIntPipe, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiResponse } from "@nestjs/swagger";
 import { validateOrReject } from "class-validator";
 import { GroupGuard } from "src/auth/guards/group.guard";
@@ -20,10 +20,12 @@ export class GameController {
 		description: "Add the player to the matchmaking queue"
 	})
  	startMatchmaking(@Req() req: { user: User }) {
-		if (this.gameService.getMatchId(req.user.id) !== 0) {
-			throw new ForbiddenException('You already are in a match !');
-		}
+		const matchId = this.gameService.getMatchId(req.user.id);
+		if (matchId)
+			return (matchId);
+		
 		this.gameService.matchmakingAddPlayer(req.user);
+		return (0);
 	}
 
 	@Post('leave')
