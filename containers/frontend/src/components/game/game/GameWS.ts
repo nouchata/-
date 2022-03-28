@@ -47,7 +47,8 @@ class GameWS {
 	}
 
 	destroy() {
-		this.socket.disconnect();
+		if (!this.socket.disconnected)
+			this.socket.disconnect();
 	}
 }
 
