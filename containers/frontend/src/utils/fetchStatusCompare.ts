@@ -11,14 +11,23 @@ export function fetchStatusCompare(first: FetchStatusData, second: FetchStatusDa
 		for (let key of keys) {
 			if (first.user && second.user && first.user[key] !== second.user[key]) {
 				if (typeof first.user[key] !== "object")
+				{
+					console.log('typeof first.user[key] !== "object"');
 					return false;
+				}
 				let fkeys = Object.keys(first.user[key]);
 				let skeys = Object.keys(second.user[key]);
 				if (fkeys.length !== skeys.length)
+				{
+					console.log('fkeys.length !== skeys.length', fkeys.length, '!=', skeys.length);
 					return false;
+				}
 				for (let index in first.user[key]) {
 					if (first.user[key][index] !== second.user[key][index])
+					{
+						console.log('first.user[key][index] !== second.user[key][index]', first.user[key][index], '!=', second.user[key][index]);
 						return false;
+					}
 				}
 			}
 		}

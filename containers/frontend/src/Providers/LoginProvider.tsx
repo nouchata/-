@@ -46,20 +46,17 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 					res.fetched = true;
 				}
 				if (
-					!loginStatus ||
-					(loginStatus &&
-						status_data &&
-						!fetchStatusCompare(loginStatus, status_data))
+					status_data &&
+					!fetchStatusCompare(loginStatus, status_data)
 				) {
 					setLoginStatus(status_data);
-					break;
 				}
 				await new Promise((resolve) =>
 					setTimeout(() => resolve(0), 1500)
 				);
 			}
 		})();
-	}, [loginStatus]);
+	}, []); // eslint-disable-line
 
 	return (
 		<LoginContext.Provider
