@@ -10,6 +10,7 @@ import { Socket } from 'socket.io';
 import { User } from 'src/user/entities/user.entity';
 import { ChannelService } from './channel/channel.service';
 import { ChannelDto, MessageDto } from './dtos/user-channels.dto';
+import { request } from 'http';
 
 @WebSocketGateway({ cors: true, namespace: 'chat' })
 export class ChatGateway {
@@ -93,7 +94,9 @@ export class ChatGateway {
 
 	// handle user connection
 	@UseGuards(WsGroupGuard)
-	handleConnection(client: Socket & { request: { user: User } }) {
+	handleConnection(client: Socket & { request: { user?: User } }) {
+		if (!client.request.user)
+			return client.emit('unauthorized', 'You are not authorized');
 		this.userSockets[client.request.user.id] = {
 			socket: client,
 			channels: [],
@@ -102,7 +105,9 @@ export class ChatGateway {
 
 	// handle user disconnection
 	@UseGuards(WsGroupGuard)
-	handleDisconnect(client: Socket & { request: { user: User } }) {
+	handleDisconnect(client: Socket & { request: { user?: User } }) {
+		if (!client.request.user)
+			return ;
 		delete this.userSockets[client.request.user.id];
 	}
 
