@@ -54,7 +54,7 @@ services:
     networks:
       - trans-network
     volumes:
-      - profile_picture_vol:/var/lib/postgresql/data
+      - profile_picture_vol:/app/public
 
   database:
     build:
@@ -73,7 +73,7 @@ services:
       - trans-network
     restart: always
     volumes:
-      - db_vol:/app/public/
+      - db_vol:/var/lib/postgresql/data
 
 volumes:
   db_vol:
