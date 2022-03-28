@@ -15,9 +15,10 @@ import LinkTree from './components/LinkTree';
 import { LoginState } from './types/FetchStatusData';
 import HSocialField from './components/homepage/SocialField/HSocialField';
 import Compose from './utils/Compose';
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router } from 'react-router-dom';
 import MaterialLikeBtns from './components/homepage/MaterialLikeBtns';
 import { ChatProvider } from './Providers/ChatProvider';
+import LoadingContent from './utils/LoadingContent';
 
 const TransApp = () => {
 	const { loginStatus } = useLogin();
@@ -70,6 +71,8 @@ const ContextLoader = () => {
 				<TransApp />
 			</Compose>
 		);
+	} else if (loginStatus.fetched === false) {
+		return <LoadingContent />;
 	} else {
 		return <TransApp />;
 	}
@@ -83,7 +86,7 @@ const App = (): JSX.Element => {
 				LoginProvider,
 				NotificationProvider,
 				ModalProvider,
-				ChatProvider
+				ChatProvider,
 			]}
 		>
 			<ContextLoader />
