@@ -20,7 +20,7 @@ class GameWS {
 			throw new Error('REACT_APP_BACKEND_ADDRESS is not defined');
 		const url = backend_address.startsWith('http')
 			? backend_address + '/game'
-			: '/chat';
+			: '/game';
 		const path = backend_address.startsWith('http')
 			? undefined
 			: backend_address + '/socket.io';
