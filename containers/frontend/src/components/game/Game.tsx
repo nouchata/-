@@ -24,7 +24,7 @@ const Game = () : JSX.Element => {
 			}
 			setDisplayData({});
 		};
-	}, [gci]);
+	}, [gci]); // eslint-disable-line
 
 	return (
 		<div className="game-container">
