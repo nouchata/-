@@ -154,7 +154,7 @@ export class User implements UserInterface {
 	messages: Message[];
 
 	@Column({
-		default: true,
+		default: 'offline',
 	})
 	@ApiProperty({
 		enum: ['online', 'offline', 'ingame'],
