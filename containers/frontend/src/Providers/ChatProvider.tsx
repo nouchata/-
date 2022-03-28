@@ -42,6 +42,7 @@ export class ChatSocket {
 			this._user,
 			this._socket
 		);
+		console.log('yolo')
 
 		// it will not work if we just doo:
 		// this._callbacks.setChatSocket(this)
@@ -58,6 +59,8 @@ export class ChatSocket {
 		this._channels = channels;
 		this._callbacks = callbacks;
 		this._user = user;
+
+		console.log('constructor');
 
 		// if we have socket, we can use it
 		if (socket) this._socket = socket;
@@ -232,7 +235,7 @@ const ChatProvider = ({ children }: { children: ReactNode }) => {
 				);
 		};
 		fetchChannels();
-	}, [loginStatus.user]);
+	}, []); // eslint-disable-line
 
 	return (
 		<ChatContext.Provider
