@@ -67,7 +67,7 @@ const ContextLoader = () => {
 
 	if (loginStatus.loggedIn === LoginState.LOGGED) {
 		return (
-			<Compose components={[FriendListProvider, BlockedProvider]}>
+			<Compose components={[FriendListProvider, BlockedProvider, ChatProvider]}>
 				<TransApp />
 			</Compose>
 		);
@@ -86,7 +86,6 @@ const App = (): JSX.Element => {
 				LoginProvider,
 				NotificationProvider,
 				ModalProvider,
-				ChatProvider,
 			]}
 		>
 			<ContextLoader />

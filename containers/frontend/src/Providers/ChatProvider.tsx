@@ -131,6 +131,7 @@ export class ChatSocket {
 
 			this._socket.on('newChannel', (channel: ChannelDto) => {
 				this._channels.push(channel);
+				this._socket.emit('connectChannel', { channelId: channel.id });
 				this._updateChatSocket();
 			});
 
