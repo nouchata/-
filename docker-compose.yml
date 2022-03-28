@@ -53,6 +53,9 @@ services:
     hostname: backend
     networks:
       - trans-network
+    volumes:
+      - profile_picture_vol:/app/public
+
   database:
     build:
       context: ./containers/database
@@ -74,6 +77,8 @@ services:
 
 volumes:
   db_vol:
+  
+  profile_picture_vol:
 
 networks:
   trans-network:
