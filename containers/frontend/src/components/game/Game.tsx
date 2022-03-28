@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import "./styles/game.scss";
 import { GameClientInstance } from "./game/GameClientInstance";
 import { useQuery } from "../../utils/useQuery";
@@ -10,19 +10,21 @@ const Game = () : JSX.Element => {
 	const { loginStatus } = useLogin();
 	const queryCode = useQuery().get('play');
 	const querySpectator = useQuery().get('forceSpectator');
-	let gci : GameClientInstance;
+	const gci = useRef<GameClientInstance>();
 
 	useEffect(() => {
 		setDisplayData({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true });
 		// eslint-disable-next-line
-		setTimeout(() => gci = new GameClientInstance(loginStatus.user?.id as number, Number(queryCode), querySpectator ? true : false), 10);
+		setTimeout(() => gci.current = new GameClientInstance(loginStatus.user?.id as number, Number(queryCode), querySpectator ? true : false), 10);
 		
-
 		return function cleanup() {
-			gci.destroy();
+			if (gci.current) {
+				gci.current.destroy();
+				gci.current = undefined;
+			}
 			setDisplayData({});
 		};
-	}, []);
+	}, [gci]);
 
 	return (
 		<div className="game-container">

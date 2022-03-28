@@ -68,7 +68,9 @@ class GameComponents extends Container implements IContainerElement {
 
 	resize : Function = (function(this: GameComponents) {
 		// field separator
-		this.fieldSeparator.clear();
+		try {
+			this.fieldSeparator.clear();
+		} catch {}
 		this.fieldSeparator.beginFill(0xFFFFFF);
 		this.fieldSeparator.drawRect(this.appRef.screen.width / 2 - 1, 0, 3, this.appRef.screen.height);
 		this.fieldSeparator.endFill();
@@ -87,6 +89,7 @@ class GameComponents extends Container implements IContainerElement {
 
 	public destroy() {
 		this.appRef.ticker.remove(this.update, this);
+		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.fieldSeparator.destroy();
 		this.leftRacket.destroy();
 		this.rightRacket.destroy();

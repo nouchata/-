@@ -78,11 +78,14 @@ class GameClientInstance {
 	destroy() {
 		this.gciState = GCI_STATE.ENDED;
 		this.app.destroy();
-		this.wsClient.destroy();
+		// this.wsClient.destroy();
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
 		this.currentResponseState = newState;
+		if (this.currentResponseState.runState >= 3) {
+			this.wsClient.destroy();
+		}
 		// cleaning for garbage collector
 		if (this.app.playerRacket)
 			this.computedGameActionsCleaner(
