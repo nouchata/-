@@ -53,6 +53,9 @@ services:
     hostname: backend
     networks:
       - trans-network
+    volumes:
+      - profile_picture_vol:/var/lib/postgresql/data
+
   database:
     build:
       context: ./containers/database
@@ -70,10 +73,12 @@ services:
       - trans-network
     restart: always
     volumes:
-      - db_vol:/var/lib/postgresql/data
+      - db_vol:/app/public/
 
 volumes:
   db_vol:
+  
+  profile_picture_vol:
 
 networks:
   trans-network:
