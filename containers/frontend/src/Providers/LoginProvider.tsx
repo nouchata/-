@@ -50,7 +50,6 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 					!fetchStatusCompare(loginStatus, status_data)
 				) {
 					setLoginStatus(status_data);
-					break;
 				}
 				await new Promise((resolve) =>
 					setTimeout(() => resolve(0), 1500)

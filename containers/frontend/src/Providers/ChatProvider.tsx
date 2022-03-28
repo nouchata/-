@@ -60,8 +60,6 @@ export class ChatSocket {
 		this._callbacks = callbacks;
 		this._user = user;
 
-		console.log('constructor');
-
 		// if we have socket, we can use it
 		if (socket) this._socket = socket;
 		else {
