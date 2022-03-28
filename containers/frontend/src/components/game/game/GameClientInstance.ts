@@ -78,7 +78,7 @@ class GameClientInstance {
 	destroy() {
 		this.gciState = GCI_STATE.ENDED;
 		this.app.destroy();
-		// this.wsClient.destroy();
+		this.wsClient.destroy();
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
