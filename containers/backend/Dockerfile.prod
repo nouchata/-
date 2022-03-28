@@ -31,7 +31,6 @@ USER node
 COPY --from=builder /home/node/package*.json /app/
 COPY --from=builder /home/node/node_modules/ /app/node_modules/
 COPY --from=builder /home/node/dist/ /app/dist/
-
-
+COPY --from=builder /home/node/public/ /app/public/
 
 CMD ["node", "dist/main.js"]
