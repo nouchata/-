@@ -39,21 +39,29 @@ export class UserService {
 	}
 
 	async findUserByLogin(login: string) {
-		return this.userRepo.findOne({ login });
+		return this.userRepo.findOne({
+			where: { login },
+		});
 	}
 
 	async findUsersByDisplayName(loginFragment: string) {
 		return await this.userRepo.find({
-			displayName: Like(`%${loginFragment}%`),
+			where: {
+				displayName: Like(`%${loginFragment}%`),
+			},
 		});
 	}
 
 	async findUserByDisplayName(name: string) {
-		return this.userRepo.findOne({ displayName: name });
+		return this.userRepo.findOne({
+			where: { displayName: name },
+		});
 	}
 
 	async findUserById(id: number) {
-		return this.userRepo.findOne({ id });
+		return this.userRepo.findOne({
+			where: { id },
+		});
 	}
 
 	async editUser(dto: EditUserDTO, userPicture: string) {
