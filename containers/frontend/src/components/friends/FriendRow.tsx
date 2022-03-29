@@ -102,7 +102,7 @@ const FriendRow = (props: IProps) => {
 			</div>
 
 			<div className="friend-info">
-				<h3>{props.data.displayName}</h3>
+				{props.data.displayName}
 				<StatusDisplay status={props.data.status} />
 			</div>
 
