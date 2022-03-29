@@ -116,7 +116,7 @@ export class UserController {
 		status: 404,
 		description: 'No id matching user',
 	})
-	@Post('edit/')
+	@Post('edit')
 	@UseFilters(QueryExceptionFilter)
 	@UseGuards(GroupGuard)
 	@UseInterceptors(
@@ -141,24 +141,20 @@ export class UserController {
 			},
 		})
 	)
-	async uploadFile(
+	async editUser(
 		@Req() req: { user: User },
-		@Body() body: { username: string; twofa: string },
+		@Body() body: EditUserDTO,
 		@UploadedFile() file?: Express.Multer.File
 	): Promise<User> {
-		const dto: EditUserDTO = new EditUserDTO();
-		dto.id = req.user.id;
-		if (body.username) dto.displayName = body.username;
-		if (file) dto.picture = file.filename;
-		if (body.twofa) dto.twofa = body.twofa === 'true' ? true : false;
 
-		const prevUser = await this.userService.findUserById(dto.id);
+		// find user and edit his informations
+		const prevUser = await this.userService.findUserById(req.user.id);
 		if (!prevUser) {
 			throw new NotFoundException(
 				`"${req.user.displayName}" is not an existing user.`
 			);
 		}
-		const newUser = await this.userService.editUser(dto, prevUser.picture);
+		const newUser = await this.userService.editUser(prevUser, body, file);
 
 		// delete the user's previous picture
 		if (prevUser.picture !== newUser.picture) {

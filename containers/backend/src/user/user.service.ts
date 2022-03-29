@@ -64,11 +64,14 @@ export class UserService {
 		});
 	}
 
-	async editUser(dto: EditUserDTO, userPicture: string) {
-		if (!dto.picture) {
-			dto.picture = userPicture;
-		}
-		return this.userRepo.save(dto.toEntity());
+	async editUser(user: User, info: EditUserDTO, file?: Express.Multer.File) {
+		if (file)
+			user.picture = file.filename;
+		if (info.username)
+			user.displayName = info.username;
+		if (info.twofa !== undefined)
+			user.twofa = info.twofa;
+		return this.userRepo.save(user);
 	}
 
 	async getLadder() {
