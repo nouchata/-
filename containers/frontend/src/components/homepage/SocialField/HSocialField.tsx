@@ -16,6 +16,7 @@ import NewConv from './NewConv';
 import ChatBox from './ChatBox';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../../Providers/ChatProvider';
+import { useLogin } from '../../../Providers/LoginProvider';
 
 const HSocialField = (props: { standalone?: boolean }) => {
 	const [isFriendTabSelected, setIsFriendTabSelected] =
@@ -33,9 +34,12 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
 	const navigate = useNavigate();
+	const {loginStatus} = useLogin()
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
+			if (message.userId === loginStatus.user?.id)
+				return ;
 			// find user in channel.users by id
 			const user = channel.users.find((u) => u.id === message.userId);
 
@@ -56,7 +60,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 				},
 			});
 		},
-		[navigate, notificationHandler, setChatStatus]
+		[loginStatus.user?.id, navigate, notificationHandler, setChatStatus]
 	);
 
 	useEffect(() => {

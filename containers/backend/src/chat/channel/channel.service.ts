@@ -58,7 +58,8 @@ export class ChannelService {
 			'punishments',
 			'punishments.user',
 		];
-		return this.channelRepository.findOne(channelId, {
+		return this.channelRepository.findOne({
+			where: { id: channelId },
 			relations: relations || defaultRelations,
 		}) as Promise<IChannel | undefined>;
 	}
@@ -89,7 +90,9 @@ export class ChannelService {
 	}
 
 	async deleteMessage(id: number): Promise<boolean> {
-		const retrieveMsg = await this.messageRepository.findOne(id);
+		const retrieveMsg = await this.messageRepository.findOne({
+			where: { id },
+		});
 		if (!retrieveMsg) return false;
 		await this.messageRepository.remove([retrieveMsg]);
 		return true;
