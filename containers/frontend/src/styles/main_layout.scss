@@ -1,0 +1,107 @@
+@use 'theme';
+
+$fab-size: 60px;
+$fab-gap: 25px;
+$fab-img-size: 50%;
+$chat-width: 280px;
+
+.material-like-fab {
+	position: fixed;
+	bottom: calc($fab-gap / 1.5);
+	width: calc(100% - $fab-gap);
+	display: flex;
+	box-sizing: border-box;
+	flex-flow: row-reverse wrap;
+	gap: $fab-gap;
+
+	> button {
+		width: $fab-size;
+		height: $fab-size;
+		background-repeat: no-repeat;
+		border-radius: 100%;
+		border: 0;
+		//border: 1px solid red;
+		padding: 0;
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: center;
+		align-items: center;
+	
+		filter: drop-shadow(0 0 0.2rem rgba(0, 0, 0, 0.2));
+
+		> img {
+			flex: 0 1 $fab-img-size;
+			width: $fab-img-size;
+		
+			filter: invert(100%);
+		}
+	}
+}
+
+/* *********************** */
+
+.main-field {
+	display: flex;
+	flex-flow: row-reverse nowrap;
+	height: inherit;
+	overflow-x: hidden;
+
+	> * {
+		flex: 0 1 100%;
+		height: 100vh;
+		box-sizing: border-box;
+	}
+}
+
+.main-content > .social-field {
+	display: flex;
+	flex: 0 0 $chat-width;
+	max-width: $chat-width;
+	position: relative;
+	border-right: 1px solid theme.$primary-color;
+	filter: drop-shadow(0 10px 1rem crimson);
+	//overflow-x: hidden;
+}
+
+.main-field > .social-field {
+	display: none;
+}
+
+.main-content {
+	margin: 0;
+	padding: 20px 0 20px 0;
+	// height: 100%;
+	overflow-x: hidden;
+
+	* {
+		margin: 0;
+		padding: 0;
+	}
+}
+
+/* ************************** */
+
+@media(min-width: 800px) {
+	.material-like-fab > *:first-child {
+		display: none;
+	}
+
+	.main-field > * {
+		height: 100vh;
+	}
+
+	.main-field > .social-field {
+		display: flex;
+		flex: 0 0 $chat-width;
+		max-width: $chat-width;
+		position: relative;
+		border-right: 1px solid theme.$primary-color;
+		filter: drop-shadow(0 10px 1rem crimson);
+		//overflow-x: hidden;
+	}
+
+	.main-content {
+		padding: 20px 5% 20px 5%;
+	}
+
+}

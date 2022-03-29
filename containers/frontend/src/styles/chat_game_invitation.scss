@@ -1,0 +1,110 @@
+@use "theme";
+
+$cgi-height: 70px;
+$cgi-padding: 5px;
+$cgi-btn-dim: 40px;
+
+.chat-game-invitation {
+	height: $cgi-height;
+	margin: 0;
+	padding: $cgi-padding;
+	display: flex;
+	flex-flow: row nowrap;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	border-radius: 5px;
+	background-color: theme.$darkest-color;
+	overflow: hidden;
+
+	box-shadow: 0 0 0.5em rgba(black, 0.7);
+
+	.chat-game-invitation-figure {
+		flex: 0 0 calc($cgi-height - ($cgi-padding * 2));
+		display: flex;
+		flex-flow: row nowrap;
+		justify-content: center;
+		align-items: center;
+		height: 100%;
+
+		> :first-child {
+			height: 70%;
+			color: theme.$darker-color;
+		}
+	}
+
+	.chat-game-invitation-current-state {
+		overflow: hidden;
+		flex: 1;
+		color: theme.$darker-color;
+		display: flex;
+		flex-flow: column nowrap;
+
+		h1 {
+			font-size: 1em;
+			margin: 0;
+			padding-bottom: 2px;
+			font-weight: bolder;
+		}
+
+		.cgi-cs-line {
+			font-size: 0.7em;
+			margin: 0;
+			padding: 0;
+		}
+
+		.first {
+			font-style: italic;
+		}
+	}
+
+	.error {
+		font-size: 1.5em;
+		font-weight: bolder;
+		text-align: center;
+	}
+
+	.chat-game-invitation-loader {
+		color: theme.$darker-color;
+		height: 50%;
+	}
+
+	.chat-game-invitation-buttons {
+		display: none;
+	}
+}
+
+.chat-game-invitation:hover {
+	position: relative;
+
+	.chat-game-invitation-buttons {
+		position: absolute;
+		right: 0;
+		top: calc(($cgi-height - $cgi-btn-dim) / 2);
+		height: $cgi-height;
+		width: 100%;
+		padding-right: 10px;
+		display: flex;
+		flex-flow: row-reverse nowrap;
+		gap: 5px;
+
+		> button {
+			flex: 0 0 $cgi-btn-dim;
+			height: $cgi-btn-dim;
+			display: flex;
+			flex-flow: row nowrap;
+			justify-content: center;
+			align-items: center;
+			background-color: theme.$darkest-color;
+			border: none;
+			border-radius: 50%;
+
+			box-shadow: 0 0 2em black;
+
+			> * {
+				height: 50%;
+				color: theme.$darker-color
+			}
+		}
+	}
+}

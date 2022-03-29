@@ -1,0 +1,109 @@
+@use '../../../styles/theme';
+
+$bubble-color: white;
+$self-bubble-color: black;
+
+.message-area {
+    flex: 1;
+    overflow-y: scroll;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 10px;
+
+    p {
+        margin: 0;
+    }
+
+    .message {
+        word-wrap: break-word;
+        word-break: break-all;
+        max-width: 70%;
+        font-size: 0.8em;
+    }
+
+    .author {
+        flex: 0 0 100%;
+        font-size: 0.6em;
+    }
+
+    > * {
+        flex: 0 0 auto;
+        width: calc(100% - 20px);
+        display: flex;
+        flex-flow: row wrap;
+    }
+    > *:first-child {
+        margin-top: 10px;
+    }
+    > *:last-child {
+        margin-bottom: 10px;
+    }
+
+    .system {
+        justify-content: center;
+        text-align: center;
+        align-items: flex-start;
+        align-content: flex-start;
+
+        .message {
+            max-width: 90%;
+            color: rgba(theme.$primary-text-color, 0.5);
+        }
+    }
+
+    .user > .message {
+            padding: 8px;
+            font-weight: bolder;
+            border-radius: 5px 15px 15px 15px;
+            background-color: theme.$darkest-color;
+            color: theme.$darker-color;
+            border: 2px solid theme.$darkest-color;
+    }
+
+    .self {
+        flex-flow: row-reverse wrap-reverse;
+        text-align: right;
+
+        .message {
+            border-radius: 15px 15px 5px 15px;
+            background-color: transparent;
+            border-color: theme.$darkest-color;
+            color: black;
+        }
+    }
+}
+
+.input-area {
+    flex: 0 0 15%;
+    display: flex;
+    flex-flow: row nowrap;
+
+	.input-field {
+		flex: 1;
+		color: black;
+        box-sizing: border-box;
+        padding: 5px;
+        margin: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        border: none;
+        outline: none;
+	}
+    .input-field:focus {
+        background-color: rgba(255, 255, 255, 1);
+    }
+	.input-button {
+        flex: 0 0 auto;
+        border: 0;
+		color: white;
+		background-color: rgba(0, 0, 0, 0.8);
+        font-size: 15px;
+        padding: 10px;
+        margin: 0;
+        cursor: pointer;
+	}
+    .input-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

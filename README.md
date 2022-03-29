@@ -14,34 +14,13 @@ you need _docker_ and _docker-compose_.
 You have to setup a file named `.env` at the root of the project with those fields filled:
 
 ```env
-RUN_ENV=PROD
-
-# DB CONFIG
-
-DB_HOSTNAME=database
-DB_PORT=5432
-DB_ROOT_PASS=
-DB_NAME=transdb
-DB_USER=nestjs
-DB_PASS=
-
-# BACKEND CONFIG
-
-FRONTEND_ADDRESS=http://localhost
-BACKEND_PORT=3000
-COOKIE_SECRET=
-
-# FRONTEND CONFIG
-
-REACT_APP_BACKEND_ADDRESS=http://localhost:3000
-GENERATE_SOURCEMAP=false
-
-# 42 AUTH CONFIG
-
-UID_42=
-SECRET_42=
-CALLBACK_URL_42=http://localhost/login/
-
+APP_PORT=8080
+DB_PASS=password
+DB_ROOT_PASS=root
+COOKIE_SECRET=cookie_secret
+UID_42=yours
+SECRET_42=yours
+CALLBACK_URL_42=http://localhost:8080/login/
 ```
 
 then you can run
@@ -104,7 +83,6 @@ you need to setup a file named dev.env in _./requirements/backend_ with those fi
 
 ```
 REACT_APP_BACKEND_ADDRESS=http://localhost:3000
-GENERATE_SOURCEMAP=false
 ```
 
 run 
