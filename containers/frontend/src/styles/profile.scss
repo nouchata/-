@@ -65,31 +65,32 @@
 
 /****** SEPARATOR ******/
 
-.separator {
-    display: flex;
-    margin-bottom: 10px;
-    color: rgb(184, 111, 83);
-    width: 100%;
-    align-items: center;
-    text-align: center;
-}
+.profile {
+    .separator {
+        display: flex;
+        margin-bottom: 10px;
+        color: rgb(184, 111, 83);
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
 
-.separator::after,
-.separator::before {
-    content: "";
-    border: 2px solid rgb(184, 111, 83);
-    border-radius: 15px;
-    flex: 1;
-}
+    .separator::after,
+    .separator::before {
+        content: "";
+        border: 2px solid rgb(184, 111, 83);
+        border-radius: 15px;
+        flex: 1;
+    }
 
-.separator:not(:empty)::before {
-    margin-right: 0.25em;
-}
+    .separator:not(:empty)::before {
+        margin-right: 0.25em;
+    }
 
-.separator:not(:empty)::after {
-    margin-left: 0.25em;
+    .separator:not(:empty)::after {
+       margin-left: 0.25em;
+    }
 }
-
 
 /****** RANKING ******/
 
