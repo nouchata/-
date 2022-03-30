@@ -23,8 +23,10 @@ const InputChat = ({
 			onChange={(e) => setMsgInput(e.target.value)}
 			onKeyPress={(e) => {
 				if (e.key === 'Enter') {
-					sendMessage(msgInput, selectChannelIndex);
-					setMsgInput("");
+					if (msgInput.length > 0) {
+						sendMessage(msgInput, selectChannelIndex);
+						setMsgInput("");
+					}
 				}
 			}}
 			/>

@@ -27,7 +27,6 @@ const RankingTable = (props: IProps) => {
                 '/user/ladder',
                 {},
                 (e) => {
-                    console.log(e.response);
                     setRankingData({...rankingData, error: true });
                 }
             );

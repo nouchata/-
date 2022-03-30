@@ -307,8 +307,6 @@ class GameInstance {
 			differencePlayerY = currentPlayer.pos.y - (gameAction.data.y as number);
 			differenceBall[0] = this.ballState.pos.x - (gameAction.data.ballPos?.x as number);
 			differenceBall[1] = this.ballState.pos.y - (gameAction.data.ballPos?.y as number);
-			// console.log(`pre if: ${differenceBall} ${gameAction.data.ballPos.x} ${this.ballState.pos.x}`);
-			// console.log(`p:${differencePlayerY} dy:${gameAction.data.y}`);
 			if ((differencePlayerY < -(differenceBallEaseRange) || differencePlayerY > differenceBallEaseRange) ||
 			(differenceBall[0] < -(differenceBallEaseRange) || differenceBall[0] > differenceBallEaseRange) ||
 			(differenceBall[1] < -(differenceBallEaseRange) || differenceBall[1] > differenceBallEaseRange))
@@ -329,11 +327,9 @@ class GameInstance {
 			this.ballState.speedPPS += 0.5; //
 			// this.lastMsPlayerBallCollision = this.mSecElapsed;
 			this.capacityUnlocker(currentPlayer);
-			// console.log(`${currentPlayer.capacityLoaderPercentage} ${currentPlayer.stockedCapacity} ${this.ballState.flags.smash}`);
 			if (this.ballState.flags.smash) {
 				this.ballState.flags.smash = false;
 				this.ballState.flags.rainbow = false;
-				// console.log('smash end');
 			}
 			// smash signal
 			if (currentPlayer.capacityLoaderPercentage >= 98 && currentPlayer.stockedCapacity === PLAYER_CAPACITY.SMASH) {
@@ -343,7 +339,6 @@ class GameInstance {
 				currentPlayer.flags.stuned = true;
 				this.ballState.pos.x = gameAction.data.ballPos?.x || 0;
 				this.ballState.pos.y = gameAction.data.ballPos?.y || 0;
-				// console.log(`smash loading ${this.ballState.pos.x}`);
 				currentPlayer.capacityTimeTrigger = this.mSecElapsed;
 			}
 		}
