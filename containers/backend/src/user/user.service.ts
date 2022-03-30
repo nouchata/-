@@ -69,8 +69,8 @@ export class UserService {
 			user.picture = file.filename;
 		if (info.username)
 			user.displayName = info.username;
-		if (info.twofa !== undefined)
-			user.twofa = info.twofa;
+		if (info.twofa)
+			user.twofa = info.twofa === 'true';
 		return this.userRepo.save(user);
 	}
 
