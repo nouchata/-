@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-	IsBoolean,
 	IsOptional,
 	IsString,
 	Length,
@@ -17,8 +16,8 @@ export class EditUserDTO {
 	@Length(3, 15)
 	username?: string;
 
-	@IsBoolean()
+	@IsString()
 	@IsOptional()
 	@ApiProperty({ description: 'state of the 2FA auth', example: 'true' })
-	twofa?: boolean;
+	twofa?: string;
 }
