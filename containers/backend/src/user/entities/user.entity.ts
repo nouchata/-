@@ -1,3 +1,4 @@
+import { UserInterface, UserStatus } from './../interface/UserInterface';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Channel } from 'src/chat/entities/channel.entity';
@@ -11,7 +12,6 @@ import {
 	OneToMany,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserInterface, UserStatus } from '../interface/UserInterface';
 import { MatchHistory } from './match-history.entity';
 
 export class UserDto {
@@ -154,16 +154,6 @@ export class User implements UserInterface {
 	messages: Message[];
 
 	@Column({
-		default: 'offline',
-	})
-	@ApiProperty({
-		enum: ['online', 'offline', 'ingame'],
-		description: 'The state of the user',
-		example: 'online',
-	})
-	status: UserStatus;
-
-	@Column({
 		default: false,
 	})
 	twofa: boolean;
@@ -179,7 +169,9 @@ export class User implements UserInterface {
 	@JoinTable()
 	blockedUsers: User[];
 
-	toDto(): UserDto {
+	async toDto(
+		getUserStatus: (user: { id: number }) => Promise<UserStatus>
+	): Promise<UserDto> {
 		const dto: UserDto = {
 			id: this.id,
 			login: this.login,
@@ -190,9 +182,21 @@ export class User implements UserInterface {
 			elo: this.elo,
 			victories: this.victories,
 			history: this.history,
-			friends: this.friends?.map((friend) => friend.toDto()),
-			status: this.status,
-			blockedUsers: this.blockedUsers?.map((user) => user.toDto()),
+			friends: this.friends
+				? await Promise.all(
+						this.friends.map(async (friend) =>
+							friend.toDto(getUserStatus)
+						)
+				  )
+				: [],
+			status: await getUserStatus(this),
+			blockedUsers: this.blockedUsers
+				? await Promise.all(
+						this.blockedUsers?.map((user) =>
+							user.toDto(getUserStatus)
+						)
+				  )
+				: [],
 		};
 		return dto;
 	}

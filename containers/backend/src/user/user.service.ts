@@ -9,7 +9,7 @@ import { EditUserDTO } from './dto/edit-user.dto';
 import { FindUserDTO } from './dto/find-user.dto';
 import { Like, Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { UserInterface } from './interface/UserInterface';
+import { UserInterface, UserStatus } from './interface/UserInterface';
 import { MatchHistoryDTO } from './dto/match-history.dto';
 import download from './utils/download';
 import { LadderDTO } from './dto/ladder.dto';
@@ -17,7 +17,11 @@ import { FriendDTO } from './dto/friend.dto';
 
 @Injectable()
 export class UserService {
-	constructor(@InjectRepository(User) private userRepo: Repository<User>) {}
+	private userStatus: Map<number, UserStatus>;
+
+	constructor(@InjectRepository(User) private userRepo: Repository<User>) {
+		this.userStatus = new Map<number, UserStatus>();
+	}
 
 	async createUser(details: UserInterface): Promise<User> {
 		// download picture from 42 servers
@@ -65,12 +69,9 @@ export class UserService {
 	}
 
 	async editUser(user: User, info: EditUserDTO, file?: Express.Multer.File) {
-		if (file)
-			user.picture = file.filename;
-		if (info.username)
-			user.displayName = info.username;
-		if (info.twofa)
-			user.twofa = info.twofa === 'true';
+		if (file) user.picture = file.filename;
+		if (info.username) user.displayName = info.username;
+		if (info.twofa) user.twofa = info.twofa === 'true';
 		return this.userRepo.save(user);
 	}
 
@@ -97,7 +98,7 @@ export class UserService {
 		dto.general.name = entity.displayName;
 		dto.general.picture = entity.picture ? entity.picture : 'default.jpg';
 		dto.general.creation = entity.createdAt;
-		dto.general.status = entity.status;
+		dto.general.status = await this.getUserStatus(entity);
 
 		dto.ranking.vdRatio = [entity.victories, entity.losses];
 		dto.ranking.elo = entity.elo;
@@ -167,7 +168,13 @@ export class UserService {
 
 		if (!channels) return [];
 		const blockedUsers = await this.getBlockedUsers(user);
-		return channels.map((channel) => channel.toDto(blockedUsers, user));
+		return Promise.all(
+			channels.map((channel) =>
+				channel.toDto(blockedUsers, user, (user) =>
+					this.getUserStatus(user)
+				)
+			)
+		);
 	}
 
 	async blockUser(user: User, blockedUser: User) {
@@ -234,7 +241,7 @@ export class UserService {
 		user = cb(user, friend, friendIndex);
 		this.userRepo.save(user); // save new relation
 
-		return FriendDTO.fromEntity(friend);
+		return FriendDTO.fromEntity(friend, this.getUserStatus);
 	}
 
 	async addFriend(user: User, friend: User) {
@@ -269,5 +276,27 @@ export class UserService {
 				return user;
 			}
 		);
+	}
+
+	/*
+	 ** This function check if status is stored and is not expired
+	 ** if not stored and expired fetch it from services and set expiration date 
+	 ** date + 10 seconds
++ 	 */
+	async getUserStatus(user: { id: number }): Promise<UserStatus> {
+		const found_status = this.userStatus.get(user.id);
+
+		if (found_status) {
+			// cached
+			return found_status;
+		}
+
+		// not cached
+		const status: UserStatus = 'offline';
+		this.userStatus.set(user.id, status);
+
+		// destroy the status after 10 seconds
+		setTimeout(() => this.userStatus.delete(user.id), 10000);
+		return status;
 	}
 }

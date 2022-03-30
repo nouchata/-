@@ -6,7 +6,6 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { FortyTwoStrategy } from './fortytwo.strategy';
 import { GroupGuard } from './guards/group.guard';
-import { OnlineStateGuard } from './guards/online-state.guard';
 import { SessionSerializer } from './serializer';
 import { SessionEntity } from './session.entity';
 
@@ -17,12 +16,6 @@ import { SessionEntity } from './session.entity';
 		TypeOrmModule.forFeature([User]),
 	],
 	controllers: [AuthController],
-	providers: [
-		AuthService,
-		FortyTwoStrategy,
-		SessionSerializer,
-		GroupGuard,
-		OnlineStateGuard,
-	],
+	providers: [AuthService, FortyTwoStrategy, SessionSerializer, GroupGuard],
 })
 export class AuthModule {}
