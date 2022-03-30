@@ -2,7 +2,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
 	IsOptional,
 	IsString,
-	Length,
+	IsIn,
+	Length
 } from 'class-validator';
 
 export class EditUserDTO {
@@ -18,6 +19,7 @@ export class EditUserDTO {
 
 	@IsString()
 	@IsOptional()
+	@IsIn(values: ['true', 'false'])
 	@ApiProperty({ description: 'state of the 2FA auth', example: 'true' })
 	twofa?: string;
 }
