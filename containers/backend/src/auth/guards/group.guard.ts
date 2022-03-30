@@ -14,7 +14,6 @@ export class GroupGuard implements CanActivate {
 	canActivate(context: ExecutionContext): boolean {
 		const request = context.switchToHttp().getRequest();
 
-		// console.log(request.session);
 		if (request.isAuthenticated()) {
 			if (
 				(request.session as Session & Session2FaDTO).twofa.needed &&

@@ -22,7 +22,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy) {
 		profile: Profile42,
 		cb: (err: Error | null, user: User) => void
 	) {
-		// console.log('validate breakpoint');
 		let email: string;
 		let picture: string | undefined = undefined;
 

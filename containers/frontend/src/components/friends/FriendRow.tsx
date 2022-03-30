@@ -58,7 +58,6 @@ const FriendRow = (props: IProps) => {
 		// if found we set the channel as selected
 		if (found) {
 			const index = chat.chatSocket.channels.indexOf(found);
-            console.log(index);
 			if (index !== -1)
             {
                 chat.setSelectedChannelIndex(index);

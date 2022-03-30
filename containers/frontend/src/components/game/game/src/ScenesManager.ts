@@ -57,7 +57,6 @@ class ScenesManager {
 			this.appRef.gciMaster.currentResponseState &&
 			this.appRef.gciMaster.currentResponseState.runState !== this.currentState)
 		{
-			console.log(this.appRef.gciMaster.currentResponseState.runState);
 			if (this.appRef.gciMaster.currentResponseState.runState === RUNSTATE.ENDED)
 				this.appRef.gciMaster.gciState = GCI_STATE.ENDED;
 			else {

@@ -73,9 +73,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 		try {
 			await friendList.addFriendByName(name);
 		} catch (e: any) {
-			console.log('error caught');
 			let errinfo: string;
-			console.log(e.response.data);
 			if (e.response.data.message) {
 				errinfo = e.response.data.message;
 			} else {
