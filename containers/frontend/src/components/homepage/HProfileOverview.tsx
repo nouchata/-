@@ -37,11 +37,11 @@ const ProfileOverview = ({fetchStatus}: {fetchStatus: FetchStatusData}) : JSX.El
 				<div className='profile-overview-data'>
 					<h3><Link to={`/profile/${fetchStatus.user?.id}`}>{fetchStatus.user?.displayName}</Link></h3> {/* tba an a tag redirecting to profile page */}
 					<div className='profile-overview-progress'>
-						<p>Level:</p>
-						<progress value='50' max='100'></progress>
+						<p>ELO:</p>
+						<p>{fetchStatus.user?.elo}</p>
 					</div>
 					<div className='profile-overview-progress'>
-						<p>Elo:</p>
+						<p>Winrate:</p>
 						<progress
 							value={
 								fetchStatus.user
