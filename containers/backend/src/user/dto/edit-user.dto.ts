@@ -19,7 +19,7 @@ export class EditUserDTO {
 
 	@IsString()
 	@IsOptional()
-	@IsIn(values: ['true', 'false'])
+	@IsIn(['true', 'false'])
 	@ApiProperty({ description: 'state of the 2FA auth', example: 'true' })
 	twofa?: string;
 }
