@@ -66,7 +66,7 @@ const Login = () => {
 				setTimeout(() => history("/"), 1000);
 			})();
 		}
-	}, [loginStatus]); // eslint-disable-line
+	}, [history, loginStatus.loggedIn, queryCode]);
 
 	return (
 		loginStatus.loggedIn === LoginState.PARTIAL && !queryCode ?
