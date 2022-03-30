@@ -1,5 +1,5 @@
 import { UserModule } from 'src/user/user.module';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { ChatController } from './chat.controller';
@@ -13,10 +13,10 @@ import { Punishment } from './entities/punishment.entity';
 @Module({
 	imports: [
 		TypeOrmModule.forFeature([Message, Channel, User, Punishment]),
-		UserModule,
+		forwardRef(() => UserModule),
 	],
 	controllers: [ChatController, ChannelController],
 	providers: [ChannelService, ChatGateway],
-	exports: [ChannelService],
+	exports: [ChannelService, ChatGateway],
 })
 export class ChatModule {}

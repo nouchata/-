@@ -1,7 +1,11 @@
+import { ChatGateway } from './../chat/chat.gateway';
+import { ChatModule } from 'src/chat/chat.module';
 import {
 	ConflictException,
+	forwardRef,
 	HttpException,
 	HttpStatus,
+	Inject,
 	Injectable,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +23,11 @@ import { FriendDTO } from './dto/friend.dto';
 export class UserService {
 	private userStatus: Map<number, UserStatus>;
 
-	constructor(@InjectRepository(User) private userRepo: Repository<User>) {
+	constructor(
+		@InjectRepository(User) private userRepo: Repository<User>,
+		@Inject(forwardRef(() => ChatGateway))
+		private chatGateway: ChatGateway
+	) {
 		this.userStatus = new Map<number, UserStatus>();
 	}
 
@@ -292,11 +300,13 @@ export class UserService {
 		}
 
 		// not cached
-		const status: UserStatus = 'offline';
+		const status: UserStatus = this.chatGateway.isUserConnected(user.id)
+			? 'online'
+			: 'offline';
 		this.userStatus.set(user.id, status);
 
 		// destroy the status after 10 seconds
-		setTimeout(() => this.userStatus.delete(user.id), 10000);
+		setTimeout(() => this.userStatus.delete(user.id), 500);
 		return status;
 	}
 }
