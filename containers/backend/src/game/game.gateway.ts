@@ -1,4 +1,4 @@
-import { Inject, UseGuards } from '@nestjs/common';
+import { forwardRef, Inject, UseGuards } from '@nestjs/common';
 import {
 	SubscribeMessage,
 	WebSocketGateway,
@@ -18,10 +18,14 @@ import { ChannelService } from 'src/chat/channel/channel.service';
 @UseGuards(WsGroupGuard)
 @WebSocketGateway({ cors: true, namespace: 'game' })
 export class GameGateway {
+	private userList: Set<number>;
 	constructor(
-		@Inject(GameService) private gameService: GameService,
-		@Inject(ChannelService) private channelService: ChannelService
-	) {}
+		private gameService: GameService,
+		@Inject(forwardRef(() => ChannelService))
+		private channelService: ChannelService
+	) {
+		this.userList = new Set<number>();
+	}
 
 	@WebSocketServer()
 	wsServer: Server;
@@ -36,15 +40,18 @@ export class GameGateway {
 		this.gameService.gatewayPtr = this;
 	}
 
-	handleConnection() {
-		//todo
+	handleConnection(client: Socket & { request: { user?: User } }) {
+		if (!client.request.user) return;
+		this.userList.add(client.request.user.id);
 	}
 
-	handleDisconnect(client: Socket & { request: { user: User } }) {
+	handleDisconnect(client: Socket & { request: { user?: User } }) {
+		if (!client.request.user) return;
 		if (this.associatedPlayers[client.request.user.id])
 			this.gameInstances[
 				this.associatedPlayers[client.request.user.id] as number
 			]?.updatePlayerNetState(client.request.user.id, false);
+		this.userList.delete(client.request.user.id);
 	}
 
 	@SubscribeMessage('joinGame')
@@ -155,6 +162,10 @@ export class GameGateway {
 				});
 
 		return instanceId;
+	}
+
+	isUserConnected(userId: number): boolean {
+		return this.userList.has(userId);
 	}
 
 	isUserPlaying(userId: number): number {

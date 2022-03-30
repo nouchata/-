@@ -1,5 +1,5 @@
+import { GameGateway } from './../game/game.gateway';
 import { ChatGateway } from './../chat/chat.gateway';
-import { ChatModule } from 'src/chat/chat.module';
 import {
 	ConflictException,
 	forwardRef,
@@ -26,7 +26,8 @@ export class UserService {
 	constructor(
 		@InjectRepository(User) private userRepo: Repository<User>,
 		@Inject(forwardRef(() => ChatGateway))
-		private chatGateway: ChatGateway
+		private chatGateway: ChatGateway,
+		private gameGateway: GameGateway
 	) {
 		this.userStatus = new Map<number, UserStatus>();
 	}
@@ -292,6 +293,12 @@ export class UserService {
 	 ** date + 10 seconds
 + 	 */
 	async getUserStatus(user: { id: number }): Promise<UserStatus> {
+		const fetchStatus = (userid: number): UserStatus => {
+			if (this.gameGateway.isUserConnected(userid)) return 'ingame';
+			if (this.chatGateway.isUserConnected(userid)) return 'online';
+			return 'offline';
+		};
+
 		const found_status = this.userStatus.get(user.id);
 
 		if (found_status) {
@@ -300,9 +307,7 @@ export class UserService {
 		}
 
 		// not cached
-		const status: UserStatus = this.chatGateway.isUserConnected(user.id)
-			? 'online'
-			: 'offline';
+		const status = fetchStatus(user.id);
 		this.userStatus.set(user.id, status);
 
 		// destroy the status after 10 seconds

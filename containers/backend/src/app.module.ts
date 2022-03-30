@@ -64,11 +64,11 @@ if (process.env.RUN_ENV === 'PROD') {
 			retryAttempts: 5,
 			retryDelay: 5000,
 		}),
-		UserModule,
 		AuthModule,
 		ChatModule,
 		TfaModule,
 		GameModule,
+		UserModule,
 		PassportModule.register({ session: true }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, '..', 'public'),

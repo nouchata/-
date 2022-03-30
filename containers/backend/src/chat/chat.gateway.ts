@@ -18,7 +18,6 @@ export class ChatGateway {
 	constructor(
 		@Inject(forwardRef(() => ChannelService))
 		private channelService: ChannelService,
-		@Inject(forwardRef(() => UserService))
 		private userService: UserService
 	) {}
 
@@ -108,7 +107,6 @@ export class ChatGateway {
 	handleConnection(client: Socket & { request: { user?: User } }) {
 		if (!client.request.user)
 			return client.emit('unauthorized', 'You are not authorized');
-		console.log('connected', client.request.user.id);
 		this.userSockets[client.request.user.id] = {
 			socket: client,
 			channels: [],
@@ -119,7 +117,6 @@ export class ChatGateway {
 	@UseGuards(WsGroupGuard)
 	handleDisconnect(client: Socket & { request: { user?: User } }) {
 		if (!client.request.user) return;
-		console.log('disconnected', client.request.user.id);
 		delete this.userSockets[client.request.user.id];
 	}
 

@@ -34,7 +34,8 @@ export class ChannelService {
 		private messageRepository: Repository<Message>,
 		@InjectRepository(Punishment)
 		private punishmentRepository: Repository<Punishment>,
-		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
+		@Inject(forwardRef(() => ChatGateway))
+		private chatGateway: ChatGateway,
 		private userService: UserService
 	) {
 		this.messageRepository
