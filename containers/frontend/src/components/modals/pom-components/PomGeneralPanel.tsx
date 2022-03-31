@@ -70,6 +70,17 @@ const PomGeneralPanel = () : JSX.Element => {
 							<input id="pom-login" type="text" placeholder={loginStatus.user?.login} disabled />
 						</div>
 						<div className="pom-gp-tc-textfield">
+							<label htmlFor="pom-email">
+								Email :
+							</label>
+							<input
+								id="pom-email"
+								type="email"
+								placeholder={loginStatus.user?.email}
+								disabled
+							/>
+						</div>
+						<div className="pom-gp-tc-textfield">
 							<label htmlFor="pom-display-name">
 								Display name :
 							</label>
@@ -79,19 +90,6 @@ const PomGeneralPanel = () : JSX.Element => {
 								placeholder={loginStatus.user?.displayName}
 								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 									setDisplayName(e.target.value);
-								}}
-							/>
-						</div>
-						<div className="pom-gp-tc-textfield">
-							<label htmlFor="pom-email">
-								Email :
-							</label>
-							<input
-								id="pom-email"
-								type="email"
-								placeholder={loginStatus.user?.email}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-									setEmail(e.target.value);
 								}}
 							/>
 						</div>

@@ -95,7 +95,7 @@ const FriendRow = (props: IProps) => {
 		>
 			<div className="friend-picture">
 				<img
-					alt="friend's avatar"
+					alt="avatar"
 					src={`${process.env.REACT_APP_BACKEND_ADDRESS}/${props.data.picture}`}
 				/>
 			</div>
