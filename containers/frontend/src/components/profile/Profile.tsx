@@ -31,7 +31,7 @@ const Profile = () : JSX.Element => {
             );
             setProfileCompData({...profileCompData, user: fetchUserData, isLoaded: true});
         })();
-    }, []); // eslint-disable-line
+    }, [urlData.id]);
 
     if (profileCompData?.error) {
         return (
