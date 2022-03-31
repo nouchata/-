@@ -250,7 +250,7 @@ export class UserService {
 		user = cb(user, friend, friendIndex);
 		this.userRepo.save(user); // save new relation
 
-		return FriendDTO.fromEntity(friend, this.getUserStatus);
+		return FriendDTO.fromEntity(friend, (user) => this.getUserStatus(user));
 	}
 
 	async addFriend(user: User, friend: User) {
