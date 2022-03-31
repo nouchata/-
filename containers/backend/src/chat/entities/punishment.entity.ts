@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Channel } from 'src/chat/entities/channel.entity';
 import { User, UserDto } from 'src/user/entities/user.entity';
+import { UserStatus } from 'src/user/interface/UserInterface';
 import {
 	Column,
 	CreateDateColumn,
@@ -87,10 +88,12 @@ export class Punishment {
 	@CreateDateColumn()
 	createdAt: Date;
 
-	toDto(): PunishmentDto {
+	async toDto(
+		getUserStatus: (user: { id: number }) => Promise<UserStatus>
+	): Promise<PunishmentDto> {
 		return {
 			id: this.id,
-			user: this.user.toDto(),
+			user: await this.user.toDto(getUserStatus),
 			reason: this.reason,
 			type: this.type,
 			expiration: this.expiration,

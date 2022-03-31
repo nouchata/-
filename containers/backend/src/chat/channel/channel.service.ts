@@ -21,9 +21,12 @@ import { UserService } from 'src/user/user.service';
 import { CreatePunishmentDto } from '../dtos/create-punishment.dto';
 import { Punishment } from '../entities/punishment.entity';
 import { EditChannelDto } from '../dtos/edit-channel.dto';
+import { UserStatus } from 'src/user/interface/UserInterface';
 
 @Injectable()
 export class ChannelService {
+	private getUserStatus: (user: { id: number }) => Promise<UserStatus>;
+
 	constructor(
 		@InjectRepository(Channel)
 		private channelRepository: Repository<Channel>,
@@ -31,7 +34,8 @@ export class ChannelService {
 		private messageRepository: Repository<Message>,
 		@InjectRepository(Punishment)
 		private punishmentRepository: Repository<Punishment>,
-		@Inject(forwardRef(() => ChatGateway)) private chatGateway: ChatGateway,
+		@Inject(forwardRef(() => ChatGateway))
+		private chatGateway: ChatGateway,
 		private userService: UserService
 	) {
 		this.messageRepository
@@ -43,12 +47,13 @@ export class ChannelService {
 			.then(async (messages) => {
 				this.messageRepository.remove(messages);
 			});
+		this.getUserStatus = (user) => this.userService.getUserStatus(user);
 	}
 
 	async getChannel(
 		channelId: number,
 		relations?: string[]
-	): Promise<IChannel | undefined> {
+	): Promise<IChannel | null> {
 		const defaultRelations = [
 			'users',
 			'owner',
@@ -61,7 +66,7 @@ export class ChannelService {
 		return this.channelRepository.findOne({
 			where: { id: channelId },
 			relations: relations || defaultRelations,
-		}) as Promise<IChannel | undefined>;
+		}) as Promise<IChannel | null>;
 	}
 
 	async createMessage(
@@ -142,7 +147,8 @@ export class ChannelService {
 
 		return newChannel.toDto(
 			await this.userService.getBlockedUsers(channel.owner),
-			channel.owner
+			channel.owner,
+			this.getUserStatus
 		);
 	}
 
@@ -175,7 +181,8 @@ export class ChannelService {
 		if (channel) {
 			return channel.toDto(
 				await this.userService.getBlockedUsers(user),
-				user
+				user,
+				this.getUserStatus
 			);
 		}
 
@@ -189,15 +196,17 @@ export class ChannelService {
 			channelCreated
 		);
 		this.chatGateway.newChannelToUser(
-			newChannel.toDto(
+			await newChannel.toDto(
 				await this.userService.getBlockedUsers(user2),
-				user2
+				user2,
+				this.getUserStatus
 			),
 			user2.id
 		);
 		return newChannel.toDto(
 			await this.userService.getBlockedUsers(user),
-			user
+			user,
+			this.getUserStatus
 		);
 	}
 
@@ -235,9 +244,10 @@ export class ChannelService {
 			channelCreated
 		);
 		this.chatGateway.newChannelToUser(
-			newChannel.toDto(
+			await newChannel.toDto(
 				await this.userService.getBlockedUsers(user2),
-				user2
+				user2,
+				this.getUserStatus
 			),
 			user2.id
 		);
@@ -335,7 +345,8 @@ export class ChannelService {
 		await this.chatGateway.addNewUser(channelToJoin.id, user);
 		return (await this.channelRepository.save(channelToJoin)).toDto(
 			await this.userService.getBlockedUsers(user),
-			user
+			user,
+			this.getUserStatus
 		);
 	}
 
@@ -395,7 +406,10 @@ export class ChannelService {
 				);
 				await this.sendMessage(message);
 				channelToLeave.messages.push(message);
-				this.chatGateway.updateChannelMetadata(channelToLeave);
+				this.chatGateway.updateChannelMetadata(
+					channelToLeave,
+					this.getUserStatus
+				);
 			}
 			this.channelRepository.save(channelToLeave);
 		}
@@ -508,7 +522,7 @@ export class ChannelService {
 			channel.users = channel.users.filter((u) => u.id !== user.id);
 		}
 		await this.channelRepository.save(channel);
-		return savedPunishment.toDto();
+		return savedPunishment.toDto(this.getUserStatus);
 	}
 
 	async getChannelPunishments(channelId: number, user: User) {
@@ -536,7 +550,7 @@ export class ChannelService {
 		) {
 			throw new HttpException('User is not an admin', 403);
 		}
-		return channel.punishments.map((p) => p.toDto());
+		return channel.punishments.map((p) => p.toDto(this.getUserStatus));
 	}
 
 	async deletePunishment(
@@ -583,7 +597,7 @@ export class ChannelService {
 			return p;
 		});
 		await this.channelRepository.save(channel);
-		return channel.punishments.map((p) => p.toDto());
+		return channel.punishments.map((p) => p.toDto(this.getUserStatus));
 	}
 
 	async inviteUser(channelId: number, userId: number, user: User) {
@@ -632,9 +646,10 @@ export class ChannelService {
 		channel.messages.push(msg);
 		this.chatGateway.addNewUser(channel.id, invitedUser);
 		this.chatGateway.newChannelToUser(
-			channel.toDto(
+			await channel.toDto(
 				await this.userService.getBlockedUsers(invitedUser),
-				invitedUser
+				invitedUser,
+				this.getUserStatus
 			),
 			invitedUser.id
 		);
@@ -715,7 +730,7 @@ export class ChannelService {
 		}
 
 		await this.channelRepository.save(channel);
-		this.chatGateway.updateChannelMetadata(channel);
+		this.chatGateway.updateChannelMetadata(channel, this.getUserStatus);
 		return { status: 'ok', message: 'Channel edited' };
 	}
 
@@ -757,7 +772,7 @@ export class ChannelService {
 		await this.sendMessage(msg);
 		channel.messages.push(msg);
 		await this.channelRepository.save(channel);
-		this.chatGateway.updateChannelMetadata(channel);
+		this.chatGateway.updateChannelMetadata(channel, this.getUserStatus);
 		return { status: 'ok', message: 'Admin added' };
 	}
 
@@ -799,7 +814,7 @@ export class ChannelService {
 		await this.sendMessage(msg);
 		channel.messages.push(msg);
 		await this.channelRepository.save(channel);
-		this.chatGateway.updateChannelMetadata(channel);
+		this.chatGateway.updateChannelMetadata(channel, this.getUserStatus);
 		return { status: 'ok', message: 'Admin removed' };
 	}
 }

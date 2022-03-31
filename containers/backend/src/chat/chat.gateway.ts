@@ -10,7 +10,8 @@ import { Socket } from 'socket.io';
 import { User } from 'src/user/entities/user.entity';
 import { ChannelService } from './channel/channel.service';
 import { ChannelDto, MessageDto } from './dtos/user-channels.dto';
-import { request } from 'http';
+import { GroupChannel } from './entities/channel.entity';
+import { UserStatus } from 'src/user/interface/UserInterface';
 
 @WebSocketGateway({ cors: true, namespace: 'chat' })
 export class ChatGateway {
@@ -75,7 +76,10 @@ export class ChatGateway {
 		}
 	}
 
-	async updateChannelMetadata(channel: ChannelDto) {
+	async updateChannelMetadata(
+		channel: GroupChannel,
+		getUserStatus: (user: { id: number }) => Promise<UserStatus>
+	) {
 		for (const userId of Object.keys(this.userSockets)) {
 			if (this.userSockets[+userId]?.channels.includes(channel.id)) {
 				this.userSockets[+userId]?.socket.emit(
@@ -83,13 +87,19 @@ export class ChatGateway {
 					{
 						id: channel.id,
 						name: channel.name,
-						admins: channel.admins,
-						owner: channel.owner,
+						admins: channel.admins.map((u) =>
+							u.toDto(getUserStatus)
+						),
+						owner: channel.owner.toDto(getUserStatus),
 						channelType: channel.channelType,
 					}
 				);
 			}
 		}
+	}
+
+	isUserConnected(userId: number) {
+		return !!this.userSockets[userId];
 	}
 
 	// handle user connection
@@ -106,8 +116,7 @@ export class ChatGateway {
 	// handle user disconnection
 	@UseGuards(WsGroupGuard)
 	handleDisconnect(client: Socket & { request: { user?: User } }) {
-		if (!client.request.user)
-			return ;
+		if (!client.request.user) return;
 		delete this.userSockets[client.request.user.id];
 	}
 

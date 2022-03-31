@@ -27,8 +27,13 @@ export class FriendDTO {
 	})
 	status: UserStatus;
 
-	static fromEntity(entity: User): FriendDTO {
-		let { id, displayName, picture, status } = entity;
+	static async fromEntity(
+		entity: User,
+		getUserStatus: (user: { id: number }) => Promise<UserStatus>
+	): Promise<FriendDTO> {
+		const { id, displayName } = entity;
+		let picture = entity.picture;
+		const status = await getUserStatus(entity);
 
 		if (!picture) {
 			picture = 'default.jpg';

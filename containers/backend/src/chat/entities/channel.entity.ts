@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { User } from 'src/user/entities/user.entity';
+import { UserStatus } from 'src/user/interface/UserInterface';
 import {
 	Column,
 	CreateDateColumn,
@@ -23,7 +24,11 @@ export interface BaseChannel {
 	createdAt: Date;
 	canUserAccess(user: User): boolean;
 	canUserTalk(user: User): boolean;
-	toDto(blockedUsers: User[], user: User): ChannelDto;
+	toDto(
+		blockedUsers: User[],
+		user: User,
+		getUserStatus: (user: { id: number }) => Promise<UserStatus>
+	): Promise<ChannelDto>;
 }
 
 export interface GroupChannel extends BaseChannel {
@@ -167,7 +172,11 @@ export class Channel {
 		return true;
 	}
 
-	toDto(blockedUsers: User[], user: User): ChannelDto {
+	async toDto(
+		blockedUsers: User[],
+		user: User,
+		getUserStatus: (user: { id: number }) => Promise<UserStatus>
+	): Promise<ChannelDto> {
 		const channelDto: ChannelDto = {
 			id: this.id,
 			name:
@@ -175,9 +184,13 @@ export class Channel {
 				this.users.find((u) => u.id !== user.id)?.displayName ||
 				'',
 			channelType: this.channelType,
-			owner: this.owner?.toDto(),
-			users: this.users.map((user) => user.toDto()),
-			admins: this.admins.map((u) => u.toDto()),
+			owner: await this.owner?.toDto(getUserStatus),
+			users: await Promise.all(
+				this.users.map((user) => user.toDto(getUserStatus))
+			),
+			admins: await Promise.all(
+				this.admins.map((u) => u.toDto(getUserStatus))
+			),
 			messages: this.messages
 				.filter((message) => {
 					return !blockedUsers.find((user) => {

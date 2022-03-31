@@ -146,7 +146,6 @@ export class UserController {
 		@Body() body: EditUserDTO,
 		@UploadedFile() file?: Express.Multer.File
 	): Promise<User> {
-
 		// find user and edit his informations
 		const prevUser = await this.userService.findUserById(req.user.id);
 		if (!prevUser) {
@@ -246,9 +245,13 @@ export class UserController {
 	})
 	async getFriendslistDTO(@Req() req: { user: User }): Promise<FriendDTO[]> {
 		const list = await this.userService.getFriendslist(req.user.id);
-		return list.map((friend) => {
-			return FriendDTO.fromEntity(friend);
-		});
+		return Promise.all(
+			list.map((friend) => {
+				return FriendDTO.fromEntity(friend, (user) =>
+					this.userService.getUserStatus(user)
+				);
+			})
+		);
 	}
 
 	@Post('friends/addByName/:id')
