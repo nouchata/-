@@ -106,6 +106,13 @@ $pom-avatar-padding: 5px;
 		}
 	}
 
+	.pom-gp-error {
+		font-weight: bold;
+		text-align: center;
+		font-size: 2rem;
+		color: red;
+	}
+
 	.pom-gp-save {
 		flex: 0 0 50px;
 		border-radius: 5px;

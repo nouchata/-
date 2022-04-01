@@ -18,6 +18,7 @@ const PomGeneralPanel = () : JSX.Element => {
 	const [ displayName, setDisplayName ] = useState<string>('');
 	const [ email, setEmail ] = useState<string>('');
 	const [ saveState, setSaveState ] = useState<number>(0);
+	const [ error, setError ] = useState<string>();
 
 	return (
 		<form className="pom-general-panel">
@@ -95,6 +96,11 @@ const PomGeneralPanel = () : JSX.Element => {
 						</div>
 					</div>
 				</div>
+			{
+				error ?
+					<p className='pom-gp-error'>Error: {error}</p> :
+					null
+			}
 			<input
 				className="pom-gp-save"
 				type="submit"
@@ -111,7 +117,10 @@ const PomGeneralPanel = () : JSX.Element => {
 								form.append('username', displayName);
 							if (uploadedAvatar)
 								form.append('picture', uploadedAvatar as File);
-							await RequestWrapper.post('/user/edit', form);
+							setError(''); // clear last error
+							await RequestWrapper.post('/user/edit', form, e => {
+								setError(e.response?.data?.message || 'Unknown');
+							});
 							setSaveState(2);
 							setTimeout(() => setSaveState(0), 1000);
 						})();
