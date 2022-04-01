@@ -2,6 +2,10 @@
     position: absolute;
     width: 150px;
     margin-left: 150px;
+    // on mobile
+    @media (max-width: 768px) {
+        margin-left: 0px;
+    }
     bottom: 370px;
     background-color: white;
     border-radius: 5px;
