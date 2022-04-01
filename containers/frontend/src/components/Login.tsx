@@ -15,7 +15,19 @@ const Login = () => {
 	const [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
 	const queryCode = useQuery().get('code');
 	const history = useNavigate();
-	const { loginStatus } = useLogin();
+	const { loginStatus, refreshStatus } = useLogin();
+
+	useEffect(() => {
+		(async() => {
+			while (loginStatus.loggedIn !== LoginState.LOGGED) {
+				/* runs until the user is logged */
+				await refreshStatus();
+				await new Promise((resolve) =>
+					setTimeout(() => resolve(0), 1500)
+				);
+			}
+		})();
+	}, []); // eslint-disable-line
 
 	useEffect(() => {
 		if (!loginStatus.loggedIn && !queryCode) {

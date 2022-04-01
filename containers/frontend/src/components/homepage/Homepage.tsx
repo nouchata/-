@@ -5,9 +5,14 @@ import RankingTable from '../../components/homepage/RankingTable';
 import '../../styles/homepage.scss';
 import '../../styles/profile_overview.scss';
 import { useLogin } from '../../Providers/LoginProvider';
+import { useEffect } from 'react';
 
 const Homepage = () : JSX.Element => {
-	const { loginStatus } = useLogin();
+	const { loginStatus, refreshStatus } = useLogin();
+
+	useEffect(() => {
+		refreshStatus();
+	}, []); // eslint-disable-line
 
 	return (
 		<>

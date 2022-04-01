@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLogin } from "../../Providers/LoginProvider";
 import "../../styles/tfa_code_input.scss";
 import { RequestWrapper } from "../../utils/RequestWrapper";
 
@@ -42,7 +43,8 @@ const codeFetcher = async(
 	inputValues : Array<Array<number | ((num: number | undefined) => void) | undefined>>,
 	inputRefs : Array<React.RefObject<HTMLInputElement>>,
 	setCantInput: (val: boolean) => void,
-	backResponse: (arg: TCIState) => void
+	backResponse: (arg: TCIState) => void,
+	refreshLoginStateCallback: () => Promise<boolean>
 ) => {
 	let stitchedCode : string = '';
 	let returnCode : string = '201';
@@ -54,6 +56,7 @@ const codeFetcher = async(
 		{ givenCode: stitchedCode },
 		(error) => { returnCode = error.response.status }
 	);
+	refreshLoginStateCallback();
 	if (returnCode === '201') { // a good attempt will freeze the component
 		backResponse(TCIState.YES);
 		for (const ref of inputRefs) {
@@ -103,6 +106,7 @@ const TFACodeInput = (
 		useState<number>()
 	];
 	const [ cantInput, setCantInput ] = useState<boolean>(false);
+	const { refreshStatus } = useLogin();
 
 	useEffect(() => {
 		if (!inputValues.some((pair) => pair[0] as number === undefined) && !cantInput) {
@@ -110,7 +114,7 @@ const TFACodeInput = (
 			props.backResponse(TCIState.PENDING);
 			if (inputRefs[0]) // move the cursor back to start
 				inputRefs[0].current?.focus();
-			codeFetcher(inputValues, inputRefs, setCantInput, props.backResponse);
+			codeFetcher(inputValues, inputRefs, setCantInput, props.backResponse, refreshStatus);
 		}
 	}, [inputValues]); // eslint-disable-line
 	

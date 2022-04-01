@@ -7,16 +7,17 @@ import { useLogin } from "../../../Providers/LoginProvider";
 const saveBtnText : Array<string> = [
 	"Save changes",
 	"...",
-	"Done !"
+	"Done !",
+	"Error"
 ];
 
 const PomGeneralPanel = () : JSX.Element => {
-	const { loginStatus } = useLogin();
+	const { loginStatus, refreshStatus } = useLogin();
 	const [ editAvatarBtnState, setEditAvatarBtnState ] = useState<boolean>(false);
 	const [ uploadedAvatarBlob, setUploadedAvatarBlob ] = useState<string>('');
 	const [ uploadedAvatar, setUploadedAvatar ] = useState<File>();
 	const [ displayName, setDisplayName ] = useState<string>('');
-	const [ email, setEmail ] = useState<string>('');
+	const [ email ] = useState<string>('');
 	const [ saveState, setSaveState ] = useState<number>(0);
 	const [ error, setError ] = useState<string>();
 
@@ -96,16 +97,13 @@ const PomGeneralPanel = () : JSX.Element => {
 						</div>
 					</div>
 				</div>
-			{
-				error ?
-					<p className='pom-gp-error'>Error: {error}</p> :
-					null
-			}
+			{!!error && <p className='pom-gp-error'>{error}</p>}
 			<input
 				className="pom-gp-save"
 				type="submit"
 				value={saveBtnText[saveState]}
-				onClick={(e) => { 
+				onClick={(e) => {
+					let error = false;
 					e.preventDefault();
 					if (saveState === 0 && (uploadedAvatarBlob || email || displayName)) {
 						setSaveState(1);
@@ -117,12 +115,20 @@ const PomGeneralPanel = () : JSX.Element => {
 								form.append('username', displayName);
 							if (uploadedAvatar)
 								form.append('picture', uploadedAvatar as File);
-							setError(''); // clear last error
 							await RequestWrapper.post('/user/edit', form, e => {
+								error = true;
 								setError(e.response?.data?.message || 'Unknown');
+								setSaveState(3);
+								setTimeout(() => {
+									setError('');
+									setSaveState(0);
+								}, 2000);
 							});
-							setSaveState(2);
-							setTimeout(() => setSaveState(0), 1000);
+							if (!error) {
+								refreshStatus();
+								setSaveState(2);
+								setTimeout(() => setSaveState(0), 1000);
+							}
 						})();
 					}
 				}}
