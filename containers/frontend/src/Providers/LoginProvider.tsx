@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash';
 import {
 	createContext,
 	ReactNode,
@@ -6,12 +7,11 @@ import {
 	useState,
 } from 'react';
 import { FetchStatusData, LoginState } from '../types/FetchStatusData';
-import { fetchStatusCompare } from '../utils/fetchStatusCompare';
 import { RequestWrapper } from '../utils/RequestWrapper';
 
 interface ILoginProvider {
 	loginStatus: FetchStatusData;
-	setLoginStatus: (status: FetchStatusData) => void;
+	refreshStatus: () => Promise<boolean>;
 }
 
 const LoginContext = createContext<ILoginProvider | undefined>(undefined);
@@ -30,27 +30,29 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 		fetched: false,
 	});
 
+	const refreshStatus = async() : Promise<boolean> => {
+		let status_data: FetchStatusData = {
+			loggedIn: LoginState.NOT_LOGGED,
+			fetched: false,
+		};
+		const res = await RequestWrapper.get<FetchStatusData>('/auth/status');
+		if (res) {
+			status_data = res;
+			res.fetched = true;
+		}
+		if (status_data.fetched) {
+			if (!isEqual(loginStatus, status_data))
+				setLoginStatus(status_data);
+			return (true);
+		}
+		return (false);
+	};
+
 	useEffect(() => {
 		(async () => {
-			while (true) {
-				/* 1.5s cyclic fetching of user data & backend server uptime */
-				let status_data: FetchStatusData = {
-					loggedIn: LoginState.NOT_LOGGED,
-					fetched: false,
-				};
-				const res = await RequestWrapper.get<FetchStatusData>(
-					'/auth/status'
-				);
-				if (res) {
-					status_data = res;
-					res.fetched = true;
-				}
-				if (
-					status_data &&
-					!fetchStatusCompare(loginStatus, status_data)
-				) {
-					setLoginStatus(status_data);
-				}
+			while (!loginStatus.fetched) {
+				/* runs until first fetch of user data */
+				await refreshStatus();
 				await new Promise((resolve) =>
 					setTimeout(() => resolve(0), 1500)
 				);
@@ -62,7 +64,7 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 		<LoginContext.Provider
 			value={{
 				loginStatus,
-				setLoginStatus,
+				refreshStatus,
 			}}
 		>
 			{children}

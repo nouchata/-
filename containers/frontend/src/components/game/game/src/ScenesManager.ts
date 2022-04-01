@@ -29,6 +29,7 @@ class ScenesManager {
 			} )
 			.onComplete(() => {
 				this.currentScene?.destroy();
+				this.currentScene = undefined;
 				this.appRef.stage.removeAllListeners();
 				this.appRef.stage.removeChildren();
 				this.currentScene = this.newScene;
@@ -69,8 +70,10 @@ class ScenesManager {
 	}
 
 	public destroy() {
-		this.transitionSceneAnimation.end();
 		this.appRef.ticker.remove(this.update, this);
+		this.currentScene?.destroy();
+		this.currentScene = undefined;
+		this.transitionSceneAnimation.end();
 	}
 }
 

@@ -70,6 +70,15 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	}, [notificationHandler, chatSocket, onMessage]);
 
 	const AddFriend = async (name: string) => {
+
+		if (!name) {
+			setModalProps({
+				show: true,
+				content: <AddFriendModal cb={AddFriend} info='You must specify a username' />,
+			});
+			return ;			
+		}
+
 		try {
 			await friendList.addFriendByName(name);
 		} catch (e: any) {

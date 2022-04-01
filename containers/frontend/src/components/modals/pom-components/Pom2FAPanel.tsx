@@ -55,7 +55,7 @@ const tfaBtnHandler = async(
 };
 
 const Pom2FAPanel = () : JSX.Element => {
-	const { loginStatus } = useLogin();
+	const { loginStatus, refreshStatus } = useLogin();
 	const [ authCodeStatus, setAuthCodeStatus ] = useState<TCIState>(TCIState.INITIAL);
 	const [ tfaStartProcedure, setTfaStartProcedure ] = useState<boolean>(false);
 	const [ qrCode, setQrCode ] = useState<JSX.Element>();
@@ -72,8 +72,9 @@ const Pom2FAPanel = () : JSX.Element => {
 					form,
 					(error) => setAuthCodeStatus(4)
 				);
+				refreshStatus();
 			})();
-	}, [authCodeStatus]);
+	}, [authCodeStatus, refreshStatus]);
 
 	return (
 		<div className="pom-2fa-panel">

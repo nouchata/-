@@ -7,17 +7,18 @@ import { useLogin } from "../../../Providers/LoginProvider";
 const saveBtnText : Array<string> = [
 	"Save changes",
 	"...",
-	"Done !"
+	"Done !",
+	"Error"
 ];
 
 const PomGeneralPanel = () : JSX.Element => {
-	const { loginStatus } = useLogin();
+	const { loginStatus, refreshStatus } = useLogin();
 	const [ editAvatarBtnState, setEditAvatarBtnState ] = useState<boolean>(false);
 	const [ uploadedAvatarBlob, setUploadedAvatarBlob ] = useState<string>('');
 	const [ uploadedAvatar, setUploadedAvatar ] = useState<File>();
 	const [ displayName, setDisplayName ] = useState<string>('');
-	const [ email, setEmail ] = useState<string>('');
 	const [ saveState, setSaveState ] = useState<number>(0);
+	const [ error, setError ] = useState<string>();
 
 	return (
 		<form className="pom-general-panel">
@@ -70,6 +71,17 @@ const PomGeneralPanel = () : JSX.Element => {
 							<input id="pom-login" type="text" placeholder={loginStatus.user?.login} disabled />
 						</div>
 						<div className="pom-gp-tc-textfield">
+							<label htmlFor="pom-email">
+								Email :
+							</label>
+							<input
+								id="pom-email"
+								type="email"
+								placeholder={loginStatus.user?.email}
+								disabled
+							/>
+						</div>
+						<div className="pom-gp-tc-textfield">
 							<label htmlFor="pom-display-name">
 								Display name :
 							</label>
@@ -82,44 +94,42 @@ const PomGeneralPanel = () : JSX.Element => {
 								}}
 							/>
 						</div>
-						<div className="pom-gp-tc-textfield">
-							<label htmlFor="pom-email">
-								Email :
-							</label>
-							<input
-								id="pom-email"
-								type="email"
-								placeholder={loginStatus.user?.email}
-								onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-									setEmail(e.target.value);
-								}}
-							/>
-						</div>
 					</div>
 				</div>
+			{!!error && <p className='pom-gp-error'>{error}</p>}
 			<input
 				className="pom-gp-save"
 				type="submit"
 				value={saveBtnText[saveState]}
-				onClick={(e) => { 
+				onClick={(e) => {
+					let error = false;
 					e.preventDefault();
-					if (saveState === 0 && (uploadedAvatarBlob || email || displayName)) {
+					if (saveState === 0 && (uploadedAvatarBlob || displayName)) {
 						setSaveState(1);
 						(async() => {
 							let form = new FormData();
-							if (email)
-								form.append('email', email);
 							if (displayName)
 								form.append('username', displayName);
 							if (uploadedAvatar)
 								form.append('picture', uploadedAvatar as File);
-							await RequestWrapper.post('/user/edit', form);
-							setSaveState(2);
-							setTimeout(() => setSaveState(0), 1000);
+							await RequestWrapper.post('/user/edit', form, e => {
+								error = true;
+								setError(e.response?.data?.message || 'Unknown');
+								setSaveState(3);
+								setTimeout(() => {
+									setError('');
+									setSaveState(0);
+								}, 2000);
+							});
+							if (!error) {
+								refreshStatus();
+								setSaveState(2);
+								setTimeout(() => setSaveState(0), 1000);
+							}
 						})();
 					}
 				}}
-				disabled={saveState !== 0 || (!uploadedAvatarBlob && !email && !displayName)}
+				disabled={saveState !== 0 || (!uploadedAvatarBlob && !displayName)}
 			/>
 		</form>
 	);

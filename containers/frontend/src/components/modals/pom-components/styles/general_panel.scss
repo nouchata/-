@@ -6,10 +6,9 @@ $pom-avatar-padding: 5px;
 	display: flex;
 	flex-flow: column nowrap;
 	justify-content: center;
-	gap: 2px;
 
 	.pom-gp-data {
-		flex: 100%;
+		flex: 1;
 		display: flex;
 		flex-flow: column wrap;
 		gap: 2px;
@@ -104,6 +103,12 @@ $pom-avatar-padding: 5px;
 				}
 			}
 		}
+	}
+
+	.pom-gp-error {
+		flex: 0 1 auto;
+		font-size: 0.4em;
+		text-align: center;
 	}
 
 	.pom-gp-save {
