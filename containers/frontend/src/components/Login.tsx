@@ -27,7 +27,7 @@ const Login = () => {
 				);
 			}
 		})();
-	}, []); // eslint-disable-line
+	}, [loginStatus.loggedIn, refreshStatus]);
 
 	useEffect(() => {
 		if (!loginStatus.loggedIn && !queryCode) {
