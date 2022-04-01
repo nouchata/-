@@ -51,7 +51,6 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		(async () => {
 			while (!loginStatus.fetched) {
-				console.log('refreshing status');
 				/* runs until first fetch of user data */
 				if (await refreshStatus())
 					return ;
