@@ -97,4 +97,9 @@ export class GameController {
 	getInstanceState(@Param('id', ParseIntPipe) id: number) {
 		return this.gameService.instanceStateRetriever(id);
 	}
+
+	@Get('player/state/:id')
+	getPlayerState(@Param('id', ParseIntPipe) id: number) {
+		return this.gameService.instancePlayerStateRetriever(id);
+	}
 }

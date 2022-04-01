@@ -30,6 +30,7 @@ class TranscendanceApp extends Application {
 	public destroy() {
 		Loader.shared.destroy();
 		Loader.shared.reset();
+		this.manager.destroy();
 		super.destroy();
 	}
 }

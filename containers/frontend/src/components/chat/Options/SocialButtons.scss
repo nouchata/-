@@ -26,3 +26,10 @@
         background-color: rgb(200, 100, 0);
     }
 }
+
+.watch-button {
+    background-color: lightseagreen;
+    &:hover {
+        background-color: rgba(lightseagreen, 0.9);
+    }
+}
