@@ -16,7 +16,6 @@ const PomGeneralPanel = () : JSX.Element => {
 	const [ uploadedAvatarBlob, setUploadedAvatarBlob ] = useState<string>('');
 	const [ uploadedAvatar, setUploadedAvatar ] = useState<File>();
 	const [ displayName, setDisplayName ] = useState<string>('');
-	const [ email, setEmail ] = useState<string>('');
 	const [ saveState, setSaveState ] = useState<number>(0);
 	const [ error, setError ] = useState<string>();
 
@@ -107,12 +106,10 @@ const PomGeneralPanel = () : JSX.Element => {
 				value={saveBtnText[saveState]}
 				onClick={(e) => { 
 					e.preventDefault();
-					if (saveState === 0 && (uploadedAvatarBlob || email || displayName)) {
+					if (saveState === 0 && (uploadedAvatarBlob || displayName)) {
 						setSaveState(1);
 						(async() => {
 							let form = new FormData();
-							if (email)
-								form.append('email', email);
 							if (displayName)
 								form.append('username', displayName);
 							if (uploadedAvatar)
@@ -126,7 +123,7 @@ const PomGeneralPanel = () : JSX.Element => {
 						})();
 					}
 				}}
-				disabled={saveState !== 0 || (!uploadedAvatarBlob && !email && !displayName)}
+				disabled={saveState !== 0 || (!uploadedAvatarBlob && !displayName)}
 			/>
 		</form>
 	);
