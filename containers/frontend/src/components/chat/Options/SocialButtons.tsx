@@ -1,9 +1,10 @@
-import { faBan, faUserMinus, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+import { faBan, faUserMinus, faUserPlus, faGlasses } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useBlocked } from '../../../Providers/BlockedProvider';
 import { useFriendList } from '../../../Providers/FriendListProvider';
 import Button from './utils/Button';
 import './SocialButtons.scss';
+import { useNavigate } from 'react-router-dom';
 
 const BlockButton = ({ userId }: { userId: number }) => {
 	const blockedHook = useBlocked();
@@ -50,4 +51,19 @@ const FriendButton = ({ userId }: { userId: number }) => {
 	);
 };
 
-export { BlockButton, FriendButton };
+const WatchButton = (props: { instanceId: number, self?: boolean }) => {
+	const navigate = useNavigate();
+	const url = "/game?play=" + String(props.instanceId) + "&forceSpectator=1";
+
+	return (
+		<Button
+			onClick={() => navigate(url)}
+			className="watch-button"
+		>
+			<FontAwesomeIcon icon={faGlasses} className="icon" />
+			Watch match
+		</Button>
+	);
+};
+
+export { BlockButton, FriendButton, WatchButton };
