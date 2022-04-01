@@ -3,7 +3,9 @@ import HistoryTable from './HistoryTable';
 import ProgressBar from '../utils/ProgressBar';
 import { Link } from 'react-router-dom';
 import UserStatus from '../utils/StatusDisplay';
-import { BlockButton, FriendButton } from '../chat/Options/SocialButtons';
+import { BlockButton, FriendButton, WatchButton } from '../chat/Options/SocialButtons';
+import { useEffect, useState } from 'react';
+import { RequestWrapper } from '../../utils/RequestWrapper';
 
 interface IProps {
 	data: FetchUserData;
@@ -37,6 +39,7 @@ export const getVictoryRatio = (victories: number, loses: number) => {
 };
 
 const UserDetails = (props: IProps) => {
+	const [ instanceId, setInstanceId ] = useState<number | undefined>(undefined);
 	// get the winrate of the user in percentage
 	let ratio = getVictoryRatio(
 		props.data.ranking.vdRatio[0],
@@ -51,17 +54,24 @@ const UserDetails = (props: IProps) => {
 		statusStyle.color = 'orange';
 	}
 
+	useEffect(() => {
+		RequestWrapper
+			.get<number>(`/game/player/state/${props.data.id}`)
+			.then((value) => setInstanceId(value));
+	}, []); // eslint-disable-line
+
 	return (
 		<div className="profile">
 			<Link to="/homepage" className="return-button">
 				Return to homepage
 			</Link>
-			{!props.data.isEditable && (
 				<div className="social-option">
-					<BlockButton userId={props.data.id} />
-					<FriendButton userId={props.data.id} />
+					{!props.data.isEditable && <>
+						<BlockButton userId={props.data.id} />
+						<FriendButton userId={props.data.id} />
+					</> }
+					{!!instanceId && <WatchButton instanceId={instanceId} />}
 				</div>
-			)}
 
 			<div className="general-info">
 				<img

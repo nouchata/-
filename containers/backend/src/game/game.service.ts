@@ -176,6 +176,12 @@ export class GameService {
 		return responseState;
 	}
 
+	instancePlayerStateRetriever(playerId: number): number | undefined {
+		if (!this.gatewayPtr)
+			throw new HttpException("The game server isn't loaded yet", 500);
+		return (this.gatewayPtr.isUserPlaying(playerId));
+	}
+
 	async removeInvitation(invitationId: number): Promise<boolean> {
 		return await this.channelService.deleteMessage(invitationId);
 	}
