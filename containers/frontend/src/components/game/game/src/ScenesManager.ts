@@ -33,6 +33,7 @@ class ScenesManager {
 				this.appRef.stage.removeAllListeners();
 				this.appRef.stage.removeChildren();
 				this.currentScene = this.newScene;
+				this.newScene = undefined;
 				if (this.currentScene) {
 					this.currentScene.alpha = 0;
 					this.appRef.stage.addChild(this.currentScene);

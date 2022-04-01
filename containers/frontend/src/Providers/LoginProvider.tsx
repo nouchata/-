@@ -2,6 +2,7 @@ import { isEqual } from 'lodash';
 import {
 	createContext,
 	ReactNode,
+	useCallback,
 	useContext,
 	useEffect,
 	useState,
@@ -29,8 +30,7 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 		loggedIn: LoginState.NOT_LOGGED,
 		fetched: false,
 	});
-
-	const refreshStatus = async() : Promise<boolean> => {
+	const refreshStatus = useCallback(async() : Promise<boolean> => {
 		let status_data: FetchStatusData = {
 			loggedIn: LoginState.NOT_LOGGED,
 			fetched: false,
@@ -46,13 +46,14 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 			return (true);
 		}
 		return (false);
-	};
+	}, [loginStatus]);
 
 	useEffect(() => {
 		(async () => {
 			while (!loginStatus.fetched) {
 				/* runs until first fetch of user data */
-				await refreshStatus();
+				if (await refreshStatus())
+					return ;
 				await new Promise((resolve) =>
 					setTimeout(() => resolve(0), 1500)
 				);
