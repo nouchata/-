@@ -40,7 +40,6 @@ services:
       - DB_NAME=trans
       - DB_USER=nestjs
       - DB_PASS=${DB_PASS}
-      - DB_ROOT_PASS=${DB_ROOT_PASS}
       - BACKEND_PORT=3000
       - COOKIE_SECRET=${COOKIE_SECRET}
       - UID_42=${UID_42}
@@ -57,16 +56,11 @@ services:
       - profile_picture_vol:/app/public
 
   database:
-    build:
-      context: ./containers/database
-      args:
-        - DB_PORT=5432
-        - DB_NAME=trans
-        - DB_USER=nestjs
-        - DB_PASS=${DB_PASS}
-        - DB_ROOT_PASS=${DB_ROOT_PASS}
-      dockerfile: Dockerfile.prod
-    image: database:v1
+    image: postgres:12.10
+    environment:
+      - POSTGRES_USER=nestjs
+      - POSTGRES_DB=trans
+      - POSTGRES_PASSWORD=${DB_PASS}
     container_name: database
     hostname: database
     networks:
