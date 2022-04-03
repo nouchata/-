@@ -550,7 +550,9 @@ export class ChannelService {
 		) {
 			throw new HttpException('User is not an admin', 403);
 		}
-		return channel.punishments.map((p) => p.toDto(this.getUserStatus));
+		return Promise.all(
+			channel.punishments.map((p) => p.toDto(this.getUserStatus))
+		);
 	}
 
 	async deletePunishment(
@@ -597,7 +599,9 @@ export class ChannelService {
 			return p;
 		});
 		await this.channelRepository.save(channel);
-		return channel.punishments.map((p) => p.toDto(this.getUserStatus));
+		return Promise.all(
+			channel.punishments.map((p) => p.toDto(this.getUserStatus))
+		);
 	}
 
 	async inviteUser(channelId: number, userId: number, user: User) {
