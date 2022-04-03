@@ -113,12 +113,12 @@ class WaitingScene extends Container implements IScene {
 
 	destroy() {
 		this.appRef.ticker.remove(this.update, this);
+		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		this.tweenText[0].end();
 		this.tweenText[1].end();
 		this.aliases[0].destroy();
 		this.aliases[1].destroy();
 		this.status.destroy();
-		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		super.destroy();
 	}
 }

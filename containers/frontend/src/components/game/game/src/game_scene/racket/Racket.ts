@@ -222,8 +222,8 @@ class Racket extends Container implements IContainerElement {
 	}
 
 	public destroy() {
-		this.shape.destroy();
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		this.shape.destroy();
 		super.destroy();
 	}
 }

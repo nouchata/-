@@ -143,10 +143,10 @@ class LoaderScene extends Container implements IScene {
 
 	destroy() {
 		this.appRef.ticker.remove(this.update, this);
-		this.flickeringTween.stop();
+		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
+		this.flickeringTween.end();
 		this.logo.destroy();
 		this.text.destroy();
-		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
 		super.destroy();
 	}
 }
