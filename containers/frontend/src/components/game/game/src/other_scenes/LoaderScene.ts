@@ -66,13 +66,17 @@ class LoaderScene extends Container implements IScene {
 		this.appRef.ticker.add(this.update, this);
 
 		Loader.registerPlugin(WebfontLoaderPlugin);
-		try {
-			Loader.shared.add(gameAssets);
-			Loader.shared.onError.once(this.errorLoading, this);
-			Loader.shared.onComplete.once(this.doneLoadingAssets, this);
-			Loader.shared.load();
-		} catch (e: any) {
-			this.errorLoading(e);
+		if (!Loader.shared.resources.fonts) {
+			try {
+				Loader.shared.add(gameAssets);
+				Loader.shared.onError.once(this.errorLoading, this);
+				Loader.shared.onComplete.once(this.doneLoadingAssets, this);
+				Loader.shared.load();
+			} catch (e: any) {
+				this.errorLoading(e);
+			}
+		} else {
+			this.doneLoadingAssets();
 		}
 	}
 

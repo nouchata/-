@@ -14,8 +14,7 @@ const Game = () : JSX.Element => {
 
 	useEffect(() => {
 		setDisplayData({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true });
-		// eslint-disable-next-line
-		setTimeout(() => gci.current = new GameClientInstance(loginStatus.user?.id as number, Number(queryCode), querySpectator ? true : false), 10);
+		gci.current = new GameClientInstance(loginStatus.user?.id as number, Number(queryCode), querySpectator ? true : false);
 		
 		return function cleanup() {
 			if (gci.current) {
@@ -24,7 +23,7 @@ const Game = () : JSX.Element => {
 			}
 			setDisplayData({});
 		};
-	}, [gci]); // eslint-disable-line
+	}, []); // eslint-disable-line
 
 	return (
 		<div className="game-container">
