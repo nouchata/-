@@ -87,10 +87,14 @@ export class ChatGateway {
 					{
 						id: channel.id,
 						name: channel.name,
-						admins: channel.admins.map((u) =>
-							u.toDto(getUserStatus)
-						),
-						owner: channel.owner.toDto(getUserStatus),
+						admins: channel.admins
+							? await Promise.all(
+									channel.admins.map((u) =>
+										u.toDto(getUserStatus)
+									)
+							  )
+							: undefined,
+						owner: await channel.owner.toDto(getUserStatus),
 						channelType: channel.channelType,
 					}
 				);
