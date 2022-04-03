@@ -89,9 +89,22 @@ export class UserController {
 	async findUsersByDisplayName(
 		@Body() findUsersByDisplayName: FindUsersByDisplayNameDTO
 	): Promise<User[]> {
-		const users: User[] = await this.userService.findUsersByDisplayName(
+		let users: User[] = await this.userService.findUsersByDisplayName(
 			findUsersByDisplayName.displaynamefragment
 		);
+
+		// place strictUserMatch at the first
+		const strictUserMatch = users.find(
+			(user) =>
+				user.displayName === findUsersByDisplayName.displaynamefragment
+		);
+
+		if (strictUserMatch) {
+			users = users.filter(
+				(user) => user.displayName !== strictUserMatch.displayName
+			);
+			users.unshift(strictUserMatch);
+		}
 
 		if (users.length > 0)
 			return users.slice(
