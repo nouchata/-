@@ -1,5 +1,4 @@
 # 𝕗𝕥_𝕥𝕣𝕒𝕟𝕤𝕔𝕖𝕟𝕕𝕖𝕟𝕔𝕖 ✨ ✨
-[![Deploy on production](https://github.com/nouchata/ft_transcendence/actions/workflows/deploy.yml/badge.svg)](https://github.com/nouchata/ft_transcendence/actions/workflows/deploy.yml)
 [![Transcendence tests](https://github.com/nouchata/ft_transcendence/actions/workflows/test.yml/badge.svg)](https://github.com/nouchata/ft_transcendence/actions/workflows/test.yml)
 ![https://fr.reactjs.org/](https://img.shields.io/badge/front--end-React-critical) ![https://nestjs.com/](https://img.shields.io/badge/back--end-NestJS-informational) ![https://www.typescriptlang.org/](https://img.shields.io/badge/powered%20with-TypeScript-blueviolet)
 
