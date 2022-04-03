@@ -73,6 +73,8 @@ class GameClientInstance {
 		window.addEventListener("keyup", this.onKeyUp as EventListenerOrEventListenerObject);
 
 		this.app.ticker.add(this.actionSender, this);
+
+		setTimeout(() => window.dispatchEvent(this.customResizeEvent), 2000);
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
