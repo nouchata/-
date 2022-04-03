@@ -34,7 +34,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 	const friendList = useFriendList();
 	const notificationHandler = useNotificationHandler();
 	const navigate = useNavigate();
-	const {loginStatus} = useLogin()
+	const {loginStatus} = useLogin();
 
 	const onMessage = useCallback(
 		(message: MessageDto, channel: ChannelDto) => {
@@ -81,6 +81,7 @@ const HSocialField = (props: { standalone?: boolean }) => {
 
 		try {
 			await friendList.addFriendByName(name);
+			setModalProps({ show: false, content: <div /> });
 		} catch (e: any) {
 			let errinfo: string;
 			if (e.response.data.message) {
