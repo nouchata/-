@@ -46,7 +46,7 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 			return (true);
 		}
 		return (false);
-	}, []); // eslint-disable-line
+	}, [loginStatus]);
 
 	useEffect(() => {
 		(async () => {
