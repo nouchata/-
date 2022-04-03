@@ -157,7 +157,9 @@ export class GameService {
 			players[1].elo
 		);
 		players[0].elo = updatedElo[0];
+		players[0].victories++;
 		players[1].elo = updatedElo[1];
+		players[1].losses++;
 
 		// save updated players
 		players.forEach(async (pl) => {
