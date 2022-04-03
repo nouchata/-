@@ -3,6 +3,7 @@ import { FetchLadderData } from '../../types/FetchLadderData';
 import { RequestWrapper } from '../../utils/RequestWrapper';
 import '../../styles/ranking_table.scss';
 import { useNavigate } from 'react-router-dom';
+import { useLogin } from '../../Providers/LoginProvider';
 // import { RouteComponentProps, withRouter } from 'react-router';
 
 interface IProps {
@@ -20,6 +21,7 @@ const RankingTable = (props: IProps) => {
     const scrollTopRef = useRef<HTMLTableRowElement>(null);
     const [ rankingData, setRankingData ] = useState<IState>({});
     const navigate = useNavigate();
+    const { loginStatus } = useLogin();
 
     useEffect(() => {
         (async() => {
@@ -32,7 +34,7 @@ const RankingTable = (props: IProps) => {
             );
             setRankingData({...rankingData, data: ladder, isLoaded: true });
         })();
-    }, []); // eslint-disable-line
+    }, [loginStatus]); // eslint-disable-line
 
     const executeScrollTop = (e: any) => {
         if (scrollTopRef.current)

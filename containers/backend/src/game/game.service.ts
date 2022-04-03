@@ -14,14 +14,15 @@ import { ChannelService } from 'src/chat/channel/channel.service';
 export class GameService {
 	private list: MatchmakingList;
 	private playersTimeout: { [playerId: number]: NodeJS.Timeout };
-	public gatewayPtr: GameGateway | undefined = undefined;
 
 	constructor(
 		@InjectRepository(User) private userRepo: Repository<User>,
 		@InjectRepository(MatchHistory)
 		private matchRepo: Repository<MatchHistory>,
 		@Inject(forwardRef(() => ChannelService))
-		private channelService: ChannelService
+		private channelService: ChannelService,
+		@Inject(forwardRef(() => GameGateway))
+		private gameGateway: GameGateway,
 	) {
 		this.list = { waiting: [], finished: [] };
 		this.playersTimeout = {};
@@ -46,8 +47,8 @@ export class GameService {
 			);
 		}
 
-		if (this.gatewayPtr) {
-			return this.gatewayPtr.createInstance(
+		if (this.gameGateway) {
+			return this.gameGateway.createInstance(
 				ids[0],
 				ids[1],
 				options,
@@ -73,8 +74,8 @@ export class GameService {
 
 		if (!match) {
 			// find the user in the game instances
-			if (this.gatewayPtr) {
-				return { id: this.gatewayPtr.isUserPlaying(playerId) };
+			if (this.gameGateway) {
+				return { id: this.gameGateway.isUserPlaying(playerId) };
 			}
 			return { id: 0 };
 		}
@@ -113,8 +114,8 @@ export class GameService {
 	}
 
 	getMatchId(userId: number): number {
-		if (this.gatewayPtr) {
-			return this.gatewayPtr.isUserPlaying(userId);
+		if (this.gameGateway) {
+			return this.gameGateway.isUserPlaying(userId);
 		} // find the user in the game instances
 
 		const match = this.list.finished.find((match) => {
@@ -167,19 +168,19 @@ export class GameService {
 	}
 
 	instanceStateRetriever(instanceId: number): ResponseState | undefined {
-		if (!this.gatewayPtr)
+		if (!this.gameGateway)
 			throw new HttpException("The game server isn't loaded yet", 500);
 		const responseState: ResponseState | undefined =
-			this.gatewayPtr.getInstanceData(instanceId);
+			this.gameGateway.getInstanceData(instanceId);
 		if (!responseState)
 			throw new HttpException('The given instanceId is invalid', 404);
 		return responseState;
 	}
 
 	instancePlayerStateRetriever(playerId: number): number | undefined {
-		if (!this.gatewayPtr)
+		if (!this.gameGateway)
 			throw new HttpException("The game server isn't loaded yet", 500);
-		return (this.gatewayPtr.isUserPlaying(playerId));
+		return (this.gameGateway.isUserPlaying(playerId));
 	}
 
 	async removeInvitation(invitationId: number): Promise<boolean> {
