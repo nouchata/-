@@ -4,6 +4,7 @@ import { useLogin } from '../../../Providers/LoginProvider';
 import { useModal } from '../../../Providers/ModalProvider';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { User } from '../../chat/types/user-channels.dto';
+import { GameOptions } from '../../game/game/types/GameOptions';
 
 import './styles/gamecreator.scss';
 
@@ -21,14 +22,16 @@ function submitTextValue(instanceId: number): string {
 const GameCreator = ({ user }: { user?: User }): JSX.Element => {
 	const [currentlyFetching, setCurrentlyFetching] = useState<boolean>(false);
 	const [userTwoFound, setUserTwoFound] = useState<number>(user?.id || 0);
-	const [userTwoLogin, setUserTwoLogin] = useState<string | undefined>(
-		user?.displayName
-	);
+	const [userTwoLogin, setUserTwoLogin] = useState<string | undefined>(user?.displayName);
 	const [timeoutStamp, setTimeoutStamp] = useState<number>(0);
 	const [instanceId, setInstanceId] = useState<number>(0);
-	const [gameType, setGameType] = useState<'standard' | 'extended'>(
-		'standard'
-	);
+	const [gameOptions, setGameOptions] = useState<GameOptions>({
+		gameType: 'standard',
+		capChargingPPS: 40,
+		yDistPPS: 50,
+		racketSize: 6,
+		ballSpeedPPS: 50
+	});
 	const { loginStatus } = useLogin();
 	const navigate = useNavigate();
 	const { setModalProps } = useModal();
@@ -64,11 +67,10 @@ const GameCreator = ({ user }: { user?: User }): JSX.Element => {
 			let fetchInstanceId: number | undefined =
 				await RequestWrapper.post<number>('/game/create', {
 					ids: [loginStatus.user?.id || 0, userTwoFound],
-					options: { gameType },
+					options: gameOptions,
 				});
 			if (fetchInstanceId && fetchInstanceId > 0) {
 				setInstanceId(fetchInstanceId);
-				/* TODO: spot to warn the other player about the game */
 				await new Promise((resolve) =>
 					setTimeout(() => resolve(1), 1000)
 				);
@@ -154,15 +156,93 @@ const GameCreator = ({ user }: { user?: User }): JSX.Element => {
 					<label>Game type:</label>
 					<select
 						name="game-type"
-						value={gameType}
+						value={gameOptions.gameType}
 						onChange={(e) =>
-							setGameType(
-								e.target.value as 'standard' | 'extended'
-							)
+							setGameOptions({
+								...gameOptions,
+								gameType: e.target.value as 'standard' | 'extended'
+							})
 						}
 					>
 						<option value="standard">Standard</option>
 						<option value="extended">Extended</option>
+					</select>
+				</div>
+				<div className="gc-other">
+					<label>Capacity charging speed (percentage value per sec):</label>
+					<select
+						name="game-capacity-charging"
+						value={String(gameOptions.capChargingPPS)}
+						onChange={(e) =>
+							setGameOptions({
+								...gameOptions,
+								capChargingPPS: Number(e.target.value)
+							})
+						}
+						disabled={gameOptions.gameType === "standard"}
+					>
+						<option value="30">30</option>
+						<option value="40">40</option>
+						<option value="50">50</option>
+						<option value="60">60</option>
+					</select>
+				</div>
+				<div className="gc-other">
+					<label>Racket speed (percentage value per sec):</label>
+					<select
+						name="game-type"
+						value={String(gameOptions.yDistPPS)}
+						onChange={(e) =>
+							setGameOptions({
+								...gameOptions,
+								yDistPPS: Number(e.target.value)
+							})
+						}
+					>
+						<option value="30">30</option>
+						<option value="50">50</option>
+						<option value="70">70</option>
+						<option value="90">90</option>
+					</select>
+				</div>
+				<div className="gc-other">
+					<label>Racket size (percentage value of the total playfield height):</label>
+					<select
+						name="game-type"
+						value={String(gameOptions.racketSize)}
+						onChange={(e) =>
+							setGameOptions({
+								...gameOptions,
+								racketSize: Number(e.target.value)
+							})
+						}
+					>
+						<option value="3">1/3</option>
+						<option value="4">1/4</option>
+						<option value="5">1/5</option>
+						<option value="6">1/6</option>
+						<option value="7">1/7</option>
+						<option value="8">1/8</option>
+					</select>
+				</div>
+				<div className="gc-other">
+					<label>Ball speed (percentage value per sec):</label>
+					<select
+						name="game-capacity-charging"
+						value={String(gameOptions.ballSpeedPPS)}
+						onChange={(e) =>
+							setGameOptions({
+								...gameOptions,
+								ballSpeedPPS: Number(e.target.value)
+							})
+						}
+					>
+						<option value="30">30</option>
+						<option value="35">35</option>
+						<option value="40">40</option>
+						<option value="45">45</option>
+						<option value="50">50</option>
+						<option value="70">70</option>
 					</select>
 				</div>
 			</form>

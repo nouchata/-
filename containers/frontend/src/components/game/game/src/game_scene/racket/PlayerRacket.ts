@@ -23,6 +23,7 @@ class PlayerRacket extends Racket {
 		if ((this.selectCorrectUnit() as PlayerState).flags.stuned) {
 			this.absolutePosition.y = toPx((this.selectCorrectUnit() as PlayerState).pos.y, this.appRef.screen.height);
 			this.y = this.absolutePosition.y;
+			this.appRef.gciMaster.computedGameActions = {};
 		}
 		else
 			this.absolutePosition.y = toPx(this.manageMovementReconciliation(), this.appRef.screen.height);

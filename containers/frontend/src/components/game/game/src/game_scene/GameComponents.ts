@@ -95,6 +95,8 @@ class GameComponents extends Container implements IContainerElement {
 		this.rightRacket.destroy();
 		this.ball.destroy();
 		this.ballParticles.destroy();
+		for (let playerGUI of this.playersGUI)
+			playerGUI.destroy();
 		super.destroy();
 	}
 }
