@@ -15,7 +15,7 @@ const Game = () : JSX.Element => {
 	useEffect(() => {
 		setDisplayData({ hideSidebar: true, hideButtons: true, hideMainContainerStyle: true });
 		gci.current = new GameClientInstance(loginStatus.user?.id as number, Number(queryCode), querySpectator ? true : false);
-		
+
 		return function cleanup() {
 			if (gci.current) {
 				gci.current.destroy();

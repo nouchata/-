@@ -69,16 +69,10 @@ class GameClientInstance {
 			});
 		})(this.customResizeEvent));
 
-		window.addEventListener("keydown", this.onKeyDown.bind(this));
-		window.addEventListener("keyup", this.onKeyUp.bind(this));
+		window.addEventListener("keydown", this.onKeyDown as EventListenerOrEventListenerObject);
+		window.addEventListener("keyup", this.onKeyUp as EventListenerOrEventListenerObject);
 
 		this.app.ticker.add(this.actionSender, this);
-	}
-
-	destroy() {
-		this.gciState = GCI_STATE.ENDED;
-		this.app.destroy();
-		this.wsClient.destroy();
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
@@ -109,7 +103,7 @@ class GameClientInstance {
 		}
 	}
 
-	private onKeyDown(e: KeyboardEvent) {
+	onKeyDown : Function = (function(this: GameClientInstance, e: KeyboardEvent) {
 		if (this.app.playerRacket) {
 			if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === " ") {
 				e.preventDefault();
@@ -122,9 +116,9 @@ class GameClientInstance {
 			else if (e.key === " ")
 				this.app.actualKeysPressed.space = true;
 		}
-	}
+	}).bind(this);
 
-	private onKeyUp(e: KeyboardEvent) {
+	onKeyUp : Function = (function(this: GameClientInstance, e: KeyboardEvent) {
 		if (this.app.playerRacket) {
 			if (e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === " ") {
 				e.preventDefault();
@@ -137,13 +131,21 @@ class GameClientInstance {
 			else if (e.key === " ")
 				this.app.actualKeysPressed.space = false;
 		}
-	}
+	}).bind(this);
 
 	private async computedGameActionsCleaner(index: number) {
 		let i: number = this.lastCleanedCGAIndex;
 		this.lastCleanedCGAIndex = index;
 		for (; i <= index ; i++)
 			this.computedGameActions[i] = undefined;
+	}
+
+	destroy() {
+		this.gciState = GCI_STATE.ENDED;
+		window.removeEventListener("keydown", this.onKeyDown as EventListenerOrEventListenerObject);
+		window.removeEventListener("keyup", this.onKeyUp as EventListenerOrEventListenerObject);
+		this.app.destroy();
+		this.wsClient.destroy();
 	}
 };
 
