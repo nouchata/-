@@ -12,7 +12,7 @@ import { RequestWrapper } from '../../../utils/RequestWrapper';
 import './ChatOption.scss';
 import { ChannelDto } from '../types/user-channels.dto';
 import { useModal } from '../../../Providers/ModalProvider';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Admin from './Admin/Admin';
 import { useLogin } from '../../../Providers/LoginProvider';
 import { Members } from './utils/Members';
@@ -87,42 +87,46 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 		}
 	}, [channel, inviteModalOpen, setModalProps]);
 
-	let options: {
-		icon: IconDefinition;
-		text: string;
-		callback: () => void;
-	}[] = [
-		{
-			icon: faPerson,
-			text: 'Members',
-			callback: () => {
-				setModalProps({
-					show: true,
-					content: <Members channel={channel} />,
-					width: '80%',
-					height: '80%',
-				});
+	const options = useMemo(() => {
+		let options: {
+			icon: IconDefinition;
+			text: string;
+			callback: () => void;
+		}[] = [
+			{
+				icon: faPerson,
+				text: 'Members',
+				callback: () => {
+					setModalProps({
+						show: true,
+						content: <Members channel={channel} />,
+						width: '80%',
+						height: '80%',
+					});
+				},
 			},
-		},
-	];
+		];
 
-	if (channel.channelType === 'direct') {
-		options.push({
-			icon: faGamepad,
-			text: 'Play together',
-			callback: () => {
-				const user = channel.users.find(
-					(user) => user.id !== loginStatus.user?.id
-				);
-				setModalProps({
-					show: true,
-					content: <GameCreator user={user} />,
-					width: '80%',
-					height: '80%',
-				});
-			},
-		});
-	} else {
+		if (channel.channelType === 'direct') {
+			options.push(
+				{
+					icon: faGamepad,
+					text: 'Play together',
+					callback: () => {
+						const user = channel.users.find(
+							(user) => user.id !== loginStatus.user?.id,
+						);
+						setModalProps({
+							show: true,
+							content: <GameCreator user={user} />,
+							width: '80%',
+							height: '80%',
+						});
+					},
+				})
+			return options;
+		}
+
 		options = options.concat([
 			{
 				icon: faDoorOpen,
@@ -140,7 +144,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 					setInviteModalOpen(true);
 				},
 			},
-		]);
+		])
 
 		if (
 			channel.admins.some((admin) => admin.id === loginStatus.user?.id) ||
@@ -164,7 +168,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 						width: '400px',
 						height: '400px',
 					});
-				},
+				}
 			});
 			options.push({
 				icon: faUserPlus,
@@ -176,10 +180,12 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 						width: '80%',
 						height: '80%',
 					});
-				},
+				}
 			});
 		}
-	}
+
+		return options;
+	}, [channel, loginStatus.user?.id, setModalProps]);
 
 	return (
 		<button title="Channels options">
