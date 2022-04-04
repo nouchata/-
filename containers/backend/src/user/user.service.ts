@@ -79,7 +79,18 @@ export class UserService {
 
 	async editUser(user: User, info: EditUserDTO, file?: Express.Multer.File) {
 		if (file) user.picture = file.filename;
-		if (info.username) user.displayName = info.username;
+		if (info.username) {
+			// find user with same username
+			const userWithSameDisplayName = await this.userRepo.findOne({
+				where: { displayName: info.username },
+			});
+			if (userWithSameDisplayName) {
+				throw new ConflictException(
+					'This display name is already taken'
+				);
+			}
+			user.displayName = info.username;
+		}
 		if (info.twofa) user.twofa = info.twofa === 'true';
 		return this.userRepo.save(user);
 	}
