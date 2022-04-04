@@ -5,7 +5,7 @@ import {
 	useEffect,
 	useState,
 } from 'react';
-import socketIOClient, { Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 import { UpdateChannelDto } from '../components/chat/types/update-channel.dto';
 import {
 	MessageDto,
@@ -70,7 +70,7 @@ export class ChatSocket {
 			const path = backend_address.startsWith('http') ? undefined : backend_address + '/socket.io';
 
 
-			this._socket = socketIOClient(url, {
+			this._socket = io(url, {
 				path: path,
 				withCredentials: true,
 			});
