@@ -67,7 +67,7 @@ class EndScene extends Container implements IScene {
 	destroy() {
 		this.appRef.ticker.remove(this.update, this);
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
-		this.tweenText.end();
+		this.tweenText.stop();
 		this.text.destroy();
 		super.destroy();
 	}

@@ -74,7 +74,7 @@ class GameClientInstance {
 
 		this.app.ticker.add(this.actionSender, this);
 
-		setTimeout(() => window.dispatchEvent(this.customResizeEvent), 2000);
+		setTimeout(() => window.dispatchEvent(new Event('resize')), 1000);
 	}
 
 	onSocketStateUpdate(newState: ResponseState) {
