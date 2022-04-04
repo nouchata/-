@@ -25,7 +25,6 @@ const Login = () => {
 		let isDone = false;
 		(async () => {
 			while (loginStatus.loggedIn !== LoginState.LOGGED && !isDone) {
-				console.log(loginStatus.loggedIn);
 				/* runs until the user is logged */
 				await refreshStatus();
 				await new Promise((resolve) =>
