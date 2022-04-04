@@ -6,7 +6,6 @@ import CloseAsset from '../../assets/profile/close.png';
 import GearAsset from '../../assets/profile/gear.png';
 import { GenericModalProps } from '../utils/GenericModal';
 import { IStdPanelContent } from '../modals/StandardModal';
-import { RequestWrapper } from '../../utils/RequestWrapper';
 import { useModal } from '../../Providers/ModalProvider';
 import PomGeneralPanel from '../modals/pom-components/PomGeneralPanel';
 import Pom2FAPanel from '../modals/pom-components/Pom2FAPanel';
@@ -32,7 +31,7 @@ const ProfileOverview = ({
 	fetchStatus: FetchStatusData;
 }): JSX.Element => {
 	const { setModalProps } = useModal();
-	const { refreshStatus } = useLogin();
+	const { logout } = useLogin();
 
 	return (
 		<div className="profile-overview">
@@ -74,13 +73,7 @@ const ProfileOverview = ({
 					</div>
 				</div>
 				<div className="profile-overview-actions">
-					<button
-						title="Log Out"
-						onClick={async () => {
-							await RequestWrapper.get('/auth/logout');
-							refreshStatus();
-						}}
-					>
+					<button title="Log Out" onClick={async () => logout()}>
 						<img src={CloseAsset} alt="btn" />
 					</button>
 					<button

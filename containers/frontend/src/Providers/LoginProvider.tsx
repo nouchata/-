@@ -13,6 +13,7 @@ import { RequestWrapper } from '../utils/RequestWrapper';
 interface ILoginProvider {
 	loginStatus: FetchStatusData;
 	refreshStatus: () => Promise<boolean>;
+	logout: () => Promise<void>;
 }
 
 const LoginContext = createContext<ILoginProvider | undefined>(undefined);
@@ -30,7 +31,7 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 		loggedIn: LoginState.NOT_LOGGED,
 		fetched: false,
 	});
-	const refreshStatus = useCallback(async() : Promise<boolean> => {
+	const refreshStatus = useCallback(async (): Promise<boolean> => {
 		let status_data: FetchStatusData = {
 			loggedIn: LoginState.NOT_LOGGED,
 			fetched: false,
@@ -41,19 +42,27 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 			res.fetched = true;
 		}
 		if (status_data.fetched) {
-			if (!isEqual(loginStatus, status_data))
-				setLoginStatus(status_data);
-			return (true);
+			if (!isEqual(loginStatus, status_data)) setLoginStatus(status_data);
+			return true;
 		}
-		return (false);
+		return false;
 	}, []); // eslint-disable-line
+	const logout = useCallback(async () => {
+		const res = await RequestWrapper.get<FetchStatusData>('/auth/logout');
+		if (res) {
+			await 
+			setLoginStatus({
+				loggedIn: LoginState.NOT_LOGGED,
+				fetched: false,
+			});
+		}
+	}, []);
 
 	useEffect(() => {
 		(async () => {
 			while (!loginStatus.fetched) {
 				/* runs until first fetch of user data */
-				if (await refreshStatus())
-					return ;
+				if (await refreshStatus()) return;
 				await new Promise((resolve) =>
 					setTimeout(() => resolve(0), 1500)
 				);
@@ -66,6 +75,7 @@ const LoginProvider = ({ children }: { children: ReactNode }) => {
 			value={{
 				loginStatus,
 				refreshStatus,
+				logout,
 			}}
 		>
 			{children}

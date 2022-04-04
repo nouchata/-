@@ -37,8 +37,8 @@ export class AuthController {
 	@Get('logout')
 	@UseGuards(GroupGuard)
 	@ApiTags('auth')
-	logout(@Req() req: { session: Session }) {
-		req.session.destroy(() => {});
+	logout(@Req() req: { session: Session; logout: () => void }) {
+		req.logout();
 		return 'logged out';
 	}
 }
