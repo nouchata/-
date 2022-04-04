@@ -90,7 +90,7 @@ class GameComponents extends Container implements IContainerElement {
 	public destroy() {
 		this.appRef.ticker.remove(this.update, this);
 		window.removeEventListener("resizeGame", this.resize as EventListenerOrEventListenerObject);
-		this.shakeRightAnimation.end();
+		this.shakeRightAnimation.stop();
 		this.fieldSeparator.destroy();
 		this.leftRacket.destroy();
 		this.rightRacket.destroy();
