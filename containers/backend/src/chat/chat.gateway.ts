@@ -21,58 +21,55 @@ export class ChatGateway {
 		private userService: UserService
 	) {}
 
-	// [userId: number] => Socket
-	private userSockets: {
-		[userId: number]: { socket: Socket; channels: number[] };
-	} = {};
+	private userSockets = new Map<
+		number,
+		{ socket: Socket; channels: number[] }
+	>();
 
 	async sendMessageToChannel(channelId: number, message: MessageDto) {
-		for (const userId of Object.keys(this.userSockets)) {
-			const blockedUsers = await this.userService.getBlockedUsers({
-				id: +userId,
-			});
-			if (
-				this.userSockets[+userId]?.channels.includes(channelId) &&
-				!blockedUsers.some((u) => u.id === message.userId)
-			) {
-				this.userSockets[+userId]?.socket.emit('receiveMessage', {
+		this.userSockets.forEach((userSocket) => {
+			if (userSocket.channels.includes(channelId)) {
+				userSocket.socket.emit('receiveMessage', {
 					...message,
 					channelId: channelId,
 				});
 			}
-		}
+		});
 	}
 
 	async addNewUser(channelId: number, user: User) {
-		for (const userId of Object.keys(this.userSockets)) {
-			if (this.userSockets[+userId]?.channels.includes(channelId)) {
-				this.userSockets[+userId]?.socket.emit('newUser', {
+		this.userSockets.forEach((userSocket) => {
+			if (userSocket.channels.includes(channelId)) {
+				userSocket.socket.emit('newUser', {
 					...user,
 					channelId: channelId,
 				});
 			}
-		}
+		});
 	}
 
 	async removeUserChannel(channelId: number, user: User) {
-		for (const userId of Object.keys(this.userSockets)) {
-			if (this.userSockets[+userId]?.channels.includes(channelId)) {
-				this.userSockets[+userId]?.socket.emit('removeUser', {
+		this.userSockets.forEach((userSocket) => {
+			if (userSocket.channels.includes(channelId)) {
+				userSocket.socket.emit('removeUser', {
 					...user,
 					channelId: channelId,
 				});
 			}
-		}
-		if (this.userSockets[user.id]) {
-			this.userSockets[user.id].channels = this.userSockets[
-				user.id
-			].channels.filter((c) => c !== channelId);
+		});
+
+		const userSocket = this.userSockets.get(user.id);
+		if (userSocket) {
+			userSocket.channels = userSocket.channels.filter(
+				(c) => c !== channelId
+			);
 		}
 	}
 
 	async newChannelToUser(channel: ChannelDto, userId: number) {
-		if (this.userSockets[userId]) {
-			this.userSockets[userId].socket.emit('newChannel', channel);
+		const userSocket = this.userSockets.get(userId);
+		if (userSocket) {
+			userSocket.socket.emit('newChannel', channel);
 		}
 	}
 
@@ -80,30 +77,26 @@ export class ChatGateway {
 		channel: GroupChannel,
 		getUserStatus: (user: { id: number }) => Promise<UserStatus>
 	) {
-		for (const userId of Object.keys(this.userSockets)) {
-			if (this.userSockets[+userId]?.channels.includes(channel.id)) {
-				this.userSockets[+userId]?.socket.emit(
-					'updateChannelMetadata',
-					{
-						id: channel.id,
-						name: channel.name,
-						admins: channel.admins
-							? await Promise.all(
-									channel.admins.map((u) =>
-										u.toDto(getUserStatus)
-									)
-							  )
-							: undefined,
-						owner: await channel.owner.toDto(getUserStatus),
-						channelType: channel.channelType,
-					}
-				);
+		const newMetadata = {
+			id: channel.id,
+			name: channel.name,
+			admins: channel.admins
+				? await Promise.all(
+						channel.admins.map((u) => u.toDto(getUserStatus))
+				  )
+				: undefined,
+			owner: await channel.owner.toDto(getUserStatus),
+			channelType: channel.channelType,
+		};
+		this.userSockets.forEach((userSocket) => {
+			if (userSocket.channels.includes(channel.id)) {
+				userSocket.socket.emit('updateChannelMetadata', newMetadata);
 			}
-		}
+		});
 	}
 
 	isUserConnected(userId: number) {
-		return !!this.userSockets[userId];
+		return this.userSockets.has(userId);
 	}
 
 	// handle user connection
@@ -111,17 +104,17 @@ export class ChatGateway {
 	handleConnection(client: Socket & { request: { user?: User } }) {
 		if (!client.request.user)
 			return client.emit('unauthorized', 'You are not authorized');
-		this.userSockets[client.request.user.id] = {
+		this.userSockets.set(client.request.user.id, {
 			socket: client,
 			channels: [],
-		};
+		});
 	}
 
 	// handle user disconnection
 	@UseGuards(WsGroupGuard)
 	handleDisconnect(client: Socket & { request: { user?: User } }) {
 		if (!client.request.user) return;
-		delete this.userSockets[client.request.user.id];
+		this.userSockets.delete(client.request.user.id);
 	}
 
 	@UseGuards(WsGroupGuard)
@@ -132,19 +125,17 @@ export class ChatGateway {
 	) {
 		const channelFound = await this.channelService.getChannel(channelId);
 
-		if (channelFound) {
-			if (channelFound.canUserAccess(client.request.user)) {
-				if (!this.userSockets[client.request.user.id])
-					throw new WsException('User not found');
-				this.userSockets[client.request.user.id]?.channels.push(
-					channelId
-				);
-				client.emit('joinedChannel', channelFound);
-			} else
-				throw new WsException(
-					'You are not allowed to join this channel'
-				);
-		} else throw new WsException('Channel not found');
+		if (!channelFound) throw new WsException('Channel not found');
+
+		if (!channelFound.canUserAccess(client.request.user))
+			throw new WsException('You are not authorized');
+
+		const userSocket = this.userSockets.get(client.request.user.id);
+
+		if (!userSocket) throw new WsException('User not found');
+
+		if (!userSocket.channels.includes(channelId))
+			userSocket.channels.push(channelId);
 	}
 
 	@UseGuards(WsGroupGuard)
@@ -154,28 +145,25 @@ export class ChatGateway {
 		{ channelId, text }: { channelId: number; text: string }
 	) {
 		const channelFound = await this.channelService.getChannel(channelId);
+		if (!channelFound) throw new WsException('Channel not found');
 
-		if (channelFound) {
-			if (channelFound.canUserTalk(client.request.user)) {
-				const message = await this.channelService.createMessage(
-					channelFound,
-					'user',
-					text,
-					client.request.user
-				);
+		if (!channelFound.canUserTalk(client.request.user))
+			throw new WsException('You are not authorized');
 
-				const msg: MessageDto & { channelId: number } = {
-					id: message.id,
-					messageType: message.messageType,
-					channelId: channelId,
-					text: text,
-					userId: client.request.user.id,
-				};
-				this.sendMessageToChannel(channelId, msg);
-			} else
-				throw new WsException(
-					'You are not allowed to send messages to this channel'
-				);
-		} else throw new WsException('Channel not found');
+		const message = await this.channelService.createMessage(
+			channelFound,
+			'user',
+			text,
+			client.request.user
+		);
+
+		const msg: MessageDto & { channelId: number } = {
+			id: message.id,
+			messageType: message.messageType,
+			channelId: channelId,
+			text: text,
+			userId: client.request.user.id,
+		};
+		this.sendMessageToChannel(channelId, msg);
 	}
 }
