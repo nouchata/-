@@ -15,9 +15,7 @@ async function bootstrap() {
 
 	const configService = app.get<ConfigService>(ConfigService);
 	const port = Number(configService.get('BACKEND_PORT'));
-	const front_address = configService.get(
-		'FRONTEND_ADDRESS'
-	);
+	const front_address = configService.get('FRONTEND_ADDRESS');
 
 	if (front_address) {
 		app.enableCors({
@@ -25,7 +23,6 @@ async function bootstrap() {
 			credentials: true,
 		});
 	}
-
 
 	// verify user content
 	app.useGlobalPipes(
@@ -40,6 +37,7 @@ async function bootstrap() {
 	const sessionMiddleware = session({
 		cookie: {
 			maxAge: 86400000 * 4,
+			sameSite: front_address ? 'none' : 'strict',
 		},
 		secret: process.env.COOKIE_SECRET as string,
 		resave: false,
