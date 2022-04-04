@@ -5,6 +5,7 @@ import {
 	HttpStatus,
 	Injectable,
 } from '@nestjs/common';
+import { WsException } from '@nestjs/websockets';
 import { Session } from 'express-session';
 import { Observable } from 'rxjs';
 import { Session2FaDTO } from '../../tfa/dtos/session-2fa.dto';
@@ -38,9 +39,17 @@ export class WsGroupGuard implements CanActivate {
 	canActivate(
 		context: ExecutionContext
 	): boolean | Promise<boolean> | Observable<boolean> {
-		const client = context.switchToWs().getClient();
+		const request = context.switchToWs().getClient().request;
 
-		if (client.request.isAuthenticated()) {
+		if (request.isAuthenticated()) {
+			if (
+				(request.session as Session & Session2FaDTO).twofa.needed &&
+				!(request.session as Session & Session2FaDTO).twofa.passed &&
+				context.getClass().name !== 'TfaController'
+			)
+				throw new WsException(
+					'The 2FA authentication is not fulfilled'
+				);
 			return true;
 		}
 		return false;
