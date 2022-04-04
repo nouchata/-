@@ -1,4 +1,4 @@
-import socketIOClient, { Socket } from 'socket.io-client';
+import { io, Socket } from "socket.io-client";
 import { GameAction } from './types/GameAction';
 import { ResponseState } from './types/ResponseState';
 
@@ -24,7 +24,7 @@ class GameWS {
 		const path = backend_address.startsWith('http')
 			? undefined
 			: backend_address + '/socket.io';
-		this.socket = socketIOClient(url, {
+		this.socket = io(url, {
 			path: path,
 			withCredentials: true,
 		});

@@ -12,14 +12,20 @@ import { useQuery } from '../utils/useQuery';
 import { useLogin } from '../Providers/LoginProvider';
 
 const Login = () => {
-	const [dataSet, setDataSet] = useState<LoginDataSet>({ h1: '', p: '', img: '' });
+	const [dataSet, setDataSet] = useState<LoginDataSet>({
+		h1: '',
+		p: '',
+		img: '',
+	});
 	const queryCode = useQuery().get('code');
 	const history = useNavigate();
 	const { loginStatus, refreshStatus } = useLogin();
 
 	useEffect(() => {
-		(async() => {
-			while (loginStatus.loggedIn !== LoginState.LOGGED) {
+		let isDone = false;
+		(async () => {
+			while (loginStatus.loggedIn !== LoginState.LOGGED && !isDone) {
+				console.log(loginStatus.loggedIn);
 				/* runs until the user is logged */
 				await refreshStatus();
 				await new Promise((resolve) =>
@@ -27,26 +33,33 @@ const Login = () => {
 				);
 			}
 		})();
+		return () => {
+			isDone = true;
+		};
 	}, [loginStatus.loggedIn, refreshStatus]);
 
 	useEffect(() => {
 		if (!loginStatus.loggedIn && !queryCode) {
-			window.open(process.env.REACT_APP_BACKEND_ADDRESS as string +
-				'/auth/login', 'Login 42', 'scrollbars=no,resizable=no,' +
-			'status=no,location=no,toolbar=no,menubar=no,width=500,height=600');
+			window.open(
+				(process.env.REACT_APP_BACKEND_ADDRESS as string) +
+					'/auth/login',
+				'Login 42',
+				'scrollbars=no,resizable=no,' +
+					'status=no,location=no,toolbar=no,menubar=no,width=500,height=600'
+			);
 			setDataSet({
 				h1: 'Use the prompt to Log In',
 				p: 'The login occurs in a popup.',
-				img: resetAsset
+				img: resetAsset,
 			});
 		} else if (!loginStatus.loggedIn && queryCode) {
 			setDataSet({
 				h1: 'Logging In ...',
 				p: 'Please wait a moment, this window will automatically close.',
-				img: resetAsset
+				img: resetAsset,
 			});
 			(async () => {
-				let failedReq : boolean = false;
+				let failedReq: boolean = false;
 				await RequestWrapper.get<FetchStatusData>(
 					'/auth/login',
 					{ params: { code: queryCode } },
@@ -55,7 +68,7 @@ const Login = () => {
 						setDataSet({
 							h1: 'Oops, an error happened :( !',
 							p: e.message,
-							img: 'error.png'
+							img: 'error.png',
 						});
 					}
 				);
@@ -63,7 +76,7 @@ const Login = () => {
 					setDataSet({
 						h1: '42 login step is done !',
 						p: 'The window will automatically close.',
-						img: tickAsset
+						img: tickAsset,
 					});
 					window.close();
 				}
@@ -71,30 +84,37 @@ const Login = () => {
 		} else if (loginStatus.loggedIn === LoginState.LOGGED) {
 			setDataSet({
 				h1: 'You are logged in !',
-				p: 'Please wait a moment, you\'ll be redirected to your last location.',
-				img: tickAsset
+				p: "Please wait a moment, you'll be redirected to your last location.",
+				img: tickAsset,
 			});
 			(async () => {
-				setTimeout(() => history("/"), 1000);
+				setTimeout(() => history('/'), 1000);
 			})();
 		}
 	}, [history, loginStatus.loggedIn, queryCode]);
 
-	return (
-		loginStatus.loggedIn === LoginState.PARTIAL && !queryCode ?
-			<div className="tfa-login-stuff">
-				<img src={GoogleAsset} className="onthespot" alt="google auth logo" />
-				<div className="login-2fa-container">
-					<TFACodeInput backResponse={(arg: TCIState) => {}} />
-				</div>
+	return loginStatus.loggedIn === LoginState.PARTIAL && !queryCode ? (
+		<div className="tfa-login-stuff">
+			<img
+				src={GoogleAsset}
+				className="onthespot"
+				alt="google auth logo"
+			/>
+			<div className="login-2fa-container">
+				<TFACodeInput backResponse={(arg: TCIState) => {}} />
 			</div>
-		:
-			<div className="login-stuff">
-				<h1>{dataSet.h1}</h1>
-				{dataSet.p.length && <p>{dataSet.p}</p>}
-				<img className={dataSet.img === tickAsset ? "onthespot" : "rotation"} src={dataSet.img} alt="" />
-			</div>
+		</div>
+	) : (
+		<div className="login-stuff">
+			<h1>{dataSet.h1}</h1>
+			{dataSet.p.length && <p>{dataSet.p}</p>}
+			<img
+				className={dataSet.img === tickAsset ? 'onthespot' : 'rotation'}
+				src={dataSet.img}
+				alt=""
+			/>
+		</div>
 	);
-}
+};
 
 export default Login;
