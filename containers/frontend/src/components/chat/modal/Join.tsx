@@ -6,7 +6,7 @@ import {
 	faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ChatSocket } from '../../../Providers/ChatProvider';
 import { RequestWrapper } from '../../../utils/RequestWrapper';
 import { GetChannelDto } from '../types/get-channel.dto';
@@ -24,6 +24,7 @@ const ModalJoin = ({
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(channel.channelType === 'public');
 	const [error, setError] = useState<string>();
+	const ref = useRef(false);
 
 	const joinChannel = useCallback(
 		async (socket: ChatSocket) => {
@@ -48,10 +49,11 @@ const ModalJoin = ({
 	);
 
 	useEffect(() => {
-		if (channel.channelType === 'public') {
+		if (channel.channelType === 'public' && !ref.current) {
+			ref.current = true;
 			joinChannel(socket);
 		}
-	}, [channel.channelType, joinChannel, socket]);
+	}, []); // eslint-disable-line
 	return (
 		<>
 			<div className="overlay" />

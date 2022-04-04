@@ -20,6 +20,8 @@ import InviteFriend from './InviteFriend';
 import EditChannel from './EditChannel/EditChannel';
 import AddAdmin from './EditChannel/AddAdmin';
 import GameCreator from '../../modals/mm-components/GameCreator';
+import { useDisplay } from '../../../Providers/DisplayProvider';
+import { useChat } from '../../../Providers/ChatProvider';
 
 const Option = ({
 	children,
@@ -54,6 +56,9 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 	const [adminModalOpen, setAdminModalOpen] = useState(false);
 	const [inviteModalOpen, setInviteModalOpen] = useState(false);
 	const { loginStatus } = useLogin();
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { displayData } = useDisplay();
+	const { chatSocket } = useChat();
 
 	useEffect(() => {
 		if (adminModalOpen) {
@@ -108,22 +113,21 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 		];
 
 		if (channel.channelType === 'direct') {
-			options.push(
-				{
-					icon: faGamepad,
-					text: 'Play together',
-					callback: () => {
-						const user = channel.users.find(
-							(user) => user.id !== loginStatus.user?.id,
-						);
-						setModalProps({
-							show: true,
-							content: <GameCreator user={user} />,
-							width: '80%',
-							height: '80%',
-						});
-					},
-				})
+			options.push({
+				icon: faGamepad,
+				text: 'Play together',
+				callback: () => {
+					const user = channel.users.find(
+						(user) => user.id !== loginStatus.user?.id
+					);
+					setModalProps({
+						show: true,
+						content: <GameCreator user={user} />,
+						width: '80%',
+						height: '80%',
+					});
+				},
+			});
 			return options;
 		}
 
@@ -144,7 +148,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 					setInviteModalOpen(true);
 				},
 			},
-		])
+		]);
 
 		if (
 			channel.admins.some((admin) => admin.id === loginStatus.user?.id) ||
@@ -168,7 +172,7 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 						width: '400px',
 						height: '400px',
 					});
-				}
+				},
 			});
 			options.push({
 				icon: faUserPlus,
@@ -180,12 +184,12 @@ const ChatOption = ({ channel }: { channel: ChannelDto }) => {
 						width: '80%',
 						height: '80%',
 					});
-				}
+				},
 			});
 		}
 
 		return options;
-	}, [channel, loginStatus.user?.id, setModalProps]);
+	}, [channel, loginStatus.user?.id, setModalProps, chatSocket]); // eslint-disable-line
 
 	return (
 		<button title="Channels options">
