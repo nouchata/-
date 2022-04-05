@@ -27,8 +27,14 @@ export class ChatGateway {
 	>();
 
 	async sendMessageToChannel(channelId: number, message: MessageDto) {
-		this.userSockets.forEach((userSocket) => {
-			if (userSocket.channels.includes(channelId)) {
+		this.userSockets.forEach(async (userSocket, id) => {
+			const blockedUsers = await this.userService.getBlockedUsers({
+				id,
+			});
+			if (
+				userSocket.channels.includes(channelId) &&
+				!blockedUsers.some((u) => u.id === message.userId)
+			) {
 				userSocket.socket.emit('receiveMessage', {
 					...message,
 					channelId: channelId,

@@ -63,10 +63,10 @@ export class GameGateway {
 
 		if (
 			this.associatedPlayers[client.request.user.id] &&
-			this.associatedPlayers[client.request.user.id] !== instanceId
+			this.associatedPlayers[client.request.user.id] === instanceId
 		)
 			throw new WsException(
-				"You can't spectate another game if you're playing"
+				"You can't spectate your own game while you're playing"
 			);
 
 		client.join('game#' + instanceId);
