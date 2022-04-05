@@ -61,14 +61,6 @@ export class GameGateway {
 		if (this.gameInstances[instanceId] === undefined)
 			throw new WsException('The given instance ID is invalid');
 
-		if (
-			this.associatedPlayers[client.request.user.id] &&
-			this.associatedPlayers[client.request.user.id] === instanceId
-		)
-			throw new WsException(
-				"You can't spectate your own game while you're playing"
-			);
-
 		client.join('game#' + instanceId);
 
 		if (
